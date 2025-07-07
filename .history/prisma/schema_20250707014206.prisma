@@ -1,0 +1,488 @@
+/**
+ * TasteBuddy Database Schema
+ * 
+ * This Prisma schema defines the database structure for the TasteBuddy recipe sharing platform.
+ * It includes models for users, recipes, favorites, and ratings with proper relationships
+ * and constraints to ensure data integrity.
+ * 
+ * Database Features:
+ * - User authentication and profiles
+ * - Recipe storage with rich metadata
+ * - Social features (favorites, ratings)
+ * - Scalable relationship design
+ * - Data validation and constraints
+ * 
+ * @file prisma/schema.prisma
+ * @version 1.0.0
+ * @created 2024
+ */
+
+// ===== PRISMA CONFIGURATION =====
+
+/**
+ * Prisma Client Generator
+ * 
+ * Generates the TypeScript client for database operations.
+ * This creates type-safe database queries and mutations.
+ */
+generator client {
+  provider = "prisma-client-js"
+  // Optional: Generate client in custom location
+  // output   = "./generated/client"
+}
+
+/**
+ * Database Datasource Configuration
+ * 
+ * Defines the database connection and provider.
+ * Supports multiple database types for different environments.
+ * 
+ * Supported Providers:
+ * - postgresql: Production-ready, full-featured
+ * - mysql: Alternative production option
+ * - sqlite: Development and testing
+ * - mongodb: NoSQL option (limited Prisma features)
+ */
+datasource db {
+  provider = "postgresql"
+  // Alternative providers for different environments:
+  // provider = "sqlite"     // For local development
+  // provider = "mysql"      // For MySQL databases
+  // provider = "mongodb"    // For MongoDB (limited features)
+  
+  url = env("DATABASE_URL")
+  
+  // Optional: Connection pooling and direct URL for serverless
+  // directUrl = env("DIRECT_URL")
+  // relationMode = "prisma" // For PlanetScale and similar
+}
+
+// ===== DATABASE MODELS =====
+
+/**
+ * User Model
+ * 
+ * Represents registered users of the TasteBuddy platform.
+ * Stores authentication data and user preferences.
+ * 
+ * Relationships:
+ * - One-to-many with Recipe (user can create many recipes)
+ * - One-to-many with Favorite (user can favorite many recipes)
+ * - One-to-many with Rating (user can rate many recipes)
+ * 
+ * Features:
+ * - Email-based authentication
+ * - Profile information (name, image)
+ * - Automatic timestamp tracking
+ * - Cascade deletion of related data
+ */
+model User {
+  // === PRIMARY KEY ===
+  /** 
+   * Unique identifier for the user
+   * Uses CUID (Collision-resistant Unique Identifier) for better performance
+   */
+  id String @id @default(cuid())
+
+  // === AUTHENTICATION FIELDS ===
+  /** 
+   * User's email address (required, unique)
+   * Used for authentication and communication
+   * Must be valid email format (enforced by application)
+   */
+  email String @unique
+
+  /** 
+   * User's display name (optional)
+   * Shown on recipes and profile
+   * Can be different from email username
+   */
+  name String?
+
+  /** 
+   * URL to user's profile image (optional)
+   * Can be from social providers or uploaded image
+   * Should be accessible via HTTPS
+   */
+  image String?
+
+  // === METADATA ===
+  /** 
+   * When the user account was created
+   * Automatically set on first insert
+   */
+  createdAt DateTime @default(now())
+
+  /** 
+   * When the user account was last updated
+   * Automatically updated on any field change
+   */
+  updatedAt DateTime @updatedAt
+
+  // === RELATIONSHIPS ===
+  /** 
+   * Recipes created by this user
+   * One-to-many relationship
+   * When user is deleted, all their recipes are also deleted (CASCADE)
+   */
+  recipes Recipe[]
+
+  /** 
+   * Recipes favorited by this user
+   * One-to-many through join table
+   * When user is deleted, all their favorites are removed (CASCADE)
+   */
+  favorites Favorite[]
+
+  /** 
+   * Ratings given by this user
+   * One-to-many through join table
+   * When user is deleted, all their ratings are removed (CASCADE)
+   */
+  ratings Rating[]
+
+  // === TABLE CONFIGURATION ===
+  /** 
+   * Custom table name in database
+   * Overrides default "User" table name
+   */
+  @@map("users")
+}
+
+/**
+ * Recipe Model
+ * 
+ * Represents individual recipes shared on the platform.
+ * Contains all recipe data including ingredients, instructions, and metadata.
+ * 
+ * Relationships:
+ * - Many-to-one with User (recipe belongs to one author)
+ * - One-to-many with Favorite (recipe can be favorited by many users)
+ * - One-to-many with Rating (recipe can be rated by many users)
+ * 
+ * Features:
+ * - Rich recipe content (ingredients, instructions, tags)
+ * - Searchable fields for discovery
+ * - Metadata for filtering and sorting
+ * - Social engagement tracking
+ */
+model Recipe {
+  // === PRIMARY KEY ===
+  /** 
+   * Unique identifier for the recipe
+   * Uses CUID for better performance and URL-friendliness
+   */
+  id String @id @default(cuid())
+
+  // === CORE CONTENT ===
+  /** 
+   * Recipe title/name (required)
+   * Primary searchable field
+   * Should be descriptive and unique
+   */
+  title String
+
+  /** 
+   * Brief description of the recipe (optional)
+   * Used for previews and search results
+   * Can include origin story or special notes
+   */
+  description String?
+
+  /** 
+   * List of ingredients with quantities (required)
+   * Stored as array of strings for flexibility
+   * Format: "2 cups flour", "1 tsp salt", etc.
+   * Searchable for ingredient-based discovery
+   */
+  ingredients String[] // PostgreSQL array, JSON in other DBs
+
+  /** 
+   * Step-by-step cooking instructions (required)
+   * Can be paragraph format or numbered steps
+   * Primary content for recipe execution
+   */
+  instructions String @db.Text // Use TEXT type for large content
+
+  // === RECIPE METADATA ===
+  /** 
+   * Estimated total cooking time (optional)
+   * Format: "30 mins", "1h 15m", etc.
+   * Used for filtering and meal planning
+   */
+  cookTime String?
+
+  /** 
+   * Number of servings the recipe makes (optional)
+   * Used for scaling and planning
+   * Must be positive integer when provided
+   */
+  servings Int?
+
+  /** 
+   * Difficulty level (required, with default)
+   * Used for filtering and user guidance
+   * Enum-like constraint enforced by application
+   */
+  difficulty String @default("easy") // "easy" | "medium" | "hard"
+
+  /** 
+   * Categorization tags (optional)
+   * Stored as array for flexible tagging
+   * Examples: ["dessert", "chocolate", "gluten-free"]
+   * Used for discovery and filtering
+   */
+  tags String[] // PostgreSQL array, JSON in other DBs
+
+  /** 
+   * URL to recipe image (optional)
+   * Should be accessible via HTTPS
+   * Can be uploaded file or external URL
+   */
+  image String?
+
+  // === TIMESTAMPS ===
+  /** 
+   * When the recipe was created
+   * Used for sorting and display
+   */
+  createdAt DateTime @default(now())
+
+  /** 
+   * When the recipe was last updated
+   * Tracks content modifications
+   */
+  updatedAt DateTime @updatedAt
+
+  // === AUTHOR RELATIONSHIP ===
+  /** 
+   * Foreign key to the recipe author
+   * Required - every recipe must have an author
+   */
+  authorId String
+
+  /** 
+   * Author of the recipe
+   * Many-to-one relationship with User
+   * When author is deleted, their recipes are also deleted (CASCADE)
+   */
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // === SOCIAL FEATURES ===
+  /** 
+   * Users who have favorited this recipe
+   * One-to-many through join table
+   * Used for user's favorite recipe collections
+   */
+  favorites Favorite[]
+
+  /** 
+   * Ratings given to this recipe
+   * One-to-many through join table
+   * Used to calculate average rating and popularity
+   */
+  ratings Rating[]
+
+  // === TABLE CONFIGURATION ===
+  /** 
+   * Custom table name in database
+   */
+  @@map("recipes")
+}
+
+/**
+ * Favorite Model
+ * 
+ * Join table representing user's favorite recipes.
+ * Implements many-to-many relationship between Users and Recipes.
+ * 
+ * Relationships:
+ * - Many-to-one with User (favorite belongs to one user)
+ * - Many-to-one with Recipe (favorite belongs to one recipe)
+ * 
+ * Features:
+ * - Unique constraint prevents duplicate favorites
+ * - Cascade deletion for data integrity
+ * - Efficient querying for user collections
+ */
+model Favorite {
+  // === PRIMARY KEY ===
+  /** 
+   * Unique identifier for the favorite record
+   * Technical primary key for database requirements
+   */
+  id String @id @default(cuid())
+
+  // === FOREIGN KEYS ===
+  /** 
+   * ID of the user who favorited the recipe
+   * Required field
+   */
+  userId String
+
+  /** 
+   * ID of the recipe that was favorited
+   * Required field
+   */
+  recipeId String
+
+  // === RELATIONSHIPS ===
+  /** 
+   * User who created this favorite
+   * Many-to-one relationship
+   * When user is deleted, their favorites are removed (CASCADE)
+   */
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /** 
+   * Recipe that was favorited
+   * Many-to-one relationship
+   * When recipe is deleted, its favorites are removed (CASCADE)
+   */
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  // === CONSTRAINTS ===
+  /** 
+   * Unique constraint on user-recipe combination
+   * Prevents user from favoriting the same recipe multiple times
+   * Creates composite index for efficient queries
+   */
+  @@unique([userId, recipeId])
+
+  /** 
+   * Custom table name in database
+   */
+  @@map("favorites")
+}
+
+/**
+ * Rating Model
+ * 
+ * Join table representing user ratings for recipes.
+ * Implements many-to-many relationship with rating values.
+ * 
+ * Relationships:
+ * - Many-to-one with User (rating belongs to one user)
+ * - Many-to-one with Recipe (rating belongs to one recipe)
+ * 
+ * Features:
+ * - 1-5 star rating system
+ * - Unique constraint prevents multiple ratings per user per recipe
+ * - Used to calculate recipe popularity and recommendations
+ */
+model Rating {
+  // === PRIMARY KEY ===
+  /** 
+   * Unique identifier for the rating record
+   * Technical primary key for database requirements
+   */
+  id String @id @default(cuid())
+
+  // === RATING DATA ===
+  /** 
+   * Rating value (1-5 stars)
+   * Default value of 1 (minimum rating)
+   * Application should enforce 1-5 range
+   */
+  rating Int @default(1) // 1-5 stars
+
+  // === FOREIGN KEYS ===
+  /** 
+   * ID of the user who gave the rating
+   * Required field
+   */
+  userId String
+
+  /** 
+   * ID of the recipe that was rated
+   * Required field
+   */
+  recipeId String
+
+  // === RELATIONSHIPS ===
+  /** 
+   * User who created this rating
+   * Many-to-one relationship
+   * When user is deleted, their ratings are removed (CASCADE)
+   */
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /** 
+   * Recipe that was rated
+   * Many-to-one relationship
+   * When recipe is deleted, its ratings are removed (CASCADE)
+   */
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  // === CONSTRAINTS ===
+  /** 
+   * Unique constraint on user-recipe combination
+   * Ensures one rating per user per recipe
+   * User can update their rating but not create duplicates
+   */
+  @@unique([userId, recipeId])
+
+  /** 
+   * Custom table name in database
+   */
+  @@map("ratings")
+}
+
+// ===== SCHEMA NOTES =====
+
+/**
+ * PERFORMANCE CONSIDERATIONS:
+ * 
+ * 1. Indexes:
+ *    - Automatic indexes on @id, @unique, and foreign key fields
+ *    - Consider adding manual indexes for frequently queried fields:
+ *      @@index([createdAt]) for Recipe model
+ *      @@index([difficulty]) for Recipe model
+ *      @@index([tags]) for Recipe model (if supported)
+ * 
+ * 2. Array Fields (ingredients, tags):
+ *    - PostgreSQL: Native array support with GIN indexes possible
+ *    - MySQL/SQLite: Stored as JSON, limited search capabilities
+ *    - Consider separate tables for complex array queries
+ * 
+ * 3. Text Fields:
+ *    - instructions uses @db.Text for large content
+ *    - Consider full-text search indexes for production
+ * 
+ * SCALABILITY CONSIDERATIONS:
+ * 
+ * 1. Soft Deletes:
+ *    - Current schema uses hard deletes (CASCADE)
+ *    - Consider adding deletedAt field for soft deletes
+ * 
+ * 2. Audit Trail:
+ *    - Consider adding version tracking for recipe updates
+ *    - Add fields like: version, lastEditedBy, editReason
+ * 
+ * 3. Media Storage:
+ *    - image field stores URLs only
+ *    - Actual files should be stored in cloud storage
+ *    - Consider adding imageMetadata JSON field
+ * 
+ * FUTURE EXTENSIONS:
+ * 
+ * 1. Categories:
+ *    - Add Category model with many-to-many Recipe relationship
+ *    - Replace or supplement tags array
+ * 
+ * 2. Collections:
+ *    - Add RecipeCollection model for user-curated lists
+ *    - Link recipes to collections via join table
+ * 
+ * 3. Comments:
+ *    - Add Comment model for recipe feedback
+ *    - Include rating context and tips
+ * 
+ * 4. Nutritional Info:
+ *    - Add nutrition JSON field to Recipe
+ *    - Include calories, macros, dietary restrictions
+ * 
+ * 5. Recipe Variations:
+ *    - Add parent/child relationship for recipe forks
+ *    - Track recipe evolution and improvements
+ */
