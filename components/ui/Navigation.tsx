@@ -11,7 +11,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Heart, Plus, Menu, X, Search, User, Home, ChefHat, Sparkles } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { Heart, Plus, Menu, X, Search, User, Home, ChefHat, Sparkles, LogOut, LogIn } from 'lucide-react';
 
 /**
  * Navigation Component
@@ -28,6 +29,7 @@ import { Heart, Plus, Menu, X, Search, User, Home, ChefHat, Sparkles } from 'luc
 export default function Navigation() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   /**
    * Checks if a link is currently active
@@ -59,6 +61,13 @@ export default function Navigation() {
    */
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
+  };
+
+  /**
+   * Handles user sign out
+   */
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
   };
 
   return (
@@ -97,32 +106,67 @@ export default function Navigation() {
               FoodFeed
             </Link>
             
-            <Link 
-              href="/profile/favorites" 
-              className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/favorites')}`}
-              aria-current={isActiveLink('/profile/favorites') ? 'page' : undefined}
-            >
-              <Heart className="w-4 h-4 mr-1" />
-              Favorites
-            </Link>
-            
-            {/* Primary CTA Button */}
-            <Link 
-              href="/recipes/new" 
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Add Recipe
-            </Link>
-            
-            {/* User Profile */}
-            <Link 
-              href="/profile" 
-              className={`p-2 rounded-md ${getLinkClasses('/profile')}`}
-              aria-label="User Profile"
-            >
-              <User className="w-5 h-5" />
-            </Link>
+            {session ? (
+              <>
+                <Link 
+                  href="/profile/favorites" 
+                  className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/favorites')}`}
+                  aria-current={isActiveLink('/profile/favorites') ? 'page' : undefined}
+                >
+                  <Heart className="w-4 h-4 mr-1" />
+                  Favorites
+                </Link>
+                
+                {/* Primary CTA Button */}
+                <Link 
+                  href="/recipes/new" 
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Recipe
+                </Link>
+                
+                {/* User Profile Dropdown */}
+                <div className="relative">
+                  <Link 
+                    href="/profile" 
+                    className={`p-2 rounded-md ${getLinkClasses('/profile')} flex items-center space-x-2`}
+                    aria-label="User Profile"
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="hidden lg:block text-sm font-medium">{session.user?.name}</span>
+                  </Link>
+                </div>
+                
+                {/* Sign Out Button */}
+                <button
+                  onClick={handleSignOut}
+                  className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                  aria-label="Sign Out"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Sign In/Up Buttons for non-authenticated users */}
+                <Link 
+                  href="/auth/signin" 
+                  className="px-3 py-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center"
+                >
+                  <LogIn className="w-4 h-4 mr-1" />
+                  Sign In
+                </Link>
+                
+                <Link 
+                  href="/auth/signup" 
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -160,36 +204,76 @@ export default function Navigation() {
                 FoodFeed
               </Link>
               
-              <Link
-                href="/profile/favorites"
-                className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/favorites')}`}
-                onClick={closeMobileMenu}
-                role="menuitem"
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                Favorites
-              </Link>
-              
-              <Link
-                href="/profile"
-                className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile')}`}
-                onClick={closeMobileMenu}
-                role="menuitem"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </Link>
-              
-              {/* Mobile CTA Button */}
-              <Link
-                href="/recipes/new"
-                className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
-                onClick={closeMobileMenu}
-                role="menuitem"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Recipe
-              </Link>
+              {session ? (
+                <>
+                  <Link
+                    href="/profile/favorites"
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/favorites')}`}
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Favorites
+                  </Link>
+                  
+                  <Link
+                    href="/profile"
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile')}`}
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile ({session.user?.name})
+                  </Link>
+                  
+                  {/* Mobile CTA Button */}
+                  <Link
+                    href="/recipes/new"
+                    className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Recipe
+                  </Link>
+                  
+                  {/* Mobile Sign Out Button */}
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      closeMobileMenu();
+                    }}
+                    className="mx-3 mt-2 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-center font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
+                    role="menuitem"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  {/* Mobile Sign In/Up Buttons */}
+                  <Link
+                    href="/auth/signin"
+                    className="mx-3 mt-2 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg text-center font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Link>
+                  
+                  <Link
+                    href="/auth/signup"
+                    className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

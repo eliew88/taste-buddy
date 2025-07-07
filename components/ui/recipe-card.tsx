@@ -8,8 +8,9 @@
  'use client';
 
  import Link from 'next/link';
- import { useState } from 'react';
- import { Heart, Clock, Users, ChefHat, Eye } from 'lucide-react';
+ import { useState, useEffect } from 'react';
+ import { useSession } from 'next-auth/react';
+ import { Heart, Clock, Users, ChefHat, Eye, Loader2 } from 'lucide-react';
  import StarRating from './star-rating';
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
@@ -23,7 +24,16 @@
    
    /** Whether to show the full description */
    showFullDescription?: boolean;
- }
+  
+  /** Whether to show the favorite button */
+  showFavoriteButton?: boolean;
+  
+  /** Whether the recipe is currently favorited */
+  isFavorited?: boolean;
+  
+  /** Callback when favorite status changes */
+  onFavoriteToggle?: (recipeId: string) => Promise<void>;
+}
  
  /**
   * RecipeCard Component
@@ -42,35 +52,48 @@
  export default function RecipeCard({ 
    recipe, 
    className = '',
-   showFullDescription = false 
+   showFullDescription = false,
+  showFavoriteButton = true,
+  isFavorited = false,
+  onFavoriteToggle 
  }: RecipeCardProps) {
-   // Local state for user interactions
-   const [isFavorite, setIsFavorite] = useState(false);
+   const { data: session } = useSession();
+  
+  // Local state for user interactions
+   const [isFavorite, setIsFavorite] = useState(isFavorited);
    const [userRating, setUserRating] = useState(0);
    const [isLoading, setIsLoading] = useState(false);
+  
+  // Update local state when props change
+  useEffect(() => {
+    setIsFavorite(isFavorited);
+  }, [isFavorited]);
  
    /**
     * Handles favorite toggle
-    * TODO: Implement API call to backend
     */
-   const handleFavorite = async () => {
-     try {
+   const handleFavorite = async (e: React.MouseEvent) => {
+     e.preventDefault();
+     e.stopPropagation();
+     
+     // Prevent double clicks
+     if (isLoading) {
+       return;
+     }
+     
+     // Check if user is authenticated
+     if (!session?.user) {
+       console.log('Please sign in to favorite recipes');
+       return;
+     }
+     
+     if (onFavoriteToggle) {
        setIsLoading(true);
-       setIsFavorite(!isFavorite);
-       
-       // TODO: Replace with actual API call
-       // await fetch(`/api/users/favorites`, {
-       //   method: isFavorite ? 'DELETE' : 'POST',
-       //   body: JSON.stringify({ recipeId: recipe.id })
-       // });
-       
-       console.log(`${isFavorite ? 'Removed from' : 'Added to'} favorites:`, recipe.title);
-     } catch (error) {
-       console.error('Error updating favorite:', error);
-       // Revert on error
-       setIsFavorite(isFavorite);
-     } finally {
-       setIsLoading(false);
+       try {
+         await onFavoriteToggle(recipe.id);
+       } finally {
+         setIsLoading(false);
+       }
      }
    };
  
@@ -139,19 +162,26 @@
              </h3>
            </Link>
            
-           <button
+           {showFavoriteButton && (
+            <button
              onClick={handleFavorite}
-             disabled={isLoading}
+             disabled={isLoading || !session?.user}
              className={`p-2 rounded-full flex-shrink-0 transition-all ${
                isFavorite 
                  ? 'text-red-500 bg-red-50 hover:bg-red-100' 
                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
              } disabled:opacity-50`}
              aria-label={`${isFavorite ? 'Remove from' : 'Add to'} favorites`}
+             title={!session?.user ? 'Sign in to favorite recipes' : ''}
            >
-             <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
+             {isLoading ? (
+               <Loader2 className="w-5 h-5 animate-spin" />
+             ) : (
+               <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
+             )}
            </button>
-         </header>
+          )}
+        </header>
          
          {/* Author */}
          <p className="text-gray-600 mb-3">

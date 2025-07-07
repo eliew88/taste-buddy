@@ -16,258 +16,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Heart, Plus, Clock, Users, ChefHat, AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Search, Plus, AlertCircle, LogIn } from 'lucide-react';
 import { useRecipeSearch } from '@/hooks/use-recipes';
-import { Recipe } from '@/types/recipe';
-import StarRating from '@/components/ui/star-rating';
+import { useFavorites } from '@/hooks/use-favorites';
 import { 
   LoadingSpinner, 
   LoadingButton, 
-  RecipeGridSkeleton, 
-  LoadingOverlay 
+  RecipeGridSkeleton
 } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
+import Navigation from '@/components/ui/navigation';
+import RecipeCard from '@/components/ui/recipe-card';
 
-/**
- * Enhanced RecipeCard Component with Loading States
- */
-const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [userRating, setUserRating] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
-  const [ratingLoading, setRatingLoading] = useState(false);
-
-  /**
-   * Handles favorite toggle with loading state
-   */
-  const handleFavorite = async () => {
-    if (favoriteLoading) return;
-    
-    try {
-      setFavoriteLoading(true);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setIsFavorite(!isFavorite);
-      console.log(`${isFavorite ? 'Removed from' : 'Added to'} favorites:`, recipe.id);
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      // Revert state on error
-      setIsFavorite(isFavorite);
-    } finally {
-      setFavoriteLoading(false);
-    }
-  };
-
-  /**
-   * Handles rating submission with loading state
-   */
-  const handleRating = async (rating: number) => {
-    if (ratingLoading) return;
-    
-    try {
-      setRatingLoading(true);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setUserRating(rating);
-      console.log('Rating submitted:', { recipeId: recipe.id, rating });
-    } catch (error) {
-      console.error('Failed to submit rating:', error);
-      // Revert rating on error
-      setUserRating(0);
-    } finally {
-      setRatingLoading(false);
-    }
-  };
-
-  /**
-   * Formats date for display
-   */
-  const formatDate = (dateString: string | Date) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  /**
-   * Truncates text for display
-   */
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + '...';
-  };
-
-  return (
-    <ErrorBoundary fallback={
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
-        <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-        <p className="text-red-700">Failed to load recipe card</p>
-      </div>
-    }>
-      <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        {/* Recipe Image */}
-        {recipe.image && (
-          <div className="aspect-video overflow-hidden">
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              loading="lazy"
-            />
-          </div>
-        )}
-
-        <div className="p-6">
-          {/* Header with Title and Favorite */}
-          <header className="flex justify-between items-start mb-4">
-            <Link href={`/recipes/${recipe.id}`} className="flex-1 mr-3">
-              <h3 className="text-xl font-semibold text-gray-800 hover:text-blue-600 cursor-pointer line-clamp-2 transition-colors">
-                {recipe.title}
-              </h3>
-            </Link>
-            
-            <LoadingButton
-              loading={favoriteLoading}
-              onClick={handleFavorite}
-              variant="outline"
-              size="sm"
-              className={`p-2 rounded-full border-0 ${
-                isFavorite 
-                  ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''} transition-all`} />
-            </LoadingButton>
-          </header>
-
-          {/* Author */}
-          <p className="text-gray-600 mb-3 text-sm">
-            By <span className="font-medium">{recipe.author.name}</span>
-          </p>
-
-          {/* Description */}
-          {recipe.description && (
-            <p className="text-gray-700 text-sm mb-4 line-clamp-2 leading-relaxed">
-              {truncateText(recipe.description, 120)}
-            </p>
-          )}
-
-          {/* Recipe Metadata */}
-          <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
-            {recipe.cookTime && (
-              <div className="flex items-center" title="Cook time">
-                <Clock className="w-4 h-4 mr-1" />
-                <span>{recipe.cookTime}</span>
-              </div>
-            )}
-            
-            {recipe.servings && (
-              <div className="flex items-center" title="Servings">
-                <Users className="w-4 h-4 mr-1" />
-                <span>{recipe.servings} serving{recipe.servings !== 1 ? 's' : ''}</span>
-              </div>
-            )}
-            
-            <div className="flex items-center" title="Difficulty">
-              <ChefHat className="w-4 h-4 mr-1" />
-              <span className="capitalize">{recipe.difficulty}</span>
-            </div>
-          </div>
-
-          {/* Ingredients Preview */}
-          <div className="mb-4">
-            <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-              Ingredients
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {recipe.ingredients.slice(0, 3).map((ingredient, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                  title={ingredient}
-                >
-                  {truncateText(ingredient.split(',')[0], 15)}
-                </span>
-              ))}
-              {recipe.ingredients.length > 3 && (
-                <span className="text-gray-500 text-xs px-2 py-1">
-                  +{recipe.ingredients.length - 3} more
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Tags */}
-          {recipe.tags.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Tags
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {recipe.tags.slice(0, 4).map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {recipe.tags.length > 4 && (
-                  <span className="text-gray-500 text-xs px-2 py-1">
-                    +{recipe.tags.length - 4} more
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Rating Section */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Rate this recipe:</p>
-              <div className={ratingLoading ? 'opacity-50 pointer-events-none' : ''}>
-                <StarRating
-                  rating={userRating}
-                  onRate={handleRating}
-                  size="sm"
-                  interactive={!ratingLoading}
-                />
-              </div>
-              {ratingLoading && (
-                <div className="flex items-center mt-1">
-                  <LoadingSpinner size="sm" className="mr-1" />
-                  <span className="text-xs text-gray-500">Saving rating...</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="text-right">
-              <StarRating
-                rating={recipe.avgRating || 0}
-                interactive={false}
-                size="sm"
-                showCount={true}
-                ratingCount={recipe._count?.ratings || 0}
-              />
-            </div>
-          </div>
-
-          {/* Creation Date */}
-          <footer className="text-xs text-gray-500 border-t pt-3">
-            Created {formatDate(recipe.createdAt)}
-          </footer>
-        </div>
-      </article>
-    </ErrorBoundary>
-  );
-};
 
 /**
  * Enhanced Error Message Component with Better UX
@@ -306,10 +67,12 @@ const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => vo
  */
 const EmptyState = ({ 
   hasFilters, 
-  onClearFilters 
+  onClearFilters,
+  isAuthenticated 
 }: { 
   hasFilters: boolean; 
   onClearFilters: () => void; 
+  isAuthenticated: boolean;
 }) => {
   const [clearLoading, setClearLoading] = useState(false);
 
@@ -346,13 +109,32 @@ const EmptyState = ({
             Clear Filters
           </LoadingButton>
         )}
-        <Link 
-          href="/recipes/new"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          {hasFilters ? 'Add Recipe' : 'Share First Recipe'}
-        </Link>
+        {isAuthenticated ? (
+          <Link 
+            href="/recipes/new"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            {hasFilters ? 'Add Recipe' : 'Share First Recipe'}
+          </Link>
+        ) : (
+          <div className="flex space-x-4">
+            <Link 
+              href="/auth/signin"
+              className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors inline-flex items-center"
+            >
+              <LogIn className="w-5 h-5 mr-2" />
+              Sign In
+            </Link>
+            <Link 
+              href="/auth/signup"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Join TasteBuddy
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -363,8 +145,15 @@ const EmptyState = ({
  */
 export default function HomePage() {
   const [searchLoading, setSearchLoading] = useState(false);
+  const { data: session } = useSession();
   
-  // Use the custom hook for all state management
+  // Use the custom hooks for state management
+  const { isFavorited, toggleFavorite } = useFavorites();
+  
+  // Handle favorite toggle - same pattern as recipe details page
+  const handleFavoriteToggle = async (recipeId: string) => {
+    await toggleFavorite(recipeId);
+  };
   const {
     recipes,
     loading,
@@ -400,51 +189,7 @@ export default function HomePage() {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50">
         {/* Navigation */}
-        <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center h-16">
-              <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
-                TasteBuddy
-              </Link>
-              
-              <div className="hidden md:flex items-center space-x-6">
-                <Link 
-                  href="/" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
-                >
-                  Home
-                </Link>
-                <Link 
-                  href="/profile/favorites" 
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors font-medium"
-                >
-                  <Heart className="w-4 h-4 mr-1" />
-                  Favorites
-                </Link>
-                <Link href="/food-feed" className="text-gray-600 hover:text-gray-900">
-                  FoodFeed
-                </Link>
-                <Link 
-                  href="/recipes/new" 
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center font-medium shadow-sm"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Recipe
-                </Link>
-              </div>
-
-              {/* Mobile menu button */}
-              <div className="md:hidden">
-                <Link 
-                  href="/recipes/new" 
-                  className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-colors"
-                >
-                  <Plus className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navigation />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
@@ -524,7 +269,12 @@ export default function HomePage() {
                 {/* Recipe Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                   {recipes.map(recipe => (
-                    <RecipeCard key={recipe.id} recipe={recipe} />
+                    <RecipeCard 
+                      key={recipe.id} 
+                      recipe={recipe}
+                      isFavorited={isFavorited(recipe.id)}
+                      onFavoriteToggle={handleFavoriteToggle}
+                    />
                   ))}
                 </div>
                 
@@ -559,6 +309,7 @@ export default function HomePage() {
               <EmptyState 
                 hasFilters={hasActiveFilters} 
                 onClearFilters={clearFilters}
+                isAuthenticated={!!session}
               />
             )}
           </section>

@@ -1,6 +1,7 @@
 // app/api/recipes/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -125,8 +126,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Get actual user ID from authentication
-    const userId = 'temp-user-id';
+    // Get authenticated user ID
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required to create recipes' },
+        { status: 401 }
+      );
+    }
 
     // Prepare data for SQLite storage (convert arrays to JSON strings)
     const recipeData = {

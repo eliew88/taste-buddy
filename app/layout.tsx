@@ -17,6 +17,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import ErrorBoundary from '@/components/error-boundary.tsx';
+import AuthSessionProvider from '@/components/providers/session-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -83,10 +84,13 @@ export default function RootLayout({
       <body className={inter.className}>
         {/* Global Error Boundary - No function props passed */}
         <ErrorBoundary>
-          {/* Main Application Content */}
-          <main id="main-content">
-            {children}
-          </main>
+          {/* Session Provider for Authentication */}
+          <AuthSessionProvider>
+            {/* Main Application Content */}
+            <main id="main-content">
+              {children}
+            </main>
+          </AuthSessionProvider>
         </ErrorBoundary>
 
         {/* Global Scripts */}

@@ -35,8 +35,8 @@ import {
   Tag,
   List
 } from 'lucide-react';
-import { LoadingButton, LoadingSpinner } from '@/components/ui/Loading';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import { LoadingButton, LoadingSpinner } from '@/components/ui/loading';
+import ErrorBoundary from '@/components/error-boundary';
 import apiClient from '@/lib/api-client';
 import { CreateRecipeData } from '@/types/recipe';
 

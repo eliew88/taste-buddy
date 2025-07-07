@@ -19,7 +19,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { 
   ArrowLeft, 
   Clock, 
@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
+import { useFavorites } from '@/hooks/use-favorites';
 
 /**
  * StarRating Component for recipe detail page
@@ -161,7 +162,6 @@ const ErrorDisplay = ({
  */
 export default function RecipeDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const recipeId = params.id as string;
 
   // State management
@@ -169,7 +169,9 @@ export default function RecipeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRating, setUserRating] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  
+  // Use favorites hook
+  const { isFavorited, toggleFavorite } = useFavorites();
 
   /**
    * Fetches recipe data from the API
@@ -221,16 +223,7 @@ export default function RecipeDetailPage() {
    * Handles favorite toggle
    */
   const handleFavorite = async () => {
-    try {
-      setIsFavorite(!isFavorite);
-      // TODO: Implement API call when favorite endpoint is ready
-      // await apiClient.toggleFavorite(recipeId);
-      console.log('Favorite toggled:', !isFavorite);
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      // Revert favorite state on error
-      setIsFavorite(isFavorite);
-    }
+    await toggleFavorite(recipeId);
   };
 
   /**
@@ -375,13 +368,13 @@ export default function RecipeDetailPage() {
             <button
               onClick={handleFavorite}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                isFavorite 
+                isFavorited(recipeId) 
                   ? 'bg-red-50 text-red-600 hover:bg-red-100' 
                   : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
               }`}
             >
-              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-600' : ''}`} />
-              <span>{isFavorite ? 'Favorited' : 'Add to Favorites'}</span>
+              <Heart className={`w-5 h-5 ${isFavorited(recipeId) ? 'fill-red-600' : ''}`} />
+              <span>{isFavorited(recipeId) ? 'Favorited' : 'Add to Favorites'}</span>
             </button>
           </div>
         </header>

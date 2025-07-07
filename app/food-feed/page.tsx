@@ -1,8 +1,8 @@
 /**
- * Working FoodFeed Page - Without Custom Hook Dependencies
+ * Enhanced FoodFeed Page with Back to Home Navigation
  * 
- * A simplified version that works with standard React hooks
- * and doesn't depend on the custom useEnhancedSearch hook.
+ * Advanced search page for discovering recipes with comprehensive filtering options.
+ * Now includes a prominent "Back to Home" navigation option at the top.
  * 
  * @file app/food-feed/page.tsx
  */
@@ -10,6 +10,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { 
   Search, 
   Grid3X3, 
@@ -21,11 +22,15 @@ import {
   TrendingUp,
   Clock,
   Users as UsersIcon,
-  SortAsc
+  SortAsc,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 
+import Navigation from '@/components/ui/navigation';
 import AdvancedSearchFilters from '@/components/ui/advanced-search-filters';
 import RecipeCard from '@/components/ui/recipe-card';
+import { useFavorites } from '@/hooks/use-favorites';
 
 /**
  * Type definitions
@@ -47,52 +52,7 @@ interface SearchFilters {
 }
 
 /**
- * Sort options configuration
- */
-const sortOptions: Array<{ value: SortOption; label: string; icon: React.ReactNode }> = [
-  { value: 'newest', label: 'Newest First', icon: <Sparkles className="w-4 h-4" /> },
-  { value: 'popular', label: 'Most Popular', icon: <TrendingUp className="w-4 h-4" /> },
-  { value: 'rating', label: 'Highest Rated', icon: <div className="w-4 h-4 text-yellow-500">★</div> },
-  { value: 'title', label: 'A-Z', icon: <SortAsc className="w-4 h-4" /> },
-  { value: 'cookTime', label: 'Quickest', icon: <Clock className="w-4 h-4" /> },
-  { value: 'difficulty', label: 'Easiest First', icon: <UsersIcon className="w-4 h-4" /> },
-];
-
-/**
- * Mock filter options
- */
-const mockFilterOptions = {
-  difficulties: [
-    { value: 'easy', label: 'Easy', count: 156 },
-    { value: 'medium', label: 'Medium', count: 89 },
-    { value: 'hard', label: 'Hard', count: 34 },
-  ],
-  popularIngredients: [
-    { name: 'chicken', count: 45 },
-    { name: 'garlic', count: 78 },
-    { name: 'onion', count: 92 },
-    { name: 'tomato', count: 56 },
-    { name: 'cheese', count: 34 },
-    { name: 'flour', count: 67 },
-    { name: 'olive oil', count: 89 },
-    { name: 'salt', count: 123 },
-  ],
-  tags: [
-    { name: 'healthy', count: 67 },
-    { name: 'quick', count: 89 },
-    { name: 'vegetarian', count: 45 },
-    { name: 'dessert', count: 23 },
-    { name: 'comfort-food', count: 34 },
-    { name: 'gluten-free', count: 28 },
-    { name: 'low-carb', count: 41 },
-    { name: 'family-friendly', count: 56 },
-  ],
-  cookTimeStats: { min: 5, max: 300, average: 45 },
-  servingsStats: { min: 1, max: 12, average: 4 },
-};
-
-/**
- * Default filter state
+ * Default filter values
  */
 const defaultFilters: SearchFilters = {
   difficulty: [],
@@ -108,49 +68,54 @@ const defaultFilters: SearchFilters = {
 };
 
 /**
- * Loading skeleton component
+ * Sort options configuration
  */
-const RecipeCardSkeleton = () => (
-  <div className="bg-white rounded-lg shadow-sm border overflow-hidden animate-pulse">
-    <div className="h-48 bg-gray-200"></div>
-    <div className="p-4 space-y-3">
-      <div className="h-4 bg-gray-200 rounded"></div>
-      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-      <div className="flex space-x-2">
-        <div className="h-6 bg-gray-200 rounded w-16"></div>
-        <div className="h-6 bg-gray-200 rounded w-16"></div>
-      </div>
-    </div>
-  </div>
-);
+const sortOptions: Array<{ value: SortOption; label: string; icon: React.ReactNode }> = [
+  { value: 'newest', label: 'Newest First', icon: <Sparkles className="w-4 h-4" /> },
+  { value: 'popular', label: 'Most Popular', icon: <TrendingUp className="w-4 h-4" /> },
+  { value: 'rating', label: 'Highest Rated', icon: <div className="w-4 h-4 text-yellow-500">★</div> },
+  { value: 'title', label: 'A-Z', icon: <SortAsc className="w-4 h-4" /> },
+  { value: 'cookTime', label: 'Quickest', icon: <Clock className="w-4 h-4" /> },
+  { value: 'difficulty', label: 'Easiest First', icon: <UsersIcon className="w-4 h-4" /> },
+];
 
 /**
- * Search statistics component
+ * Mock filter options for demonstration
  */
-interface SearchStatsProps {
-  totalResults: number;
-  searchTime: number;
-  currentPage: number;
-  resultsPerPage: number;
-}
-
-const SearchStats: React.FC<SearchStatsProps> = ({
-  totalResults,
-  searchTime,
-  currentPage,
-  resultsPerPage,
-}) => {
-  const startResult = (currentPage - 1) * resultsPerPage + 1;
-  const endResult = Math.min(currentPage * resultsPerPage, totalResults);
-  
-  return (
-    <div className="text-sm text-gray-600">
-      Showing {startResult.toLocaleString()}-{endResult.toLocaleString()} of {totalResults.toLocaleString()} recipes
-      <span className="ml-2 text-xs text-gray-500">
-        ({searchTime}ms)
-      </span>
-    </div>
-  );
+const mockFilterOptions = {
+  difficulties: [
+    { value: 'easy', label: 'Easy', count: 156 },
+    { value: 'medium', label: 'Medium', count: 89 },
+    { value: 'hard', label: 'Hard', count: 34 },
+  ],
+  popularIngredients: [
+    { name: 'chicken', count: 45 },
+    { name: 'garlic', count: 78 },
+    { name: 'onion', count: 92 },
+    { name: 'tomato', count: 56 },
+    { name: 'cheese', count: 34 },
+    { name: 'flour', count: 67 },
+    { name: 'olive oil', count: 89 },
+    { name: 'salt', count: 134 },
+  ],
+  tags: [
+    { name: 'vegetarian', count: 67 },
+    { name: 'quick meals', count: 89 },
+    { name: 'healthy', count: 45 },
+    { name: 'comfort food', count: 34 },
+    { name: 'dessert', count: 56 },
+    { name: 'gluten-free', count: 23 },
+  ],
+  cookTimeStats: {
+    min: 5,
+    max: 300,
+    average: 45,
+  },
+  servingsStats: {
+    min: 1,
+    max: 12,
+    average: 4,
+  },
 };
 
 /**
@@ -202,6 +167,14 @@ const Pagination: React.FC<PaginationProps> = ({
  * Main FoodFeed Page Component
  */
 export default function FoodFeedPage() {
+  // Favorites hook
+  const { isFavorited, toggleFavorite } = useFavorites();
+  
+  // Handle favorite toggle - same pattern as recipe details page
+  const handleFavoriteToggle = async (recipeId: string) => {
+    await toggleFavorite(recipeId);
+  };
+
   // State management
   const [searchQuery, setSearchQuery] = useState('');
   const [localQuery, setLocalQuery] = useState('');
@@ -210,13 +183,13 @@ export default function FoodFeedPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(12);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   
   // Data states
   const [recipes, setRecipes] = useState<any[]>([]);
   const [searchMeta, setSearchMeta] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Computed values
   const activeFilterCount = useMemo(() => {
@@ -382,11 +355,28 @@ export default function FoodFeedPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Main Navigation */}
+      <Navigation />
+      
+      {/* Back to Home Navigation */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <Link 
+            href="/"
+            className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            <Home className="w-4 h-4 mr-2" />
+            <span className="font-medium">Back to Home</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="space-y-6">
-            {/* Page Title */}
+            {/* Page Title and Description */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900">FoodFeed</h1>
               <p className="text-gray-600 mt-1">
@@ -436,6 +426,7 @@ export default function FoodFeedPage() {
         </div>
       </div>
 
+      {/* Main Content Container */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex gap-6">
           {/* Sidebar Filters - Desktop */}
@@ -452,113 +443,104 @@ export default function FoodFeedPage() {
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content Area */}
           <div className="flex-1">
             {/* Controls Bar */}
-            <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  {/* Search Stats */}
-                  {searchMeta && (
-                    <SearchStats
-                      totalResults={searchMeta.totalResults || 0}
-                      searchTime={searchMeta.searchTime || 0}
-                      currentPage={searchMeta.currentPage || currentPage}
-                      resultsPerPage={searchMeta.resultsPerPage || resultsPerPage}
-                    />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              {/* Results Info */}
+              <div className="flex items-center space-x-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {searchMeta && searchMeta.totalResults !== undefined ? (
+                    <>
+                      {searchMeta.totalResults.toLocaleString()} Recipe{searchMeta.totalResults !== 1 ? 's' : ''}
+                      {searchQuery && ` for "${searchQuery}"`}
+                    </>
+                  ) : (
+                    'Recipes'
                   )}
-                  {!searchMeta && !loading && (
-                    <div className="text-sm text-gray-600">
-                      Ready to search recipes
-                    </div>
-                  )}
-                  {loading && (
-                    <div className="text-sm text-gray-600 flex items-center">
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Searching...
-                    </div>
-                  )}
-                </div>
+                </h2>
+                
+                {activeFilterCount > 0 && (
+                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                    {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                  </span>
+                )}
+              </div>
 
-                <div className="flex items-center space-x-4">
-                  {/* Mobile Filter Toggle */}
+              {/* Controls */}
+              <div className="flex items-center space-x-3">
+                {/* Mobile Filter Button */}
+                <button
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="lg:hidden flex items-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Sort Dropdown */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value as SortOption)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {sortOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                {/* View Mode Toggle */}
+                <div className="flex border border-gray-300 rounded-lg">
                   <button
-                    onClick={() => setFiltersOpen(true)}
-                    className="lg:hidden flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                    onClick={() => handleViewModeChange('grid')}
+                    className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
                   >
-                    <Filter className="w-4 h-4" />
-                    <span>Filters</span>
-                    {activeFilterCount > 0 && (
-                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                        {activeFilterCount}
-                      </span>
-                    )}
+                    <Grid3X3 className="w-4 h-4" />
                   </button>
-
-                  {/* Sort Dropdown */}
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600 hidden sm:inline">Sort:</span>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      {sortOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* View Mode Toggle */}
-                  <div className="hidden sm:flex items-center border border-gray-300 rounded-md">
-                    <button
-                      onClick={() => handleViewModeChange('grid')}
-                      className={`p-2 ${
-                        viewMode === 'grid' 
-                          ? 'bg-blue-100 text-blue-600' 
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                      title="Grid view"
-                    >
-                      <Grid3X3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleViewModeChange('list')}
-                      className={`p-2 ${
-                        viewMode === 'list' 
-                          ? 'bg-blue-100 text-blue-600' 
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                      title="List view"
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleViewModeChange('list')}
+                    className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Results Section */}
-            {loading ? (
-              <div className="space-y-6">
-                <div className={
-                  viewMode === 'grid' 
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                    : "space-y-4"
-                }>
-                  {Array.from({ length: resultsPerPage }).map((_, index) => (
-                    <RecipeCardSkeleton key={index} />
-                  ))}
-                </div>
+            {/* Mobile Filters Panel */}
+            {filtersOpen && (
+              <div className="lg:hidden mb-6 border border-gray-200 rounded-lg bg-white">
+                <AdvancedSearchFilters
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  filterOptions={mockFilterOptions}
+                  loading={false}
+                  onResetFilters={handleResetFilters}
+                  activeFilterCount={activeFilterCount}
+                />
               </div>
-            ) : error ? (
-              <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+            )}
+
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <p className="text-gray-600">Searching for delicious recipes...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="text-center py-12">
                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Search Error
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Search Error</h3>
                 <p className="text-gray-600 mb-4">{error}</p>
                 <button
                   onClick={performSearch}
@@ -567,22 +549,23 @@ export default function FoodFeedPage() {
                   Try Again
                 </button>
               </div>
-            ) : recipes.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+            )}
+
+            {/* No Results */}
+            {!loading && !error && recipes.length === 0 && (
+              <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <Search className="w-16 h-16 mx-auto" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No recipes found
-                </h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No recipes found</h3>
+                <p className="text-gray-500 mb-6">
                   {searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search criteria or filters."
                     : "Search for recipes using the search bar above, or try the advanced filters."}
                 </p>
                 
                 {/* Search Suggestions */}
-                {searchMeta?.suggestions && (
+                {searchMeta?.suggestions && Array.isArray(searchMeta.suggestions) && (
                   <div className="text-left max-w-md mx-auto mb-4">
                     <p className="text-sm font-medium text-gray-900 mb-2">Suggestions:</p>
                     <ul className="text-sm text-gray-600 space-y-1">
@@ -605,7 +588,10 @@ export default function FoodFeedPage() {
                   </button>
                 )}
               </div>
-            ) : (
+            )}
+
+            {/* Recipe Results */}
+            {!loading && !error && recipes.length > 0 && (
               <div className="space-y-6">
                 {/* Recipe Grid/List */}
                 <div className={
@@ -618,18 +604,20 @@ export default function FoodFeedPage() {
                       key={recipe.id} 
                       recipe={recipe}
                       className={viewMode === 'list' ? 'flex' : ''}
+                      isFavorited={isFavorited(recipe.id)}
+                      onFavoriteToggle={handleFavoriteToggle}
                     />
                   ))}
                 </div>
 
                 {/* Pagination */}
-                {searchMeta && searchMeta.totalPages > 1 && (
+                {searchMeta && searchMeta.totalPages && searchMeta.totalPages > 1 && (
                   <div className="flex flex-col items-center space-y-4">
                     <Pagination
-                      currentPage={searchMeta.currentPage}
+                      currentPage={searchMeta.currentPage || 1}
                       totalPages={searchMeta.totalPages}
-                      hasNextPage={searchMeta.hasNextPage}
-                      hasPreviousPage={searchMeta.hasPreviousPage}
+                      hasNextPage={searchMeta.hasNextPage || false}
+                      hasPreviousPage={searchMeta.hasPreviousPage || false}
                       onPageChange={handlePageChange}
                     />
                     
@@ -642,11 +630,11 @@ export default function FoodFeedPage() {
                           setResultsPerPage(parseInt(e.target.value));
                           setCurrentPage(1);
                         }}
-                        className="border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="border border-gray-300 rounded px-2 py-1"
                       >
+                        <option value={6}>6 per page</option>
                         <option value={12}>12 per page</option>
                         <option value={24}>24 per page</option>
-                        <option value={36}>36 per page</option>
                         <option value={48}>48 per page</option>
                       </select>
                     </div>
@@ -657,42 +645,6 @@ export default function FoodFeedPage() {
           </div>
         </div>
       </div>
-
-      {/* Mobile Filter Modal */}
-      {filtersOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
-          <div className="absolute inset-y-0 left-0 w-80 bg-white shadow-xl overflow-y-auto">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Filters</h3>
-                <button
-                  onClick={() => setFiltersOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-md text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-4">
-              <AdvancedSearchFilters
-                filters={filters}
-                onFiltersChange={(newFilters) => {
-                  handleFiltersChange(newFilters);
-                  setFiltersOpen(false);
-                }}
-                filterOptions={mockFilterOptions}
-                loading={false}
-                onResetFilters={() => {
-                  handleResetFilters();
-                  setFiltersOpen(false);
-                }}
-                activeFilterCount={activeFilterCount}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
