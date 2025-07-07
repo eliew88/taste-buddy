@@ -10,7 +10,7 @@
  import Link from 'next/link';
  import { useState } from 'react';
  import { Heart, Clock, Users, ChefHat, Eye } from 'lucide-react';
- import StarRating from './StarRating';
+ import StarRating from './star-rating';
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
  

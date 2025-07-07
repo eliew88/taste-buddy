@@ -1,6 +1,6 @@
+// app/api/recipes/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { prepareRecipeForDB, transformRecipeFromDB } from '@/lib/sqlite-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,17 +11,18 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')));
     const skip = (page - 1) * limit;
 
-    // Build where clause for SQLite
+    // Build where clause for SQLite (no mode: 'insensitive' support)
     const where: any = {};
 
-    // Search functionality (SQLite compatible)
+    // Search functionality (SQLite compatible - case insensitive search)
     if (search) {
+      const searchLower = search.toLowerCase();
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
+        { title: { contains: searchLower } },
+        { description: { contains: searchLower } },
         // SQLite: Search in JSON fields using contains
-        { ingredients: { contains: search } },
-        { tags: { contains: search } },
+        { ingredients: { contains: searchLower } },
+        { tags: { contains: searchLower } },
       ];
     }
 
@@ -47,11 +48,21 @@ export async function GET(request: NextRequest) {
 
     // Transform recipes from DB format to app format
     const transformedRecipes = recipes.map(recipe => {
-      const transformed = transformRecipeFromDB(recipe);
+      // Parse JSON fields stored as strings in SQLite
+      const ingredients = typeof recipe.ingredients === 'string' 
+        ? JSON.parse(recipe.ingredients) 
+        : recipe.ingredients;
+      
+      const tags = typeof recipe.tags === 'string' 
+        ? JSON.parse(recipe.tags) 
+        : recipe.tags;
+
       return {
-        ...transformed,
-        // Calculate average rating (same as before)
-        avgRating: 0, // TODO: Calculate from ratings
+        ...recipe,
+        ingredients,
+        tags,
+        // Calculate average rating (TODO: implement from actual ratings)
+        avgRating: 0,
       };
     });
 
@@ -92,7 +103,7 @@ export async function POST(request: NextRequest) {
       tags 
     } = body;
 
-    // Validation (same as before)
+    // Validation
     if (!title?.trim()) {
       return NextResponse.json(
         { success: false, error: 'Recipe title is required' },
@@ -117,18 +128,18 @@ export async function POST(request: NextRequest) {
     // TODO: Get actual user ID from authentication
     const userId = 'temp-user-id';
 
-    // Prepare data for SQLite storage
-    const recipeData = prepareRecipeForDB({
+    // Prepare data for SQLite storage (convert arrays to JSON strings)
+    const recipeData = {
       title: title.trim(),
       description: description?.trim() || null,
-      ingredients,
+      ingredients: JSON.stringify(ingredients), // Store as JSON string for SQLite
       instructions: instructions.trim(),
       cookTime: cookTime?.trim() || null,
       servings: servings ? Math.max(1, parseInt(servings)) : null,
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
-      tags: tags || [],
+      tags: JSON.stringify(tags || []), // Store as JSON string for SQLite
       authorId: userId,
-    });
+    };
 
     // Create recipe in database
     const recipe = await prisma.recipe.create({
@@ -143,8 +154,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Transform back to app format
-    const transformedRecipe = transformRecipeFromDB(recipe);
+    // Transform back to app format (parse JSON strings back to arrays)
+    const transformedRecipe = {
+      ...recipe,
+      ingredients: JSON.parse(recipe.ingredients),
+      tags: JSON.parse(recipe.tags),
+      avgRating: 0,
+    };
 
     return NextResponse.json(
       { success: true, data: transformedRecipe }, 
