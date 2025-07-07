@@ -241,6 +241,9 @@ export async function GET(request: NextRequest) {
           _count: {
             select: { favorites: true, ratings: true },
           },
+          ratings: {
+            select: { rating: true },
+          },
         },
         orderBy,
         skip,
@@ -252,11 +255,17 @@ export async function GET(request: NextRequest) {
     // Transform recipes and add computed fields
     const transformedRecipes = recipes.map(recipe => {
       const transformed = transformRecipeFromDB(recipe);
+      
+      // Calculate average rating from ratings array
+      const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
+      const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
+      
       return {
         ...transformed,
         cookTimeMinutes: parseCookTimeToMinutes(recipe.cookTime),
-        // TODO: Calculate actual average rating from ratings table
-        avgRating: Math.random() * 5, // Placeholder
+        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
+        // Remove ratings array from response for cleaner API
+        ratings: undefined,
       };
     });
     

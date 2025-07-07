@@ -48,17 +48,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password (for future use when password field is added to schema)
-    // const hashedPassword = await bcrypt.hash(password, 12);
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
         email: email.toLowerCase(),
-        // Note: In a real app, you'd store the hashed password
-        // For this demo, we'll store it in a custom field or skip it
-        // since the existing schema doesn't have a password field
+        password: hashedPassword,
       },
       select: {
         id: true,

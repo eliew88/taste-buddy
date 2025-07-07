@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       where.difficulty = difficulty;
     }
 
-    // Fetch recipes
+    // Fetch recipes with rating aggregation
     const recipes = await prisma.recipe.findMany({
       where,
       include: {
@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: { favorites: true, ratings: true },
+        },
+        ratings: {
+          select: { rating: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -58,12 +61,17 @@ export async function GET(request: NextRequest) {
         ? JSON.parse(recipe.tags) 
         : recipe.tags;
 
+      // Calculate average rating from ratings array
+      const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
+      const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
+
       return {
         ...recipe,
         ingredients,
         tags,
-        // Calculate average rating (TODO: implement from actual ratings)
-        avgRating: 0,
+        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
+        // Remove ratings array from response for cleaner API
+        ratings: undefined,
       };
     });
 
@@ -167,7 +175,7 @@ export async function POST(request: NextRequest) {
       ...recipe,
       ingredients: JSON.parse(recipe.ingredients),
       tags: JSON.parse(recipe.tags),
-      avgRating: 0,
+      avgRating: 0, // New recipes start with 0 rating
     };
 
     return NextResponse.json(

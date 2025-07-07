@@ -104,25 +104,25 @@ export default function SignInPage() {
             <h3 className="text-sm font-medium text-blue-900 mb-3">Demo Users (Click to Login)</h3>
             <div className="space-y-2">
               <button
-                onClick={() => handleDemoLogin('sarah@tasteBuddy.com')}
+                onClick={() => handleDemoLogin('sarah@example.com')}
                 disabled={loading}
                 className="w-full text-left text-sm text-blue-700 hover:text-blue-900 p-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50"
               >
-                <strong>Sarah Johnson</strong> - Recipe Creator
+                <strong>Sarah Chen</strong> - Recipe Creator
               </button>
               <button
-                onClick={() => handleDemoLogin('mike@tasteBuddy.com')}
+                onClick={() => handleDemoLogin('mike@example.com')}
                 disabled={loading}
                 className="w-full text-left text-sm text-blue-700 hover:text-blue-900 p-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50"
               >
-                <strong>Mike Chen</strong> - Food Enthusiast
+                <strong>Mike Rodriguez</strong> - Food Enthusiast
               </button>
               <button
-                onClick={() => handleDemoLogin('david@tasteBuddy.com')}
+                onClick={() => handleDemoLogin('david@example.com')}
                 disabled={loading}
                 className="w-full text-left text-sm text-blue-700 hover:text-blue-900 p-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50"
               >
-                <strong>David Liu</strong> - Cooking Expert
+                <strong>David Kim</strong> - Cooking Expert
               </button>
             </div>
           </div>

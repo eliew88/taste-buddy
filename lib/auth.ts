@@ -7,6 +7,7 @@
 import { getServerSession } from 'next-auth';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 
 export const authOptions: NextAuthOptions = {
@@ -33,8 +34,24 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // For demo purposes, we'll allow login for existing users
-          // In production, verify hashed password here
+          // Handle authentication - support both demo and regular users
+          let isPasswordValid = false;
+
+          if (user.password) {
+            // User has a hashed password - verify it
+            isPasswordValid = await bcrypt.compare(
+              credentials.password,
+              user.password
+            );
+          } else {
+            // Demo user fallback - allow 'demo' password for users without stored password
+            isPasswordValid = credentials.password === 'demo';
+          }
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
           return {
             id: user.id,
             email: user.email,
@@ -68,6 +85,20 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
     signUp: '/auth/signup',
+  },
+  // Production security settings
+  secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    },
   },
 };
 

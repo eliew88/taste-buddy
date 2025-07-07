@@ -107,6 +107,13 @@ model User {
    */
   image String?
 
+  /** 
+   * Hashed password for credentials authentication
+   * NULL for OAuth-only users
+   * Hashed using bcryptjs with salt rounds 12
+   */
+  password String?
+
   // === METADATA ===
   /** 
    * When the user account was created

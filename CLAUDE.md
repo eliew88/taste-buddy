@@ -17,10 +17,15 @@ TasteBuddy is a Next.js 15 recipe sharing platform built with TypeScript, Tailwi
 ## Database Architecture
 
 The application uses SQLite with Prisma ORM. The schema includes:
-- **Users** - User accounts with authentication data
+- **Users** - User accounts with authentication data (email, hashed password, profile info)
 - **Recipes** - Core recipe data with ingredients/tags stored as JSON strings
-- **Favorites** - Many-to-many relationship between users and recipes
-- **Ratings** - User ratings for recipes (1-5 stars)
+- **Favorites** - Many-to-many relationship between users and recipes (implemented)
+- **Ratings** - User ratings for recipes (1-5 stars) - placeholder for future implementation
+
+### Database Relationships
+- **User → Favorites**: One-to-many (user can have multiple favorites)
+- **Recipe → Favorites**: One-to-many (recipe can be favorited by multiple users)
+- **User ↔ Recipe**: Many-to-many through Favorites table
 
 ### SQLite-Specific Considerations
 
@@ -79,15 +84,66 @@ const recipe = {
 };
 ```
 
-## Authentication Status
-Currently uses temporary user ID (`temp-user-id`) for development. Authentication system is planned but not yet implemented.
+## Authentication System
+**Status: ✅ IMPLEMENTED**
+
+The application now includes a complete authentication system:
+
+### NextAuth.js Integration
+- **Provider**: Credentials provider for email/password authentication
+- **Session Strategy**: JWT-based sessions for scalability
+- **Security**: Secure password hashing with bcrypt
+- **Demo Users**: Pre-configured demo accounts for testing
+
+### Authentication Flow
+1. User registration creates new account with hashed password
+2. Sign-in validates credentials and creates JWT session
+3. Session persists across page loads and browser sessions
+4. Protected routes check authentication status
+5. API routes validate session for user-specific operations
+
+### Demo Accounts
+- **Sarah Chen** (sarah@example.com) - Password: demo
+- **Mike Rodriguez** (mike@example.com) - Password: demo  
+- **David Kim** (david@example.com) - Password: demo
+
+### Key Files
+- `/lib/auth.ts` - NextAuth configuration and utilities
+- `/app/api/auth/[...nextauth]/route.ts` - NextAuth API route
+- `/app/auth/signin/page.tsx` - Sign-in page with demo user shortcuts
+- `/app/auth/signup/page.tsx` - User registration page
+- `/components/providers/session-provider.tsx` - Session context provider
 
 ## Development Patterns
 
 ### Custom Hooks Usage
 - Use `useRecipes()` for general recipe fetching
 - Use `useRecipeSearch()` for search pages with filters
-- Use `useFavoriteRecipes()` for user favorites (future implementation)
+- Use `useFavorites()` for favorites management (implemented)
+
+### Favorites System
+**Status: ✅ IMPLEMENTED**
+
+Complete favorites functionality with persistent storage:
+
+#### Features
+- **Toggle Favorites** - Add/remove recipes from favorites with heart icon
+- **Favorites Page** - Dedicated page to view saved recipes (`/profile/favorites`)
+- **Real-time Updates** - Instant UI feedback when favoriting/unfavoriting
+- **Cross-page Consistency** - Favorites status syncs across home, search, and detail pages
+
+#### Implementation
+- **API Routes**: `/api/recipes/favorites` (POST) and `/api/users/favorites` (GET)
+- **Custom Hook**: `useFavorites()` for centralized state management
+- **Database**: Many-to-many relationship between Users and Recipes via Favorites table
+- **UI Integration**: RecipeCard component with favorite toggle functionality
+
+#### Key Files
+- `/hooks/use-favorites.ts` - Custom hook for favorites state management
+- `/app/api/recipes/favorites/route.ts` - API for toggling favorites
+- `/app/api/users/favorites/route.ts` - API for fetching user's favorites
+- `/app/profile/favorites/page.tsx` - Favorites page component
+- `/components/ui/recipe-card.tsx` - Updated with favorites functionality
 
 ### Error Handling
 - API routes return structured `{ success: boolean, data?: T, error?: string }` responses

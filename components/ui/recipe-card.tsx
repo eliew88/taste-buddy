@@ -14,6 +14,7 @@
  import StarRating from './star-rating';
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
+ import { useRatings } from '@/hooks/use-ratings';
  
  interface RecipeCardProps {
    /** Recipe data to display */
@@ -59,9 +60,11 @@
  }: RecipeCardProps) {
    const { data: session } = useSession();
   
+  // Use ratings hook for persistent rating functionality
+   const { userRating, recipeStats, submitRating } = useRatings(recipe.id);
+  
   // Local state for user interactions
    const [isFavorite, setIsFavorite] = useState(isFavorited);
-   const [userRating, setUserRating] = useState(0);
    const [isLoading, setIsLoading] = useState(false);
   
   // Update local state when props change
@@ -98,26 +101,25 @@
    };
  
    /**
-    * Handles rating submission
-    * TODO: Implement API call to backend
+    * Handles rating submission with persistent storage
     * 
     * @param rating - New rating value (1-5)
     */
    const handleRating = async (rating: number) => {
+     if (!session?.user) {
+       console.log('Please sign in to rate recipes');
+       return;
+     }
+
      try {
-       setUserRating(rating);
-       
-       // TODO: Replace with actual API call
-       // await fetch(`/api/recipes/${recipe.id}/rating`, {
-       //   method: 'POST',
-       //   body: JSON.stringify({ rating })
-       // });
-       
-       console.log(`Rated recipe "${recipe.title}" with ${rating} stars`);
+       const success = await submitRating(rating);
+       if (success) {
+         console.log(`Successfully rated recipe "${recipe.title}" with ${rating} stars`);
+       } else {
+         console.error('Failed to submit rating');
+       }
      } catch (error) {
        console.error('Error submitting rating:', error);
-       // Revert on error
-       setUserRating(0);
      }
    };
  
@@ -252,14 +254,14 @@
                size="sm"
              />
              <span className="text-sm text-gray-600">
-               {recipe.avgRating?.toFixed(1) || '0.0'} ({recipe._count?.ratings || 0})
+               {recipeStats.averageRating?.toFixed(1) || '0.0'} ({recipeStats.ratingCount || 0})
              </span>
            </div>
            
            {/* View count (if available) */}
            <div className="flex items-center text-sm text-gray-500">
              <Eye className="w-3 h-3 mr-1" />
-             <span>{recipe._count?.favorites || 0} saves</span>
+             <span>{recipe._count?.favorites || 0} favorites</span>
            </div>
          </footer>
        </div>

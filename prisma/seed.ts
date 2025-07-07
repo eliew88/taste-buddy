@@ -1,36 +1,45 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 /**
- * Sample users for the recipe platform
+ * Sample users for the recipe platform with hashed passwords
  */
-const sampleUsers = [
-  {
-    id: 'user1',
-    email: 'sarah@tasteBuddy.com',
-    name: 'Sarah Johnson',
-    image: null,
-  },
-  {
-    id: 'user2',
-    email: 'mike@tasteBuddy.com',
-    name: 'Mike Chen',
-    image: null,
-  },
-  {
-    id: 'user3',
-    email: 'david@tasteBuddy.com',
-    name: 'David Liu',
-    image: null,
-  },
-  {
-    id: 'temp-user-id',
-    email: 'temp@tasteBuddy.com',
-    name: 'Temp Temp',
-    image: null,
-  }
-];
+async function createSampleUsers() {
+  const hashedPassword = await bcrypt.hash('demo', 12);
+  
+  return [
+    {
+      id: 'user1',
+      email: 'sarah@example.com',
+      name: 'Sarah Chen',
+      image: null,
+      password: hashedPassword,
+    },
+    {
+      id: 'user2',
+      email: 'mike@example.com',
+      name: 'Mike Rodriguez',
+      image: null,
+      password: hashedPassword,
+    },
+    {
+      id: 'user3',
+      email: 'david@example.com',
+      name: 'David Kim',
+      image: null,
+      password: hashedPassword,
+    },
+    {
+      id: 'temp-user-id',
+      email: 'temp@example.com',
+      name: 'Temp User',
+      image: null,
+      password: hashedPassword,
+    }
+  ];
+}
 
 /**
  * Sample recipes with realistic data
@@ -258,13 +267,14 @@ async function main() {
     await prisma.recipe.deleteMany();
     await prisma.user.deleteMany();
 
-    // Create users
+    // Create users with hashed passwords
     console.log('👥 Creating users...');
+    const sampleUsers = await createSampleUsers();
     for (const user of sampleUsers) {
       await prisma.user.create({
         data: user,
       });
-      console.log(`   ✓ Created user: ${user.name}`);
+      console.log(`   ✓ Created user: ${user.name} (${user.email})`);
     }
 
     // Create recipes
