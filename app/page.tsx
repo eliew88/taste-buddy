@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Star, Heart, Plus, Filter, Clock, Users, ChefHat } from 'lucide-react';
+import { Search, Star, Heart, Plus, Clock, Users, ChefHat, AlertCircle } from 'lucide-react';
 
 interface Recipe {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   ingredients: string[];
   instructions: string;
-  cookTime: string;
-  servings: number;
+  cookTime?: string;
+  servings?: number;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
   author: {
@@ -19,90 +19,27 @@ interface Recipe {
     name: string;
     email: string;
   };
-  avgRating: number;
-  totalRatings: number;
+  avgRating?: number;
+  _count?: {
+    favorites: number;
+    ratings: number;
+  };
   createdAt: string;
 }
 
-// Sample data for development - replace with API calls
-const sampleRecipes: Recipe[] = [
-  {
-    id: '1',
-    title: "Classic Chocolate Chip Cookies",
-    description: "These classic chocolate chip cookies are crispy on the outside and chewy on the inside, perfect for any occasion.",
-    ingredients: [
-      "2 cups all-purpose flour",
-      "1 cup butter, softened",
-      "3/4 cup brown sugar",
-      "1/2 cup white sugar",
-      "2 large eggs",
-      "2 tsp vanilla extract",
-      "1 tsp baking soda",
-      "1 tsp salt",
-      "2 cups chocolate chips"
-    ],
-    instructions: "Preheat oven to 375°F. In a large bowl, cream together butter and sugars until light and fluffy. Beat in eggs one at a time, then add vanilla. In a separate bowl, whisk together flour, baking soda, and salt. Gradually mix dry ingredients into wet ingredients. Stir in chocolate chips. Drop rounded tablespoons of dough onto ungreased baking sheets. Bake for 9-11 minutes or until golden brown.",
-    cookTime: "25 mins",
-    servings: 36,
-    difficulty: "easy",
-    tags: ["dessert", "cookies", "chocolate", "baking"],
-    author: { id: '1', name: "Sarah Johnson", email: "sarah@example.com" },
-    avgRating: 4.5,
-    totalRatings: 128,
-    createdAt: "2024-01-15T10:30:00Z"
-  },
-  {
-    id: '2',
-    title: "Creamy Chicken Alfredo",
-    description: "Rich and creamy Alfredo sauce with tender chicken and perfectly cooked fettuccine.",
-    ingredients: [
-      "1 lb fettuccine pasta",
-      "2 chicken breasts, sliced",
-      "2 cups heavy cream",
-      "1 cup grated Parmesan cheese",
-      "4 cloves garlic, minced",
-      "4 tbsp butter",
-      "2 tbsp olive oil",
-      "Salt and pepper to taste",
-      "Fresh parsley for garnish"
-    ],
-    instructions: "Cook fettuccine according to package directions. Season chicken with salt and pepper, then cook in olive oil until golden and cooked through. Remove chicken and set aside. In the same pan, melt butter and sauté garlic for 1 minute. Add heavy cream and bring to a gentle simmer. Gradually whisk in Parmesan cheese until smooth. Return chicken to pan and toss with cooked pasta.",
-    cookTime: "30 mins",
-    servings: 4,
-    difficulty: "medium",
-    tags: ["dinner", "pasta", "chicken", "italian"],
-    author: { id: '2', name: "Mike Chen", email: "mike@example.com" },
-    avgRating: 4.2,
-    totalRatings: 87,
-    createdAt: "2024-01-14T15:20:00Z"
-  },
-  {
-    id: '3',
-    title: "Spicy Thai Green Curry",
-    description: "Authentic Thai green curry with tender chicken and fresh vegetables in a rich coconut broth.",
-    ingredients: [
-      "400ml coconut milk",
-      "2 tbsp green curry paste",
-      "1 lb chicken thigh, cubed",
-      "1 eggplant, cubed",
-      "1 bell pepper, sliced",
-      "1 cup green beans",
-      "2 tbsp fish sauce",
-      "1 tbsp brown sugar",
-      "Thai basil leaves",
-      "Jasmine rice for serving"
-    ],
-    instructions: "Heat a wok over medium-high heat. Add 2 tbsp of the thick coconut cream from the top of the can and fry curry paste for 2 minutes until fragrant. Add chicken and cook until no longer pink. Add remaining coconut milk, fish sauce, and brown sugar. Bring to a simmer, then add vegetables. Cook for 10-15 minutes until vegetables are tender. Stir in Thai basil leaves and serve over jasmine rice.",
-    cookTime: "35 mins",
-    servings: 4,
-    difficulty: "medium",
-    tags: ["asian", "curry", "spicy", "thai"],
-    author: { id: '3', name: "David Liu", email: "david@example.com" },
-    avgRating: 4.7,
-    totalRatings: 156,
-    createdAt: "2024-01-13T12:45:00Z"
-  }
-];
+interface ApiResponse {
+  success: boolean;
+  data: Recipe[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+  error?: string;
+}
 
 const StarRating = ({ rating, onRate, interactive = true }: { 
   rating: number; 
@@ -128,14 +65,32 @@ const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [userRating, setUserRating] = useState(0);
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    // TODO: API call to toggle favorite
+  const handleFavorite = async () => {
+    try {
+      // TODO: Implement favorite API call
+      setIsFavorite(!isFavorite);
+      console.log('Toggle favorite for recipe:', recipe.id);
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
   };
 
-  const handleRating = (rating: number) => {
-    setUserRating(rating);
-    // TODO: API call to submit rating
+  const handleRating = async (rating: number) => {
+    try {
+      // TODO: Implement rating API call
+      setUserRating(rating);
+      console.log('Rate recipe:', recipe.id, 'Rating:', rating);
+    } catch (error) {
+      console.error('Failed to rate recipe:', error);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   return (
@@ -156,17 +111,24 @@ const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
         </div>
         
         <p className="text-gray-600 mb-3">By {recipe.author.name}</p>
-        <p className="text-gray-700 text-sm mb-4 line-clamp-2">{recipe.description}</p>
+        
+        {recipe.description && (
+          <p className="text-gray-700 text-sm mb-4 line-clamp-2">{recipe.description}</p>
+        )}
         
         <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
-          <div className="flex items-center">
-            <Clock className="w-4 h-4 mr-1" />
-            {recipe.cookTime}
-          </div>
-          <div className="flex items-center">
-            <Users className="w-4 h-4 mr-1" />
-            {recipe.servings} servings
-          </div>
+          {recipe.cookTime && (
+            <div className="flex items-center">
+              <Clock className="w-4 h-4 mr-1" />
+              {recipe.cookTime}
+            </div>
+          )}
+          {recipe.servings && (
+            <div className="flex items-center">
+              <Users className="w-4 h-4 mr-1" />
+              {recipe.servings} servings
+            </div>
+          )}
           <div className="flex items-center">
             <ChefHat className="w-4 h-4 mr-1" />
             {recipe.difficulty}
@@ -180,9 +142,7 @@ const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
                 key={index}
                 className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
               >
-                {ingredient.split(',')[0].length > 15 
-                  ? ingredient.split(',')[0].substring(0, 15) + '...' 
-                  : ingredient.split(',')[0]}
+                {ingredient.length > 15 ? ingredient.substring(0, 15) + '...' : ingredient}
               </span>
             ))}
             {recipe.ingredients.length > 3 && (
@@ -193,59 +153,124 @@ const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
         
         <div className="mb-4">
           <div className="flex flex-wrap gap-2">
-            {recipe.tags.map((tag, index) => (
+            {recipe.tags.slice(0, 4).map((tag, index) => (
               <span key={index} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
                 {tag}
               </span>
             ))}
+            {recipe.tags.length > 4 && (
+              <span className="text-gray-500 text-xs">+{recipe.tags.length - 4} more</span>
+            )}
           </div>
         </div>
         
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-2">
           <div className="flex items-center space-x-2">
             <StarRating rating={userRating} onRate={handleRating} />
             <span className="text-sm text-gray-600">
-              {recipe.avgRating.toFixed(1)} ({recipe.totalRatings} reviews)
+              {recipe.avgRating ? recipe.avgRating.toFixed(1) : '0.0'} 
+              ({recipe._count?.ratings || 0} reviews)
             </span>
           </div>
         </div>
+        
+        <p className="text-xs text-gray-500">
+          Created {formatDate(recipe.createdAt)}
+        </p>
       </div>
     </div>
   );
 };
 
+const ErrorMessage = ({ message, onRetry }: { message: string; onRetry: () => void }) => (
+  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+    <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+    <p className="text-red-700 mb-2">{message}</p>
+    <button
+      onClick={onRetry}
+      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+    >
+      Try Again
+    </button>
+  </div>
+);
+
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [difficulty, setDifficulty] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    total: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
-  useEffect(() => {
-    // TODO: Replace with actual API call
-    // fetchRecipes();
-    setRecipes(sampleRecipes);
-    setLoading(false);
-  }, []);
-
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (page = 1, search = searchTerm, diff = difficulty) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/recipes');
-      const data = await response.json();
+      setError(null);
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '12',
+      });
+      
+      if (search.trim()) {
+        params.append('search', search.trim());
+      }
+      
+      if (diff) {
+        params.append('difficulty', diff);
+      }
+
+      const response = await fetch(`/api/recipes?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data: ApiResponse = await response.json();
+      
       if (data.success) {
         setRecipes(data.data);
+        setPagination(data.pagination);
+      } else {
+        throw new Error(data.error || 'Failed to fetch recipes');
       }
     } catch (error) {
       console.error('Failed to fetch recipes:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch recipes');
+      setRecipes([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredRecipes = recipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.ingredients.some(ing => ing.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    recipe.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  useEffect(() => {
+    fetchRecipes(1, searchTerm, difficulty);
+  }, [searchTerm, difficulty]);
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handleDifficultyChange = (value: string) => {
+    setDifficulty(value);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    fetchRecipes(newPage, searchTerm, difficulty);
+  };
+
+  const retryFetch = () => {
+    fetchRecipes(pagination.page, searchTerm, difficulty);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -304,47 +329,121 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Search Section */}
-        <div className="mb-8">
+        {/* Search and Filter Section */}
+        <div className="mb-8 space-y-4">
           <div className="relative max-w-2xl mx-auto">
             <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search recipes, ingredients, or tags..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+          
+          <div className="flex justify-center">
+            <select
+              value={difficulty}
+              onChange={(e) => handleDifficultyChange(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
         </div>
 
-        {/* Featured Recipes */}
+        {/* Recipes Section */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Featured Recipes ({filteredRecipes.length})
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {searchTerm || difficulty ? 'Search Results' : 'Featured Recipes'} 
+              {!loading && ` (${pagination.total})`}
+            </h2>
+            
+            {(searchTerm || difficulty) && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setDifficulty('');
+                }}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
           
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Loading recipes...</p>
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading delicious recipes...</p>
             </div>
+          ) : error ? (
+            <ErrorMessage message={error} onRetry={retryFetch} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRecipes.map(recipe => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
-          )}
-
-          {!loading && filteredRecipes.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No recipes found matching your search.</p>
-            </div>
+            <>
+              {recipes.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {recipes.map(recipe => (
+                      <RecipeCard key={recipe.id} recipe={recipe} />
+                    ))}
+                  </div>
+                  
+                  {/* Pagination */}
+                  {pagination.totalPages > 1 && (
+                    <div className="flex justify-center items-center space-x-2">
+                      <button
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={!pagination.hasPrevPage}
+                        className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      >
+                        Previous
+                      </button>
+                      
+                      <span className="px-4 py-2 text-gray-600">
+                        Page {pagination.page} of {pagination.totalPages}
+                      </span>
+                      
+                      <button
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={!pagination.hasNextPage}
+                        className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <Search className="w-16 h-16 mx-auto" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No recipes found</h3>
+                  <p className="text-gray-500 mb-6">
+                    {searchTerm || difficulty 
+                      ? "Try adjusting your search criteria or clear the filters." 
+                      : "Be the first to share a recipe with the community!"
+                    }
+                  </p>
+                  <Link 
+                    href="/recipes/new"
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 inline-flex items-center"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add First Recipe
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>
     </div>
   );
 }
-
