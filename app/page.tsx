@@ -55,18 +55,23 @@ const HeroSection = ({
   searchLoading: boolean;
   heroImages?: string[];
 }) => {
+  console.log('🎨 HeroSection rendering with images:', heroImages);
+  
   return (
     <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
       {/* 4-Panel Background Images */}
       <div className="absolute inset-0 z-0">
         <div className="grid grid-cols-2 grid-rows-2 h-full w-full">
-          {heroImages.map((image, index) => (
-            <div
-              key={index}
-              className="bg-cover bg-center transition-transform duration-700 hover:scale-105"
-              style={{ backgroundImage: `url(${image})` }}
-            />
-          ))}
+          {heroImages.map((image, index) => {
+            console.log(`🖼️ Panel ${index}: ${image}`);
+            return (
+              <div
+                key={index}
+                className="bg-cover bg-center transition-transform duration-700 hover:scale-105"
+                style={{ backgroundImage: `url(${image})` }}
+              />
+            );
+          })}
         </div>
         
         {/* Overlay for text readability */}
@@ -246,18 +251,26 @@ export default function HomePage() {
   // Fetch featured recipes for hero background
   const fetchFeaturedRecipes = async () => {
     try {
+      console.log('🔍 Fetching featured recipes...');
       const response = await fetch('/api/recipes?limit=4&featured=true');
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 API Response:', data);
         const recipesWithImages = data.data.filter((recipe: any) => recipe.image);
+        console.log('🖼️ Recipes with images:', recipesWithImages.length);
+        console.log('📸 Image URLs:', recipesWithImages.map((recipe: any) => recipe.image));
         
         if (recipesWithImages.length >= 4) {
-          setHeroImages(recipesWithImages.slice(0, 4).map((recipe: any) => recipe.image));
+          const newHeroImages = recipesWithImages.slice(0, 4).map((recipe: any) => recipe.image);
+          console.log('✅ Setting hero images:', newHeroImages);
+          setHeroImages(newHeroImages);
         } else if (recipesWithImages.length > 0) {
           // Mix database images with fallback images
           const dbImages = recipesWithImages.map((recipe: any) => recipe.image);
           const neededFallbacks = FALLBACK_HERO_IMAGES.slice(0, 4 - dbImages.length);
-          setHeroImages([...dbImages, ...neededFallbacks]);
+          const mixedImages = [...dbImages, ...neededFallbacks];
+          console.log('🔄 Mixed images:', mixedImages);
+          setHeroImages(mixedImages);
         }
         // If no recipes with images, keep fallback images
       }
