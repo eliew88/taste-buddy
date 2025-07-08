@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { Recipe } from '@/types/recipe';
 import { 
   Search, 
   Grid3X3, 
@@ -186,8 +187,8 @@ export default function FoodFeedPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   
   // Data states
-  const [recipes, setRecipes] = useState<any[]>([]);
-  const [searchMeta, setSearchMeta] = useState<any>(null);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [searchMeta, setSearchMeta] = useState<{total: number, pages: number, currentPage: number, suggestions?: string[]} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -450,9 +451,9 @@ export default function FoodFeedPage() {
               {/* Results Info */}
               <div className="flex items-center space-x-4">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {searchMeta && searchMeta.totalResults !== undefined ? (
+                  {searchMeta && searchMeta.total !== undefined ? (
                     <>
-                      {searchMeta.totalResults.toLocaleString()} Recipe{searchMeta.totalResults !== 1 ? 's' : ''}
+                      {searchMeta.total.toLocaleString()} Recipe{searchMeta.total !== 1 ? 's' : ''}
                       {searchQuery && ` for "${searchQuery}"`}
                     </>
                   ) : (
@@ -565,7 +566,7 @@ export default function FoodFeedPage() {
                 </p>
                 
                 {/* Search Suggestions */}
-                {searchMeta?.suggestions && Array.isArray(searchMeta.suggestions) && (
+                {searchMeta?.suggestions && Array.isArray(searchMeta.suggestions) && searchMeta.suggestions.length > 0 && (
                   <div className="text-left max-w-md mx-auto mb-4">
                     <p className="text-sm font-medium text-gray-900 mb-2">Suggestions:</p>
                     <ul className="text-sm text-gray-600 space-y-1">
@@ -599,7 +600,7 @@ export default function FoodFeedPage() {
                     ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                     : "space-y-6"
                 }>
-                  {recipes.map((recipe: any) => (
+                  {recipes.map((recipe: Recipe) => (
                     <RecipeCard 
                       key={recipe.id} 
                       recipe={recipe}
@@ -611,13 +612,13 @@ export default function FoodFeedPage() {
                 </div>
 
                 {/* Pagination */}
-                {searchMeta && searchMeta.totalPages && searchMeta.totalPages > 1 && (
+                {searchMeta && searchMeta.pages && searchMeta.pages > 1 && (
                   <div className="flex flex-col items-center space-y-4">
                     <Pagination
                       currentPage={searchMeta.currentPage || 1}
-                      totalPages={searchMeta.totalPages}
-                      hasNextPage={searchMeta.hasNextPage || false}
-                      hasPreviousPage={searchMeta.hasPreviousPage || false}
+                      totalPages={searchMeta.pages}
+                      hasNextPage={searchMeta.currentPage < searchMeta.pages}
+                      hasPreviousPage={searchMeta.currentPage > 1}
                       onPageChange={handlePageChange}
                     />
                     

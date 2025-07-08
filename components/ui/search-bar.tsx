@@ -18,7 +18,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Search, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, X, ChevronUp } from 'lucide-react';
 
 interface SearchFilters {
   search: string;
@@ -329,7 +329,7 @@ export default function SearchBar({
         <div className="flex flex-wrap gap-2">
           {filters.search && (
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
-              Search: "{filters.search}"
+              Search: &quot;{filters.search}&quot;
               <button
                 onClick={() => removeFilter('search')}
                 className="ml-2 text-blue-600 hover:text-blue-800"

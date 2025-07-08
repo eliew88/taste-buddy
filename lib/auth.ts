@@ -9,6 +9,7 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { env } from '@/lib/env';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,7 +24,19 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Skip database operations during build time
+        if (process.env.VERCEL || process.env.CI || process.env.GITHUB_ACTIONS || process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL?.includes('postgres')) {
+          console.log('Build environment detected, skipping database auth');
+          return null;
+        }
+
         try {
+          // Handle case where database might not be available
+          if (!env.DATABASE_URL || env.DATABASE_URL === 'file:./dev.db') {
+            console.warn('Database not available, skipping auth');
+            return null;
+          }
+          
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email
@@ -84,19 +97,18 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
   // Production security settings
-  secret: process.env.NEXTAUTH_SECRET,
-  useSecureCookies: process.env.NODE_ENV === 'production',
+  secret: env.NEXTAUTH_SECRET,
+  useSecureCookies: env.NODE_ENV === 'production',
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      name: env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production'
+        secure: env.NODE_ENV === 'production'
       }
     },
   },

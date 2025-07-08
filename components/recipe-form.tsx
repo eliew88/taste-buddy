@@ -30,12 +30,12 @@ import {
   Save,
   ArrowLeft,
   AlertCircle,
-  Check,
-  Image as ImageIcon,
+  // Check,
+  // Image as ImageIcon,
   Tag,
   List
 } from 'lucide-react';
-import { LoadingButton, LoadingSpinner } from '@/components/ui/loading';
+import { LoadingButton } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
 import apiClient from '@/lib/api-client';
 import { CreateRecipeData } from '@/types/recipe';
@@ -92,7 +92,7 @@ export default function RecipeForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [currentTag, setCurrentTag] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
+  // const [showPreview, setShowPreview] = useState(false);
 
   // Auto-save key for localStorage
   const autoSaveKey = 'tastebuddy-recipe-draft';
@@ -422,7 +422,7 @@ export default function RecipeForm({
                         name="difficulty"
                         value={level}
                         checked={formData.difficulty === level}
-                        onChange={(e) => updateFormData({ difficulty: e.target.value as any })}
+                        onChange={(e) => updateFormData({ difficulty: e.target.value as 'easy' | 'medium' | 'hard' })}
                         className="mr-2 text-blue-600"
                       />
                       <span className="capitalize">{level}</span>

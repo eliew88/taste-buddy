@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Heart, Plus, Menu, X, Search, User, Home, ChefHat, Sparkles, LogOut, LogIn } from 'lucide-react';
+import { Heart, Plus, Menu, X, User, Home, ChefHat, Sparkles, LogOut, LogIn } from 'lucide-react';
 
 /**
  * Navigation Component
@@ -29,7 +29,7 @@ import { Heart, Plus, Menu, X, Search, User, Home, ChefHat, Sparkles, LogOut, Lo
 export default function Navigation() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   /**
    * Checks if a link is currently active

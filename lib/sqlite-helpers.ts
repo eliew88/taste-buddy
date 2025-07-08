@@ -60,7 +60,7 @@ export function parseTags(tags: string | null): string[] {
 export function prepareRecipeForDB(recipeData: {
   ingredients: string[] | string;
   tags: string[] | string;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   const ingredients = Array.isArray(recipeData.ingredients) 
     ? recipeData.ingredients 
@@ -85,7 +85,7 @@ export function prepareRecipeForDB(recipeData: {
 export function transformRecipeFromDB(dbRecipe: {
   ingredients: string;
   tags: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   return {
     ...dbRecipe,

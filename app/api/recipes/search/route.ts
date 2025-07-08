@@ -68,7 +68,7 @@ function parseCookTimeToMinutes(cookTime?: string): number | null {
 /**
  * SQLite helper functions for array handling
  */
-function transformRecipeFromDB(recipe: any) {
+function transformRecipeFromDB(recipe: Record<string, unknown>) {
   return {
     ...recipe,
     ingredients: typeof recipe.ingredients === 'string' 
@@ -125,20 +125,20 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
     
     // For case-insensitive search in SQLite, we'll use raw SQL
-    let whereClause: Prisma.RecipeWhereInput = {};
-    let searchConditions: any[] = [];
+    const whereClause: Prisma.RecipeWhereInput = {};
+    const searchConditions: Record<string, unknown>[] = [];
     
     // Handle text search with case-insensitive approach
     if (params.query) {
       const searchQuery = params.query.toLowerCase();
       
       // Use raw SQL for truly case-insensitive search
-      const searchSql = Prisma.sql`
-        (LOWER(title) LIKE LOWER(${'%' + params.query + '%'}) OR 
-         LOWER(description) LIKE LOWER(${'%' + params.query + '%'}) OR 
-         LOWER(ingredients) LIKE LOWER(${'%' + params.query + '%'}) OR 
-         LOWER(tags) LIKE LOWER(${'%' + params.query + '%'}))
-      `;
+      // const searchSql = Prisma.sql`
+      //   (LOWER(title) LIKE LOWER(${'%' + params.query + '%'}) OR 
+      //    LOWER(description) LIKE LOWER(${'%' + params.query + '%'}) OR 
+      //    LOWER(ingredients) LIKE LOWER(${'%' + params.query + '%'}) OR 
+      //    LOWER(tags) LIKE LOWER(${'%' + params.query + '%'}))
+      // `;
       
       // For now, let's use a simpler approach that works with the Prisma client
       searchConditions.push({
@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
     
     // Servings range filter
     if (params.servingsMin || params.servingsMax) {
-      const servingsFilter: any = {};
+      const servingsFilter: Record<string, unknown> = {};
       if (params.servingsMin) servingsFilter.gte = params.servingsMin;
       if (params.servingsMax) servingsFilter.lte = params.servingsMax;
       searchConditions.push({ servings: servingsFilter });
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
     
     // Date range filter
     if (params.createdAfter || params.createdBefore) {
-      const dateFilter: any = {};
+      const dateFilter: Record<string, unknown> = {};
       if (params.createdAfter) dateFilter.gte = new Date(params.createdAfter);
       if (params.createdBefore) dateFilter.lte = new Date(params.createdBefore);
       searchConditions.push({ createdAt: dateFilter });
@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
       
       return {
         ...transformed,
-        cookTimeMinutes: parseCookTimeToMinutes(recipe.cookTime),
+        cookTimeMinutes: parseCookTimeToMinutes(recipe.cookTime || undefined),
         avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
         // Remove ratings array from response for cleaner API
         ratings: undefined,

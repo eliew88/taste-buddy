@@ -22,11 +22,12 @@ interface UserRecipe {
   instructions: string;
   cookTime?: string;
   servings?: number;
-  difficulty: string;
+  difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
   image?: string;
-  createdAt: string;
-  updatedAt: string;
+  authorId: string;
+  createdAt: Date;
+  updatedAt: Date;
   author: {
     id: string;
     name: string;

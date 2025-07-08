@@ -322,8 +322,8 @@ class ApiClient {
    * 
    * @future This endpoint is not yet implemented in the backend
    */
-  async getUser(id: string): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/users/${id}`);
+  async getUser(id: string): Promise<ApiResponse<Record<string, unknown>>> {
+    return this.request<ApiResponse<Record<string, unknown>>>(`/users/${id}`);
   }
 
   /**
@@ -335,8 +335,8 @@ class ApiClient {
    * 
    * @future This endpoint is not yet implemented in the backend
    */
-  async updateUser(id: string, data: any): Promise<ApiResponse<any>> {
-    return this.request<ApiResponse<any>>(`/users/${id}`, {
+  async updateUser(id: string, data: Record<string, unknown>): Promise<ApiResponse<Record<string, unknown>>> {
+    return this.request<ApiResponse<Record<string, unknown>>>(`/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });

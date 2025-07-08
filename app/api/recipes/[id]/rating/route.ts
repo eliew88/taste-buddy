@@ -15,9 +15,9 @@ const ratingSchema = z.object({
 });
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id: recipeId } = params;
+    const { id: recipeId } = await params;
     const body = await request.json();
     const validation = ratingSchema.safeParse(body);
     
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id: recipeId } = params;
+    const { id: recipeId } = await params;
 
     // Get user's rating for this recipe
     const userRating = await prisma.rating.findUnique({

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause for SQLite (no mode: 'insensitive' support)
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     // Search functionality (SQLite compatible - case insensitive search)
     if (search) {
@@ -144,16 +144,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare data for SQLite storage (convert arrays to JSON strings)
+    // Prepare data for database storage (handles both SQLite and PostgreSQL)
+    const isPostgreSQL = process.env.DATABASE_URL?.includes('postgresql');
     const recipeData = {
       title: title.trim(),
       description: description?.trim() || null,
-      ingredients: JSON.stringify(ingredients), // Store as JSON string for SQLite
+      ingredients: isPostgreSQL ? ingredients : JSON.stringify(ingredients), // Native arrays for PostgreSQL, JSON strings for SQLite
       instructions: instructions.trim(),
       cookTime: cookTime?.trim() || null,
       servings: servings ? Math.max(1, parseInt(servings)) : null,
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
-      tags: JSON.stringify(tags || []), // Store as JSON string for SQLite
+      tags: isPostgreSQL ? (tags || []) : JSON.stringify(tags || []), // Native arrays for PostgreSQL, JSON strings for SQLite
       authorId: userId,
     };
 
@@ -170,11 +171,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Transform back to app format (parse JSON strings back to arrays)
+    // Transform back to app format (handles both SQLite and PostgreSQL)
     const transformedRecipe = {
       ...recipe,
-      ingredients: JSON.parse(recipe.ingredients),
-      tags: JSON.parse(recipe.tags),
+      ingredients: typeof recipe.ingredients === 'string' 
+        ? JSON.parse(recipe.ingredients) 
+        : recipe.ingredients,
+      tags: typeof recipe.tags === 'string'
+        ? JSON.parse(recipe.tags)
+        : recipe.tags,
       avgRating: 0, // New recipes start with 0 rating
     };
 

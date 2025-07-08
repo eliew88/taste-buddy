@@ -22,11 +22,12 @@ interface FavoriteRecipe {
   instructions: string;
   cookTime?: string;
   servings?: number;
-  difficulty: string;
+  difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
   image?: string;
-  createdAt: string;
-  updatedAt: string;
+  authorId: string;
+  createdAt: Date;
+  updatedAt: Date;
   author: {
     id: string;
     name: string;
@@ -186,7 +187,7 @@ export default function FavoritesPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Favorites</h1>
               <p className="text-gray-600">
-                {favorites.length} recipe{favorites.length !== 1 ? 's' : ''} you've saved
+                {favorites.length} recipe{favorites.length !== 1 ? 's' : ''} you&apos;ve saved
               </p>
             </div>
           </div>
@@ -262,7 +263,7 @@ export default function FavoritesPage() {
                 <span>Filters active:</span>
                 {searchTerm && (
                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    Search: "{searchTerm}"
+                    Search: &quot;{searchTerm}&quot;
                   </span>
                 )}
                 {selectedDifficulty && (

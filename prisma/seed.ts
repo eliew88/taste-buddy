@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { prepareRecipeForDB } from '../lib/db-helpers';
 
 const prisma = new PrismaClient();
 
@@ -49,7 +50,7 @@ const sampleRecipes = [
     id: 'recipe1',
     title: 'Classic Chocolate Chip Cookies',
     description: 'These classic chocolate chip cookies are crispy on the outside and chewy on the inside. Perfect for any occasion and loved by both kids and adults. The secret is using both brown and white sugar for the perfect texture.',
-    ingredients: JSON.stringify([
+    ingredients: [
       '2 cups all-purpose flour',
       '1 cup butter, softened',
       '3/4 cup brown sugar, packed',
@@ -59,7 +60,7 @@ const sampleRecipes = [
       '1 tsp baking soda',
       '1 tsp salt',
       '2 cups chocolate chips',
-    ]),
+    ],
     instructions: `1. Preheat your oven to 375°F (190°C). Line baking sheets with parchment paper.
 
 2. In a large bowl, cream together the softened butter, brown sugar, and white sugar until light and fluffy (about 3-4 minutes with an electric mixer).
@@ -82,14 +83,14 @@ const sampleRecipes = [
     cookTime: '25 mins',
     servings: 36,
     difficulty: 'easy',
-    tags: JSON.stringify(['dessert', 'cookies', 'chocolate', 'baking', 'family-friendly']),
+    tags: ['dessert', 'cookies', 'chocolate', 'baking', 'family-friendly'],
     authorId: 'user1',
   },
   {
     id: 'recipe2',
     title: 'Creamy Chicken Alfredo',
     description: 'Rich and indulgent Alfredo sauce with tender chicken breast and perfectly cooked fettuccine. This restaurant-quality dish is surprisingly easy to make at home and comes together in just 30 minutes.',
-    ingredients: JSON.stringify([
+    ingredients: [
       '1 lb fettuccine pasta',
       '2 chicken breasts, sliced thin',
       '2 cups heavy cream',
@@ -100,7 +101,7 @@ const sampleRecipes = [
       'Salt and black pepper to taste',
       'Fresh parsley for garnish',
       '1/4 tsp nutmeg (optional)',
-    ]),
+    ],
     instructions: `1. Bring a large pot of salted water to boil. Cook fettuccine according to package directions until al dente. Reserve 1 cup pasta water before draining.
 
 2. Season chicken breasts with salt and pepper. Heat olive oil in a large skillet over medium-high heat.
@@ -121,14 +122,14 @@ const sampleRecipes = [
     cookTime: '30 mins',
     servings: 4,
     difficulty: 'medium',
-    tags: JSON.stringify(['dinner', 'pasta', 'chicken', 'italian', 'creamy']),
+    tags: ['dinner', 'pasta', 'chicken', 'italian', 'creamy'],
     authorId: 'user2',
   },
   {
     id: 'recipe3',
     title: 'Spicy Thai Green Curry',
     description: 'Authentic Thai green curry with tender chicken and fresh vegetables in a rich, aromatic coconut broth. This vibrant dish balances sweet, spicy, and savory flavors perfectly. Adjust the heat level to your preference.',
-    ingredients: JSON.stringify([
+    ingredients: [
       '400ml coconut milk',
       '2-3 tbsp green curry paste',
       '1 lb chicken thigh, cubed',
@@ -141,7 +142,7 @@ const sampleRecipes = [
       '2 kaffir lime leaves (optional)',
       '1 red chili, sliced (optional)',
       'Jasmine rice for serving',
-    ]),
+    ],
     instructions: `1. Cook jasmine rice according to package directions and keep warm.
 
 2. Heat a wok or large skillet over medium-high heat. Add 2-3 tablespoons of the thick coconut cream from the top of the can.
@@ -166,14 +167,14 @@ const sampleRecipes = [
     cookTime: '35 mins',
     servings: 4,
     difficulty: 'medium',
-    tags: JSON.stringify(['asian', 'curry', 'spicy', 'thai', 'coconut', 'dinner']),
+    tags: ['asian', 'curry', 'spicy', 'thai', 'coconut', 'dinner'],
     authorId: 'user3',
   },
   {
     id: 'recipe4',
     title: 'Perfect Pancakes',
     description: 'Fluffy, golden pancakes that are perfect for weekend mornings. These pancakes are light, airy, and have just the right amount of sweetness. Serve with maple syrup, fresh berries, or your favorite toppings.',
-    ingredients: JSON.stringify([
+    ingredients: [
       '2 cups all-purpose flour',
       '2 tbsp sugar',
       '2 tsp baking powder',
@@ -183,7 +184,7 @@ const sampleRecipes = [
       '4 tbsp melted butter',
       '1 tsp vanilla extract',
       'Butter for cooking',
-    ]),
+    ],
     instructions: `1. In a large bowl, whisk together flour, sugar, baking powder, and salt.
 
 2. In another bowl, whisk together eggs, milk, melted butter, and vanilla extract.
@@ -204,14 +205,14 @@ const sampleRecipes = [
     cookTime: '20 mins',
     servings: 4,
     difficulty: 'easy',
-    tags: JSON.stringify(['breakfast', 'pancakes', 'weekend', 'family-friendly', 'quick']),
+    tags: ['breakfast', 'pancakes', 'weekend', 'family-friendly', 'quick'],
     authorId: 'user1',
   },
   {
     id: 'recipe5',
     title: 'Mediterranean Quinoa Bowl',
     description: 'A healthy and colorful bowl packed with Mediterranean flavors. This nutritious meal features quinoa, fresh vegetables, feta cheese, and a zesty lemon herb dressing. Perfect for lunch or a light dinner.',
-    ingredients: JSON.stringify([
+    ingredients: [
       '1 cup quinoa',
       '2 cups vegetable broth',
       '1 cucumber, diced',
@@ -225,7 +226,7 @@ const sampleRecipes = [
       '2 tbsp lemon juice',
       '1 tsp oregano',
       'Salt and pepper to taste',
-    ]),
+    ],
     instructions: `1. Rinse quinoa under cold water until water runs clear.
 
 2. In a saucepan, bring vegetable broth to a boil. Add quinoa, reduce heat to low, cover and simmer for 15 minutes.
@@ -248,7 +249,7 @@ const sampleRecipes = [
     cookTime: '25 mins',
     servings: 4,
     difficulty: 'easy',
-    tags: JSON.stringify(['healthy', 'mediterranean', 'vegetarian', 'quinoa', 'lunch', 'meal-prep']),
+    tags: ['healthy', 'mediterranean', 'vegetarian', 'quinoa', 'lunch', 'meal-prep'],
     authorId: 'user2',
   },
 ];
@@ -281,7 +282,7 @@ async function main() {
     console.log('🍳 Creating recipes...');
     for (const recipe of sampleRecipes) {
       await prisma.recipe.create({
-        data: recipe,
+        data: prepareRecipeForDB(recipe) as any,
       });
       console.log(`   ✓ Created recipe: ${recipe.title}`);
     }

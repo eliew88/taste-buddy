@@ -22,7 +22,7 @@ import { prisma } from '@/lib/db';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -107,10 +107,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     if (!id) {
@@ -153,7 +153,7 @@ export async function PUT(
     } = body;
 
     // Prepare update data (only include provided fields)
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (title !== undefined) {
       if (!title.trim()) {
@@ -235,8 +235,12 @@ export async function PUT(
     // Transform back to app format
     const transformedRecipe = {
       ...updatedRecipe,
-      ingredients: JSON.parse(updatedRecipe.ingredients),
-      tags: JSON.parse(updatedRecipe.tags),
+      ingredients: typeof updatedRecipe.ingredients === 'string' 
+        ? JSON.parse(updatedRecipe.ingredients)
+        : updatedRecipe.ingredients,
+      tags: typeof updatedRecipe.tags === 'string'
+        ? JSON.parse(updatedRecipe.tags)
+        : updatedRecipe.tags,
       avgRating: 0,
     };
 
@@ -266,10 +270,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

@@ -16,7 +16,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import ErrorBoundary from '@/components/error-boundary.tsx';
+import ErrorBoundary from '@/components/error-boundary';
 import AuthSessionProvider from '@/components/providers/session-provider';
 
 const inter = Inter({ subsets: ['latin'] });

@@ -119,7 +119,7 @@ export default function SignUpPage() {
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to TasteBuddy!</h2>
               <p className="text-gray-600 mb-4">
-                Your account has been created successfully. You're being signed in...
+                Your account has been created successfully. You&apos;re being signed in...
               </p>
               <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
             </div>

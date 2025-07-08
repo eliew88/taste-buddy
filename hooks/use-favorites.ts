@@ -31,7 +31,7 @@ export function useFavorites(): UseFavoritesReturn {
       const data = await response.json();
 
       if (data.success) {
-        const favoriteIds = new Set(data.data.map((recipe: any) => recipe.id));
+        const favoriteIds = new Set<string>(data.data.map((recipe: {id: string}) => recipe.id));
         setFavorites(favoriteIds);
       }
     } catch (error) {

@@ -204,8 +204,8 @@ User Agent: ${navigator.userAgent}
 
               {/* Error Message */}
               <p className="text-gray-600 mb-6">
-                We encountered an unexpected error. Don't worry, this has been reported 
-                and we're working to fix it.
+                We encountered an unexpected error. Don&apos;t worry, this has been reported 
+                and we&apos;re working to fix it.
               </p>
 
               {/* Error ID (for support) */}

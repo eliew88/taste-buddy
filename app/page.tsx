@@ -169,7 +169,7 @@ export default function HomePage() {
   } = useRecipeSearch();
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm || difficulty;
+  const hasActiveFilters = !!(searchTerm || difficulty);
 
   /**
    * Enhanced search handler with loading state
