@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
-import { prepareRecipeForDB, transformRecipeFromDB } from '@/lib/db-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,15 +15,15 @@ export async function GET(request: NextRequest) {
     // Build where clause for SQLite (no mode: 'insensitive' support)
     const where: Record<string, unknown> = {};
 
-    // Search functionality (SQLite compatible - case insensitive search)
+    // Search functionality (PostgreSQL with case-insensitive search)
     if (search) {
       const searchLower = search.toLowerCase();
       where.OR = [
-        { title: { contains: searchLower } },
-        { description: { contains: searchLower } },
-        // SQLite: Search in JSON fields using contains
-        { ingredients: { contains: searchLower } },
-        { tags: { contains: searchLower } },
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        // PostgreSQL: Search in native arrays
+        { ingredients: { hasSome: [searchLower] } },
+        { tags: { hasSome: [searchLower] } },
       ];
     }
 
@@ -51,17 +50,14 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    // Transform recipes from DB format to app format
+    // Transform recipes for response (native PostgreSQL arrays need no transformation)
     const transformedRecipes = recipes.map(recipe => {
-      // Use helper function for data transformation
-      const transformed = transformRecipeFromDB(recipe);
-
       // Calculate average rating from ratings array
       const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
 
       return {
-        ...transformed,
+        ...recipe,
         avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
         // Remove ratings array from response for cleaner API
         ratings: undefined,
@@ -137,8 +133,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare data for database storage using helper function
-    const recipeData = prepareRecipeForDB({
+    // Prepare data for PostgreSQL database storage (native arrays)
+    const recipeData = {
       title: title.trim(),
       description: description?.trim() || null,
       ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
@@ -148,11 +144,11 @@ export async function POST(request: NextRequest) {
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
       tags: Array.isArray(tags) ? tags : [],
       authorId: userId,
-    });
+    };
 
     // Create recipe in database
     const recipe = await prisma.recipe.create({
-      data: recipeData as any, // Type assertion needed due to union type from helper
+      data: recipeData,
       include: {
         author: {
           select: { id: true, name: true, email: true },
@@ -163,9 +159,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Transform back to app format using helper function
+    // Recipe data is ready for response (no transformation needed with PostgreSQL)
     const transformedRecipe = {
-      ...transformRecipeFromDB(recipe),
+      ...recipe,
       avgRating: 0, // New recipes start with 0 rating
     };
 
