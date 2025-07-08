@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { prepareRecipeForDB } from '../lib/db-helpers';
+// Removed - no longer needed
 
 const prisma = new PrismaClient();
 
@@ -282,7 +282,7 @@ async function main() {
     console.log('🍳 Creating recipes...');
     for (const recipe of sampleRecipes) {
       await prisma.recipe.create({
-        data: prepareRecipeForDB(recipe) as any,
+        data: recipe, // Native PostgreSQL arrays need no transformation
       });
       console.log(`   ✓ Created recipe: ${recipe.title}`);
     }

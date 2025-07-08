@@ -44,18 +44,17 @@ export async function GET() {
       }
     });
 
-    // Transform the data to match expected format
+    // Transform the data to match expected format (PostgreSQL native arrays)
     const transformedFavorites = favorites.map(favorite => {
       const recipe = favorite.recipe;
       return {
         ...recipe,
-        ingredients: typeof recipe.ingredients === 'string' 
-          ? JSON.parse(recipe.ingredients) 
-          : recipe.ingredients,
-        tags: typeof recipe.tags === 'string' 
-          ? JSON.parse(recipe.tags) 
-          : recipe.tags,
-        avgRating: 0, // TODO: Calculate actual average rating
+        // Calculate actual average rating from ratings
+        avgRating: recipe.ratings?.length > 0 
+          ? recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length
+          : 0,
+        // Remove ratings array from response
+        ratings: undefined,
       };
     });
 

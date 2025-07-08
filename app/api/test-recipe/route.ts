@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
-import { prepareRecipeForDB, isPostgreSQL } from '@/lib/db-helpers';
+// Removed helper imports - no longer needed
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const envCheck = {
       databaseUrl: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
       databaseProtocol: process.env.DATABASE_URL?.split('://')[0] || 'UNKNOWN',
-      isPostgreSQL: isPostgreSQL(),
+      isPostgreSQL: true, // Always PostgreSQL now
       nodeEnv: process.env.NODE_ENV,
       vercel: !!process.env.VERCEL
     };
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       authorId: typeof testData.authorId
     });
 
-    const recipeData = prepareRecipeForDB(testData);
+    const recipeData = testData; // No transformation needed with PostgreSQL
     console.log('[TEST-RECIPE] After prepareRecipeForDB types:', {
       ingredients: typeof recipeData.ingredients,
       tags: typeof recipeData.tags

@@ -65,20 +65,15 @@ export async function GET(
       );
     }
 
-    // Transform data from SQLite format to app format
+    // PostgreSQL native arrays need no transformation
     const transformedRecipe = {
       ...recipe,
-      // Parse JSON fields stored as strings in SQLite
-      ingredients: typeof recipe.ingredients === 'string' 
-        ? JSON.parse(recipe.ingredients) 
-        : recipe.ingredients,
-      
-      tags: typeof recipe.tags === 'string' 
-        ? JSON.parse(recipe.tags) 
-        : recipe.tags,
-
-      // TODO: Calculate actual average rating from ratings
-      avgRating: 0, // Placeholder until rating system is implemented
+      // Calculate actual average rating from ratings
+      avgRating: recipe.ratings.length > 0 
+        ? recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length
+        : 0,
+      // Remove ratings array from response
+      ratings: undefined,
     };
 
     return NextResponse.json({
@@ -232,16 +227,15 @@ export async function PUT(
       },
     });
 
-    // Transform back to app format
+    // PostgreSQL native arrays need no transformation
     const transformedRecipe = {
       ...updatedRecipe,
-      ingredients: typeof updatedRecipe.ingredients === 'string' 
-        ? JSON.parse(updatedRecipe.ingredients)
-        : updatedRecipe.ingredients,
-      tags: typeof updatedRecipe.tags === 'string'
-        ? JSON.parse(updatedRecipe.tags)
-        : updatedRecipe.tags,
-      avgRating: 0,
+      // Calculate actual average rating from ratings
+      avgRating: updatedRecipe.ratings?.length > 0 
+        ? updatedRecipe.ratings.reduce((sum, r) => sum + r.rating, 0) / updatedRecipe.ratings.length
+        : 0,
+      // Remove ratings array from response
+      ratings: undefined,
     };
 
     return NextResponse.json({
