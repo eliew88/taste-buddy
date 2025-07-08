@@ -23,20 +23,37 @@
   * - In development: reuses existing instance to prevent connection issues
   */
  export const prisma = globalForPrisma.prisma ?? (() => {
-   try {
-     return new PrismaClient({
-       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-       // Gracefully handle missing DATABASE_URL during build
-       datasourceUrl: env.DATABASE_URL,
-     });
-   } catch (error) {
-     console.warn('Prisma client creation failed, using mock client:', error);
-     // Return a mock client that won't crash during builds
+   // Check if we have a valid database URL
+   const dbUrl = env.DATABASE_URL;
+   
+   if (!dbUrl || dbUrl === 'file:./dev.db' || dbUrl.includes('placeholder')) {
+     console.warn('Invalid or missing DATABASE_URL, using mock client');
+     // Return a mock client that won't crash
      return {
-       user: { findUnique: async () => null },
-       recipe: { findMany: async () => [], create: async () => null },
+       user: { 
+         findUnique: async () => null,
+         findMany: async () => [],
+         create: async () => { throw new Error('Database not configured'); },
+         count: async () => 0
+       },
+       recipe: { 
+         findMany: async () => [], 
+         create: async () => { throw new Error('Database not configured'); },
+         findUnique: async () => null
+       },
        $disconnect: async () => {}
      } as unknown as PrismaClient;
+   }
+   
+   try {
+     console.log('Creating Prisma client with URL protocol:', dbUrl.split('://')[0]);
+     return new PrismaClient({
+       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+       datasourceUrl: dbUrl,
+     });
+   } catch (error) {
+     console.error('Prisma client creation failed:', error);
+     throw error;
    }
  })();
  

@@ -24,16 +24,13 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Skip database operations during build time
-        if (process.env.VERCEL || process.env.CI || process.env.GITHUB_ACTIONS || process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL?.includes('postgres')) {
-          console.log('Build environment detected, skipping database auth');
-          return null;
-        }
-
         try {
-          // Handle case where database might not be available
-          if (!env.DATABASE_URL || env.DATABASE_URL === 'file:./dev.db') {
-            console.warn('Database not available, skipping auth');
+          // Check if database is properly configured
+          if (!env.DATABASE_URL || 
+              env.DATABASE_URL === 'file:./dev.db' || 
+              env.DATABASE_URL.includes('placeholder') ||
+              (!env.DATABASE_URL.startsWith('postgresql://') && !env.DATABASE_URL.startsWith('postgres://'))) {
+            console.warn('Database not properly configured for auth, URL:', env.DATABASE_URL?.split('://')[0]);
             return null;
           }
           
