@@ -33,6 +33,9 @@ export async function GET() {
             },
             _count: {
               select: { favorites: true, ratings: true }
+            },
+            ratings: {
+              select: { rating: true }
             }
           }
         }

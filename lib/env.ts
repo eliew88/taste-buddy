@@ -33,7 +33,7 @@ export function getRequiredEnvVar(name: string, fallback?: string): string {
 }
 
 export const env = {
-  DATABASE_URL: getRequiredEnvVar('DATABASE_URL', 'file:./dev.db'),
+  DATABASE_URL: getRequiredEnvVar('DATABASE_URL', 'postgresql://user:password@localhost:5432/placeholder'),
   NEXTAUTH_SECRET: getRequiredEnvVar('NEXTAUTH_SECRET', 'fallback-secret-for-build'),
   NEXTAUTH_URL: getRequiredEnvVar('NEXTAUTH_URL', 'http://localhost:3000'),
   NODE_ENV: process.env.NODE_ENV || 'development',

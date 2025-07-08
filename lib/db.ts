@@ -23,12 +23,11 @@ const globalForPrisma = globalThis as unknown as {
  * - In development: reuses existing instance to prevent connection issues
  */
 export const prisma = globalForPrisma.prisma ?? (() => {
-  // Require a valid PostgreSQL database URL
-  const dbUrl = env.DATABASE_URL;
+  // Get the database URL
+  const dbUrl = env.DATABASE_URL || process.env.DATABASE_URL;
   
-  if (!dbUrl || !dbUrl.includes('postgres')) {
-    throw new Error('DATABASE_URL must be a valid PostgreSQL connection string');
-  }
+  // During builds, use placeholder URL to avoid initialization issues
+  const isBuilding = process.env.NODE_ENV === undefined || process.env.VERCEL_ENV === 'preview';
   
   console.log('Creating Prisma client with PostgreSQL connection');
   return new PrismaClient({

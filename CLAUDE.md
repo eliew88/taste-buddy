@@ -16,9 +16,9 @@ TasteBuddy is a Next.js 15 recipe sharing platform built with TypeScript, Tailwi
 
 ## Database Architecture
 
-The application uses SQLite with Prisma ORM. The schema includes:
+The application uses PostgreSQL with Prisma ORM. The schema includes:
 - **Users** - User accounts with authentication data (email, hashed password, profile info)
-- **Recipes** - Core recipe data with ingredients/tags stored as JSON strings
+- **Recipes** - Core recipe data with ingredients/tags stored as native PostgreSQL arrays
 - **Favorites** - Many-to-many relationship between users and recipes (implemented)
 - **Ratings** - User ratings for recipes (1-5 stars) - placeholder for future implementation
 
@@ -27,20 +27,21 @@ The application uses SQLite with Prisma ORM. The schema includes:
 - **Recipe → Favorites**: One-to-many (recipe can be favorited by multiple users)
 - **User ↔ Recipe**: Many-to-many through Favorites table
 
-### SQLite-Specific Considerations
+### PostgreSQL Features
 
-- Arrays (ingredients, tags) are stored as JSON strings due to SQLite limitations
-- JSON parsing/stringify is handled in API routes and helper functions
-- Search uses `contains` queries instead of full-text search
-- Use `JSON.parse()` when reading and `JSON.stringify()` when writing array fields
+- Native array support for ingredients and tags (String[] type)
+- Advanced search capabilities with `hasSome`, `hasEvery`, and `contains` operators
+- Case-insensitive text search with `mode: 'insensitive'`
+- GIN indexes for optimized array and full-text search performance
+- Better concurrent access and connection pooling
 
 ## Core Architecture
 
 ### API Layer (`app/api/`)
 - REST API endpoints using Next.js App Router
 - Centralized error handling and response formatting
-- Prisma integration for database operations
-- JSON transformation for SQLite compatibility
+- Prisma integration for PostgreSQL database operations
+- Native array handling with PostgreSQL
 
 ### Client-Side Data Management
 - **API Client** (`lib/api-client.ts`) - Centralized HTTP client with type safety
@@ -67,20 +68,20 @@ The application uses SQLite with Prisma ORM. The schema includes:
 - Pagination with configurable page size
 - Debounced search input (300ms delay)
 
-### JSON Field Handling
-Always use these patterns when working with ingredients/tags:
+### Array Field Handling
+With PostgreSQL, arrays are handled natively:
 ```typescript
 // Storing in database
 const recipeData = {
-  ingredients: JSON.stringify(ingredientsArray),
-  tags: JSON.stringify(tagsArray)
+  ingredients: ingredientsArray, // Native PostgreSQL array
+  tags: tagsArray // Native PostgreSQL array
 };
 
-// Reading from database
+// Reading from database - no transformation needed
 const recipe = {
   ...dbRecipe,
-  ingredients: JSON.parse(dbRecipe.ingredients),
-  tags: JSON.parse(dbRecipe.tags)
+  ingredients: dbRecipe.ingredients, // Already an array
+  tags: dbRecipe.tags // Already an array
 };
 ```
 

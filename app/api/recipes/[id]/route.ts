@@ -51,10 +51,9 @@ export async function GET(
             ratings: true 
           },
         },
-        // TODO: Include actual ratings when rating system is implemented
-        // ratings: {
-        //   select: { rating: true }
-        // }
+        ratings: {
+          select: { rating: true }
+        }
       },
     });
 
@@ -224,6 +223,9 @@ export async function PUT(
             ratings: true 
           },
         },
+        ratings: {
+          select: { rating: true }
+        }
       },
     });
 
