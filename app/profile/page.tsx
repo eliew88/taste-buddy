@@ -89,7 +89,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-green-700" />
         </div>
       </div>
     );
@@ -108,8 +108,8 @@ export default function ProfilePage() {
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                <User className="w-8 h-8 text-green-700" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{session.user?.name}</h1>
@@ -133,7 +133,7 @@ export default function ProfilePage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{userRecipes.length}</div>
+              <div className="text-2xl font-bold text-green-700">{userRecipes.length}</div>
               <div className="text-sm text-gray-600">Recipes Shared</div>
             </div>
             <div className="text-center">
@@ -155,7 +155,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link
             href="/recipes/new"
-            className="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-3"
+            className="bg-green-700 text-white p-4 rounded-lg hover:bg-green-800 transition-colors flex items-center space-x-3"
           >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Add New Recipe</span>
@@ -189,7 +189,7 @@ export default function ProfilePage() {
 
           {loading ? (
             <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+              <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
               <p className="text-gray-600">Loading your recipes...</p>
             </div>
           ) : userRecipes.length === 0 ? (
@@ -201,7 +201,7 @@ export default function ProfilePage() {
               </p>
               <Link
                 href="/recipes/new"
-                className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center space-x-2 bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create Your First Recipe</span>

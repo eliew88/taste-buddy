@@ -79,6 +79,21 @@
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
   }
+
+  /**
+   * Data structure for updating an existing recipe
+   * All fields are optional to allow partial updates
+   */
+  export interface UpdateRecipeData {
+    title?: string;
+    description?: string;
+    ingredients?: string[];
+    instructions?: string;
+    cookTime?: string;
+    servings?: number;
+    difficulty?: 'easy' | 'medium' | 'hard';
+    tags?: string[];
+  }
   
   /**
    * User interface - represents a registered user

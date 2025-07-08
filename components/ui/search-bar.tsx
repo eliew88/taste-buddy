@@ -190,7 +190,7 @@ export default function SearchBar({
           placeholder={placeholder}
           value={filters.search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+          className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500"
         />
         
         {/* Filter Toggle Button */}
@@ -203,7 +203,7 @@ export default function SearchBar({
             <div className="relative">
               <Filter className="w-5 h-5" />
               {activeFilterCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-green-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -234,7 +234,7 @@ export default function SearchBar({
               <select
                 value={filters.difficulty}
                 onChange={(e) => handleDifficultyChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
               >
                 <option value="">Any difficulty</option>
                 <option value="easy">Easy</option>
@@ -254,11 +254,11 @@ export default function SearchBar({
                   placeholder="e.g. 30"
                   value={tempCookTime}
                   onChange={(e) => setTempCookTime(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
                 />
                 <button
                   onClick={handleCookTimeApply}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-3 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 transition-colors"
                 >
                   Apply
                 </button>
@@ -276,11 +276,11 @@ export default function SearchBar({
                   placeholder="e.g. 4"
                   value={tempServings}
                   onChange={(e) => setTempServings(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
                 />
                 <button
                   onClick={handleServingsApply}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-3 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 transition-colors"
                 >
                   Apply
                 </button>
@@ -300,7 +300,7 @@ export default function SearchBar({
                   onClick={() => handleTagToggle(tag)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                     filters.tags.includes(tag)
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-green-700 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -315,7 +315,7 @@ export default function SearchBar({
             <div className="flex justify-end">
               <button
                 onClick={clearAllFilters}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="text-purple-700 hover:text-purple-900 text-sm font-medium"
               >
                 Clear all filters
               </button>
@@ -328,11 +328,11 @@ export default function SearchBar({
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap gap-2">
           {filters.search && (
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
               Search: &quot;{filters.search}&quot;
               <button
                 onClick={() => removeFilter('search')}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                className="ml-2 text-purple-700 hover:text-purple-900"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -340,11 +340,11 @@ export default function SearchBar({
           )}
 
           {filters.difficulty && (
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
               Difficulty: {filters.difficulty}
               <button
                 onClick={() => removeFilter('difficulty')}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                className="ml-2 text-purple-700 hover:text-purple-900"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -354,12 +354,12 @@ export default function SearchBar({
           {filters.tags.map((tag) => (
             <span
               key={tag}
-              className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+              className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center"
             >
               Tag: {tag}
               <button
                 onClick={() => removeFilter('tag', tag)}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                className="ml-2 text-purple-700 hover:text-purple-900"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -367,11 +367,11 @@ export default function SearchBar({
           ))}
 
           {filters.cookTimeMax && (
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
               Max time: {filters.cookTimeMax}m
               <button
                 onClick={() => removeFilter('cookTime')}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                className="ml-2 text-purple-700 hover:text-purple-900"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -379,11 +379,11 @@ export default function SearchBar({
           )}
 
           {filters.servingsMin && (
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+            <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center">
               Min servings: {filters.servingsMin}
               <button
                 onClick={() => removeFilter('servings')}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                className="ml-2 text-purple-700 hover:text-purple-900"
               >
                 <X className="w-3 h-3" />
               </button>

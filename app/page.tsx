@@ -112,7 +112,7 @@ const EmptyState = ({
         {isAuthenticated ? (
           <Link 
             href="/recipes/new"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center"
+            className="bg-green-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-800 transition-colors inline-flex items-center"
           >
             <Plus className="w-5 h-5 mr-2" />
             {hasFilters ? 'Add Recipe' : 'Share First Recipe'}
@@ -121,14 +121,14 @@ const EmptyState = ({
           <div className="flex space-x-4">
             <Link 
               href="/auth/signin"
-              className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors inline-flex items-center"
+              className="border border-purple-700 text-purple-700 px-6 py-3 rounded-lg font-semibold hover:bg-purple-100 transition-colors inline-flex items-center"
             >
               <LogIn className="w-5 h-5 mr-2" />
               Sign In
             </Link>
             <Link 
               href="/auth/signup"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors inline-flex items-center"
+              className="bg-green-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-800 transition-colors inline-flex items-center"
             >
               <Plus className="w-5 h-5 mr-2" />
               Join TasteBuddy
@@ -210,7 +210,7 @@ export default function HomePage() {
                   placeholder="Search recipes, ingredients, or tags..."
                   value={searchTerm}
                   onChange={(e) => handleSearchWithLoading(e.target.value)}
-                  className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 shadow-sm"
+                  className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500 shadow-sm"
                 />
                 {searchLoading && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -223,7 +223,7 @@ export default function HomePage() {
                 <select
                   value={difficulty}
                   onChange={(e) => handleDifficultyChange(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white shadow-sm"
                 >
                   <option value="">All Difficulties</option>
                   <option value="easy">Easy</option>

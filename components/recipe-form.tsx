@@ -308,7 +308,7 @@ export default function RecipeForm({
             </button>
             
             {isDirty && !isEditing && (
-              <div className="flex items-center text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-full">
+              <div className="flex items-center text-sm text-gray-600 bg-purple-100 px-3 py-1 rounded-full">
                 <Save className="w-4 h-4 mr-1" />
                 Draft auto-saved
               </div>
@@ -328,7 +328,7 @@ export default function RecipeForm({
           {/* Basic Information */}
           <section className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <List className="w-5 h-5 mr-2 text-blue-600" />
+              <List className="w-5 h-5 mr-2 text-green-700" />
               Basic Information
             </h2>
             
@@ -342,7 +342,7 @@ export default function RecipeForm({
                   type="text"
                   value={formData.title}
                   onChange={(e) => updateFormData({ title: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                     errors.title ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="e.g., Grandma's Chocolate Chip Cookies"
@@ -364,7 +364,7 @@ export default function RecipeForm({
                   value={formData.description}
                   onChange={(e) => updateFormData({ description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
                   placeholder="Tell us about this recipe - what makes it special?"
                 />
               </div>
@@ -379,7 +379,7 @@ export default function RecipeForm({
                   type="text"
                   value={formData.cookTime}
                   onChange={(e) => updateFormData({ cookTime: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
                   placeholder="e.g., 30 mins, 1h 15m"
                 />
               </div>
@@ -398,7 +398,7 @@ export default function RecipeForm({
                   onChange={(e) => updateFormData({ 
                     servings: e.target.value ? parseInt(e.target.value) : undefined 
                   })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                     errors.servings ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="4"
@@ -423,7 +423,7 @@ export default function RecipeForm({
                         value={level}
                         checked={formData.difficulty === level}
                         onChange={(e) => updateFormData({ difficulty: e.target.value as 'easy' | 'medium' | 'hard' })}
-                        className="mr-2 text-blue-600"
+                        className="mr-2 text-green-700"
                       />
                       <span className="capitalize">{level}</span>
                     </label>
@@ -447,7 +447,7 @@ export default function RecipeForm({
                     type="text"
                     value={ingredient}
                     onChange={(e) => updateIngredient(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
                     placeholder="e.g., 2 cups all-purpose flour"
                   />
                   {formData.ingredients.length > 1 && (
@@ -465,7 +465,7 @@ export default function RecipeForm({
               <button
                 type="button"
                 onClick={addIngredient}
-                className="flex items-center text-blue-600 hover:text-blue-700 text-sm"
+                className="flex items-center text-green-700 hover:text-green-800 text-sm"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Add Ingredient
@@ -490,7 +490,7 @@ export default function RecipeForm({
               value={formData.instructions}
               onChange={(e) => updateFormData({ instructions: e.target.value })}
               rows={8}
-              className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                 errors.instructions ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Provide step-by-step instructions for preparing this recipe..."
@@ -507,7 +507,7 @@ export default function RecipeForm({
           {/* Tags */}
           <section className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <Tag className="w-5 h-5 mr-2 text-blue-600" />
+              <Tag className="w-5 h-5 mr-2 text-green-700" />
               Tags
             </h2>
             
@@ -518,13 +518,13 @@ export default function RecipeForm({
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center"
+                      className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        className="ml-2 text-green-700 hover:text-green-900"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -541,14 +541,14 @@ export default function RecipeForm({
                 value={currentTag}
                 onChange={(e) => setCurrentTag(e.target.value)}
                 onKeyPress={handleTagKeyPress}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
                 placeholder="Add a tag (e.g., vegetarian, quick, dessert)"
               />
               <button
                 type="button"
                 onClick={addTag}
                 disabled={!currentTag.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add
               </button>

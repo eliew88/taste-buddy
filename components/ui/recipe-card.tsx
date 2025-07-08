@@ -159,7 +159,7 @@
          {/* Header with title and favorite button */}
          <header className="flex justify-between items-start mb-4">
            <Link href={`/recipes/${recipe.id}`} className="flex-1 group">
-             <h3 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
+             <h3 className="text-xl font-semibold text-gray-800 group-hover:text-green-700 transition-colors line-clamp-2">
                {recipe.title}
              </h3>
            </Link>

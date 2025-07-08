@@ -10,7 +10,7 @@
  */
 
 // lib/api-client.ts
-import { Recipe, CreateRecipeData } from '@/types/recipe';
+import { Recipe, CreateRecipeData, UpdateRecipeData } from '@/types/recipe';
 
 /**
  * Standard API response wrapper interface
@@ -231,7 +231,7 @@ class ApiClient {
    * });
    * ```
    */
-  async updateRecipe(id: string, data: Partial<CreateRecipeData>): Promise<ApiResponse<Recipe>> {
+  async updateRecipe(id: string, data: UpdateRecipeData): Promise<ApiResponse<Recipe>> {
     return this.request<ApiResponse<Recipe>>(`/recipes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

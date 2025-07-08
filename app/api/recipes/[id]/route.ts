@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
 
 /**
  * GET /api/recipes/[id]
@@ -92,8 +93,7 @@ export async function GET(
 /**
  * PUT /api/recipes/[id]
  * 
- * Updates an existing recipe. Only the recipe author should be able
- * to update their recipes (TODO: implement authorization).
+ * Updates an existing recipe. Only the recipe author can update their recipes.
  * 
  * @param request - Next.js request object with recipe data
  * @param params - Route parameters containing the recipe ID
@@ -126,14 +126,22 @@ export async function PUT(
       );
     }
 
-    // TODO: Add authorization check
-    // Verify that the current user is the author of the recipe
-    // if (existingRecipe.authorId !== currentUserId) {
-    //   return NextResponse.json(
-    //     { success: false, error: 'Unauthorized' },
-    //     { status: 403 }
-    //   );
-    // }
+    // Authorization check - only recipe author can update
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (existingRecipe.authorId !== userId) {
+      return NextResponse.json(
+        { success: false, error: 'Only the recipe author can edit this recipe' },
+        { status: 403 }
+      );
+    }
 
     const { 
       title, 
@@ -170,7 +178,8 @@ export async function PUT(
           { status: 400 }
         );
       }
-      updateData.ingredients = JSON.stringify(ingredients);
+      // PostgreSQL native array support
+      updateData.ingredients = Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean);
     }
 
     if (instructions !== undefined) {
@@ -202,7 +211,8 @@ export async function PUT(
     }
 
     if (tags !== undefined) {
-      updateData.tags = JSON.stringify(tags || []);
+      // PostgreSQL native array support
+      updateData.tags = Array.isArray(tags) ? tags : [];
     }
 
     // Update recipe
@@ -257,8 +267,7 @@ export async function PUT(
 /**
  * DELETE /api/recipes/[id]
  * 
- * Deletes a recipe. Only the recipe author should be able to delete
- * their recipes (TODO: implement authorization).
+ * Deletes a recipe. Only the recipe author can delete their recipes.
  * 
  * @param request - Next.js request object
  * @param params - Route parameters containing the recipe ID
@@ -290,14 +299,22 @@ export async function DELETE(
       );
     }
 
-    // TODO: Add authorization check
-    // Verify that the current user is the author of the recipe
-    // if (existingRecipe.authorId !== currentUserId) {
-    //   return NextResponse.json(
-    //     { success: false, error: 'Unauthorized' },
-    //     { status: 403 }
-    //   );
-    // }
+    // Authorization check - only recipe author can delete
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (existingRecipe.authorId !== userId) {
+      return NextResponse.json(
+        { success: false, error: 'Only the recipe author can delete this recipe' },
+        { status: 403 }
+      );
+    }
 
     // Delete recipe (this will also delete related favorites and ratings due to CASCADE)
     await prisma.recipe.delete({

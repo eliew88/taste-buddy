@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Heart, Plus, Menu, X, User, Home, ChefHat, Sparkles, LogOut, LogIn } from 'lucide-react';
+import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn } from 'lucide-react';
 
 /**
  * Navigation Component
@@ -50,7 +50,7 @@ export default function Navigation() {
    */
   const getLinkClasses = (href: string): string => {
     const baseClasses = 'transition-colors duration-200';
-    const activeClasses = 'text-blue-600 bg-blue-50';
+    const activeClasses = 'text-purple-700 bg-purple-100';
     const inactiveClasses = 'text-gray-600 hover:text-gray-900 hover:bg-gray-50';
     
     return `${baseClasses} ${isActiveLink(href) ? activeClasses : inactiveClasses}`;
@@ -77,11 +77,11 @@ export default function Navigation() {
           {/* Brand Logo */}
           <Link 
             href="/" 
-            className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="text-2xl font-bold text-green-700 hover:text-green-800 transition-colors"
             aria-label="TasteBuddy Home"
           >
             <div className="flex items-center space-x-2">
-              <ChefHat className="w-8 h-8" />
+              <span className="text-3xl">👅</span>
               <span>TasteBuddy</span>
             </div>
           </Link>
@@ -120,7 +120,7 @@ export default function Navigation() {
                 {/* Primary CTA Button */}
                 <Link 
                   href="/recipes/new" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
+                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Recipe
@@ -160,7 +160,7 @@ export default function Navigation() {
                 
                 <Link 
                   href="/auth/signup" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
+                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Sign Up
@@ -229,7 +229,7 @@ export default function Navigation() {
                   {/* Mobile CTA Button */}
                   <Link
                     href="/recipes/new"
-                    className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    className="mx-3 mt-2 bg-green-700 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-green-800 transition-colors flex items-center justify-center"
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
@@ -265,7 +265,7 @@ export default function Navigation() {
                   
                   <Link
                     href="/auth/signup"
-                    className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    className="mx-3 mt-2 bg-green-700 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-green-800 transition-colors flex items-center justify-center"
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >

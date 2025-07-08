@@ -99,7 +99,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         <div className="text-gray-500">{icon}</div>
         <span className="font-medium text-gray-900">{title}</span>
         {badgeCount !== undefined && badgeCount > 0 && (
-          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+          <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
             {badgeCount}
           </span>
         )}
@@ -157,7 +157,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 type="checkbox"
                 checked={selectedValues.includes(option.value)}
                 onChange={() => handleToggle(option.value)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-gray-300 text-purple-700 focus:ring-green-600"
               />
               <span className="text-sm text-gray-700 capitalize">{option.label}</span>
             </div>
@@ -216,7 +216,7 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
         
         {/* Active range */}
         <div 
-          className="absolute top-3 h-1 bg-blue-500 rounded"
+          className="absolute top-3 h-1 bg-green-600 rounded"
           style={{
             left: `${((value[0] - min) / (max - min)) * 100}%`,
             width: `${((value[1] - value[0]) / (max - min)) * 100}%`
@@ -247,13 +247,13 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
         
         {/* Min handle */}
         <div
-          className="absolute top-2 w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
+          className="absolute top-2 w-3 h-3 bg-green-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
           style={{ left: `${((value[0] - min) / (max - min)) * 100}%` }}
         ></div>
         
         {/* Max handle */}
         <div
-          className="absolute top-2 w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
+          className="absolute top-2 w-3 h-3 bg-green-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
           style={{ left: `${((value[1] - min) / (max - min)) * 100}%` }}
         ></div>
       </div>
@@ -370,7 +370,7 @@ export default function AdvancedSearchFilters({
             <Filter className="w-5 h-5 text-gray-500" />
             <h3 className="font-semibold text-gray-900">Filters</h3>
             {activeFilterCount > 0 && (
-              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+              <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
                 {activeFilterCount}
               </span>
             )}
@@ -379,7 +379,7 @@ export default function AdvancedSearchFilters({
           {activeFilterCount > 0 && (
             <button
               onClick={onResetFilters}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1"
+              className="text-sm text-purple-700 hover:text-purple-900 font-medium flex items-center space-x-1"
             >
               <X className="w-3 h-3" />
               <span>Clear all</span>
@@ -521,7 +521,7 @@ export default function AdvancedSearchFilters({
                 onChange={(e) => updateFilters({
                   dateRange: { ...filters.dateRange, start: e.target.value || null }
                 })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-green-600 focus:border-green-600"
               />
             </div>
             
@@ -535,7 +535,7 @@ export default function AdvancedSearchFilters({
                 onChange={(e) => updateFilters({
                   dateRange: { ...filters.dateRange, end: e.target.value || null }
                 })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-green-600 focus:border-green-600"
               />
             </div>
             
@@ -544,7 +544,7 @@ export default function AdvancedSearchFilters({
                 onClick={() => updateFilters({
                   dateRange: { start: null, end: null }
                 })}
-                className="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+                className="text-sm text-purple-700 hover:text-purple-900 flex items-center space-x-1"
               >
                 <X className="w-3 h-3" />
                 <span>Clear date range</span>
@@ -562,14 +562,14 @@ export default function AdvancedSearchFilters({
             {filters.difficulty.map(diff => (
               <span
                 key={diff}
-                className="inline-flex items-center space-x-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full"
+                className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full"
               >
                 <span className="capitalize">{diff}</span>
                 <button
                   onClick={() => updateFilters({
                     difficulty: filters.difficulty.filter(d => d !== diff)
                   })}
-                  className="hover:text-blue-900 transition-colors"
+                  className="hover:text-green-900 transition-colors"
                   aria-label={`Remove ${diff} filter`}
                 >
                   <X className="w-3 h-3" />
@@ -580,7 +580,7 @@ export default function AdvancedSearchFilters({
             {filters.ingredients.map(ingredient => (
               <span
                 key={ingredient}
-                className="inline-flex items-center space-x-1 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full"
+                className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full"
               >
                 <span>{ingredient}</span>
                 <button
@@ -605,7 +605,7 @@ export default function AdvancedSearchFilters({
                   onClick={() => updateFilters({
                     tags: filters.tags.filter(t => t !== tag)
                   })}
-                  className="hover:text-purple-900 transition-colors"
+                  className="hover:text-green-900 transition-colors"
                   aria-label={`Remove ${tag} filter`}
                 >
                   <X className="w-3 h-3" />
@@ -628,7 +628,7 @@ export default function AdvancedSearchFilters({
             
             {(filters.cookTimeRange[0] > (filterOptions?.cookTimeStats.min || 0) || 
               filters.cookTimeRange[1] < (filterOptions?.cookTimeStats.max || 300)) && (
-              <span className="inline-flex items-center space-x-1 bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-1 rounded-full">
+              <span className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
                 <span>
                   {formatCookTime(filters.cookTimeRange[0])}-{formatCookTime(filters.cookTimeRange[1])}
                 </span>
@@ -636,7 +636,7 @@ export default function AdvancedSearchFilters({
                   onClick={() => updateFilters({ 
                     cookTimeRange: [filterOptions?.cookTimeStats.min || 0, filterOptions?.cookTimeStats.max || 300] 
                   })}
-                  className="hover:text-indigo-900 transition-colors"
+                  className="hover:text-green-900 transition-colors"
                   aria-label="Remove cook time filter"
                 >
                   <X className="w-3 h-3" />
@@ -646,7 +646,7 @@ export default function AdvancedSearchFilters({
             
             {(filters.servingsRange[0] > (filterOptions?.servingsStats.min || 1) || 
               filters.servingsRange[1] < (filterOptions?.servingsStats.max || 12)) && (
-              <span className="inline-flex items-center space-x-1 bg-pink-100 text-pink-800 text-xs font-medium px-2 py-1 rounded-full">
+              <span className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
                 <span>
                   {filters.servingsRange[0]}-{filters.servingsRange[1]} servings
                 </span>
@@ -654,7 +654,7 @@ export default function AdvancedSearchFilters({
                   onClick={() => updateFilters({ 
                     servingsRange: [filterOptions?.servingsStats.min || 1, filterOptions?.servingsStats.max || 12] 
                   })}
-                  className="hover:text-pink-900 transition-colors"
+                  className="hover:text-green-900 transition-colors"
                   aria-label="Remove servings filter"
                 >
                   <X className="w-3 h-3" />

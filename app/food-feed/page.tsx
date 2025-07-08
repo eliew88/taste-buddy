@@ -364,7 +364,7 @@ export default function FoodFeedPage() {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <Link 
             href="/"
-            className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors group"
+            className="inline-flex items-center text-gray-600 hover:text-green-700 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
             <Home className="w-4 h-4 mr-2" />
@@ -394,13 +394,13 @@ export default function FoodFeedPage() {
                   value={localQuery}
                   onChange={(e) => setLocalQuery(e.target.value)}
                   placeholder="Search recipes, ingredients, or tags..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+                className="px-6 py-3 bg-green-700 text-white rounded-lg hover:bg-green-800 focus:ring-2 focus:ring-green-600 disabled:opacity-50 transition-colors"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -462,7 +462,7 @@ export default function FoodFeedPage() {
                 </h2>
                 
                 {activeFilterCount > 0 && (
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                  <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
                     {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
                   </span>
                 )}
@@ -478,7 +478,7 @@ export default function FoodFeedPage() {
                   <Filter className="w-4 h-4 mr-2" />
                   Filters
                   {activeFilterCount > 0 && (
-                    <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded-full">
+                    <span className="ml-2 bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded-full">
                       {activeFilterCount}
                     </span>
                   )}
@@ -488,7 +488,7 @@ export default function FoodFeedPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                 >
                   {sortOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -501,13 +501,13 @@ export default function FoodFeedPage() {
                 <div className="flex border border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleViewModeChange('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                    className={`p-2 ${viewMode === 'grid' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleViewModeChange('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                    className={`p-2 ${viewMode === 'list' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -532,7 +532,7 @@ export default function FoodFeedPage() {
             {/* Loading State */}
             {loading && (
               <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
                 <p className="text-gray-600">Searching for delicious recipes...</p>
               </div>
             )}
@@ -545,7 +545,7 @@ export default function FoodFeedPage() {
                 <p className="text-gray-600 mb-4">{error}</p>
                 <button
                   onClick={performSearch}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
                 >
                   Try Again
                 </button>
@@ -583,7 +583,7 @@ export default function FoodFeedPage() {
                 {activeFilterCount > 0 && (
                   <button
                     onClick={handleResetFilters}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
                   >
                     Clear all filters
                   </button>

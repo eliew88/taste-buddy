@@ -165,7 +165,7 @@ export default function FavoritesPage() {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-green-700" />
         </div>
       </div>
     );
@@ -205,7 +205,7 @@ export default function FavoritesPage() {
                   placeholder="Search your favorites..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                 />
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function FavoritesPage() {
               <select
                 value={selectedDifficulty}
                 onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
               >
                 <option value="">All Difficulties</option>
                 <option value="easy">Easy</option>
@@ -229,7 +229,7 @@ export default function FavoritesPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -242,13 +242,13 @@ export default function FavoritesPage() {
             <div className="flex border border-gray-300 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -262,19 +262,19 @@ export default function FavoritesPage() {
                 <Filter className="w-4 h-4" />
                 <span>Filters active:</span>
                 {searchTerm && (
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
                     Search: &quot;{searchTerm}&quot;
                   </span>
                 )}
                 {selectedDifficulty && (
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded capitalize">
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded capitalize">
                     {selectedDifficulty}
                   </span>
                 )}
               </div>
               <button
                 onClick={clearFilters}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-purple-700 hover:text-purple-800 font-medium"
               >
                 Clear filters
               </button>
@@ -285,7 +285,7 @@ export default function FavoritesPage() {
         {/* Content */}
         {loading ? (
           <div className="text-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+            <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
             <p className="text-gray-600">Loading your favorites...</p>
           </div>
         ) : error ? (
@@ -295,7 +295,7 @@ export default function FavoritesPage() {
             <p className="text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
             >
               Try Again
             </button>
@@ -315,14 +315,14 @@ export default function FavoritesPage() {
               {(searchTerm || selectedDifficulty) && (
                 <button
                   onClick={clearFilters}
-                  className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="border border-purple-700 text-purple-700 px-6 py-3 rounded-lg hover:bg-purple-100 transition-colors"
                 >
                   Clear Filters
                 </button>
               )}
               <Link
                 href="/food-feed"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
+                className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-800 transition-colors inline-flex items-center"
               >
                 <Search className="w-5 h-5 mr-2" />
                 Discover Recipes

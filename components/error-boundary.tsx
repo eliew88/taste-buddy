@@ -219,7 +219,7 @@ User Agent: ${navigator.userAgent}
               <div className="space-y-3">
                 <button
                   onClick={this.handleRetry}
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  className="w-full bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center justify-center"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Try Again

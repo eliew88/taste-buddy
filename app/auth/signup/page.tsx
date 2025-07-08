@@ -132,7 +132,7 @@ export default function SignUpPage() {
               <p className="text-gray-600 mb-4">
                 Your account has been created successfully. You&apos;re being signed in...
               </p>
-              <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
+              <Loader2 className="w-6 h-6 animate-spin text-green-700 mx-auto" />
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function SignUpPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <Link href="/" className="flex justify-center">
-          <div className="flex items-center space-x-2 text-blue-600">
+          <div className="flex items-center space-x-2 text-green-700">
             <ChefHat className="w-8 h-8" />
             <span className="text-2xl font-bold">TasteBuddy</span>
           </div>
@@ -185,7 +185,7 @@ export default function SignUpPage() {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-600 focus:border-green-600"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -207,7 +207,7 @@ export default function SignUpPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-600 focus:border-green-600"
                   placeholder="Enter your email"
                 />
               </div>
@@ -229,7 +229,7 @@ export default function SignUpPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-600 focus:border-green-600"
                   placeholder="Create a password"
                 />
               </div>
@@ -254,7 +254,7 @@ export default function SignUpPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-600 focus:border-green-600"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -264,7 +264,7 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? (
                   <>
@@ -282,7 +282,7 @@ export default function SignUpPage() {
             <div className="text-center">
               <span className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link href="/auth/signin" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link href="/auth/signin" className="font-medium text-green-700 hover:text-green-600">
                   Sign in
                 </Link>
               </span>

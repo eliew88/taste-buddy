@@ -83,7 +83,7 @@ export default function SignInPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <Link href="/" className="flex justify-center">
-          <div className="flex items-center space-x-2 text-blue-600">
+          <div className="flex items-center space-x-2 text-green-700">
             <ChefHat className="w-8 h-8" />
             <span className="text-2xl font-bold">TasteBuddy</span>
           </div>
@@ -100,27 +100,27 @@ export default function SignInPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {/* Demo Users Section */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-900 mb-3">Demo Users (Click to Login)</h3>
+          <div className="mb-6 p-4 bg-purple-100 rounded-lg">
+            <h3 className="text-sm font-medium text-purple-900 mb-3">Demo Users (Click to Login)</h3>
             <div className="space-y-2">
               <button
                 onClick={() => handleDemoLogin('sarah@example.com')}
                 disabled={loading}
-                className="w-full text-left text-sm text-blue-700 hover:text-blue-900 p-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50"
+                className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
               >
                 <strong>Sarah Chen</strong> - Recipe Creator
               </button>
               <button
                 onClick={() => handleDemoLogin('mike@example.com')}
                 disabled={loading}
-                className="w-full text-left text-sm text-blue-700 hover:text-blue-900 p-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50"
+                className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
               >
                 <strong>Mike Rodriguez</strong> - Food Enthusiast
               </button>
               <button
                 onClick={() => handleDemoLogin('david@example.com')}
                 disabled={loading}
-                className="w-full text-left text-sm text-blue-700 hover:text-blue-900 p-2 rounded hover:bg-blue-100 transition-colors disabled:opacity-50"
+                className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
               >
                 <strong>David Kim</strong> - Cooking Expert
               </button>
@@ -161,7 +161,7 @@ export default function SignInPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-600 focus:border-green-600"
                   placeholder="Enter your email"
                 />
               </div>
@@ -183,7 +183,7 @@ export default function SignInPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-600 focus:border-green-600"
                   placeholder="Enter your password"
                 />
               </div>
@@ -193,7 +193,7 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? (
                   <>
@@ -211,7 +211,7 @@ export default function SignInPage() {
             <div className="text-center">
               <span className="text-sm text-gray-600">
                 Don&apos;t have an account?{' '}
-                <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link href="/auth/signup" className="font-medium text-green-700 hover:text-green-600">
                   Sign up
                 </Link>
               </span>

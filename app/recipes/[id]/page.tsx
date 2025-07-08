@@ -20,6 +20,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { 
   ArrowLeft, 
   Clock, 
@@ -31,7 +32,8 @@ import {
   User,
   AlertCircle,
   Printer,
-  Share2
+  Share2,
+  Edit
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
@@ -141,7 +143,7 @@ const ErrorDisplay = ({
         <div className="flex space-x-3 justify-center">
           <button
             onClick={onRetry}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
           >
             Try Again
           </button>
@@ -162,6 +164,7 @@ const ErrorDisplay = ({
  */
 export default function RecipeDetailPage() {
   const params = useParams();
+  const { data: session } = useSession();
   const recipeId = params.id as string;
 
   // State management
@@ -297,6 +300,16 @@ export default function RecipeDetailPage() {
             </Link>
             
             <div className="flex items-center space-x-3">
+              {/* Edit button - only show if user is the recipe author */}
+              {session?.user?.id === recipe.authorId && (
+                <Link
+                  href={`/recipes/${recipeId}/edit`}
+                  className="flex items-center space-x-2 bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Edit</span>
+                </Link>
+              )}
               <button
                 onClick={handlePrint}
                 className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -403,7 +416,7 @@ export default function RecipeDetailPage() {
                     <p key={index} className="mb-4 leading-relaxed">
                       {step.trim() && (
                         <>
-                          <span className="font-semibold text-blue-600">
+                          <span className="font-semibold text-green-700">
                             {index + 1}.
                           </span>{' '}
                           {step.trim()}
@@ -460,7 +473,7 @@ export default function RecipeDetailPage() {
               <ol className="space-y-2">
                 {recipe.ingredients.map((ingredient, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="min-w-6 h-6 bg-blue-600 text-white text-sm font-medium rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                    <span className="min-w-6 h-6 bg-green-700 text-white text-sm font-medium rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                       {index + 1}
                     </span>
                     <span className="text-gray-700">{ingredient}</span>
@@ -477,7 +490,7 @@ export default function RecipeDetailPage() {
                   {recipe.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
+                      className="bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full"
                     >
                       {tag}
                     </span>

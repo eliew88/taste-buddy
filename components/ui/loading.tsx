@@ -25,7 +25,7 @@ import { Loader2 } from 'lucide-react';
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  color?: 'blue' | 'gray' | 'white';
+  color?: 'green' | 'gray' | 'white';
 }
 
 /**
@@ -36,12 +36,12 @@ interface LoadingSpinnerProps {
  * 
  * @param size - Spinner size (sm: 16px, md: 24px, lg: 32px, xl: 48px)
  * @param className - Additional CSS classes
- * @param color - Color theme (blue, gray, white)
+ * @param color - Color theme (green, gray, white)
  */
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
   size = 'md', 
   className = '',
-  color = 'blue'
+  color = 'green'
 }) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -51,7 +51,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const colorClasses = {
-    blue: 'text-blue-600',
+    green: 'text-green-700',
     gray: 'text-gray-600',
     white: 'text-white',
   };
@@ -103,9 +103,9 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantClasses = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    primary: 'bg-green-700 text-white hover:bg-green-800 focus:ring-green-600',
     secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-green-600',
   };
 
   const sizeClasses = {
@@ -252,7 +252,7 @@ export const LoadingPage: React.FC<LoadingPageProps> = ({
       <div className="text-center">
         {showLogo && (
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-blue-600 mb-2">TasteBuddy</h1>
+            <h1 className="text-4xl font-bold text-green-700 mb-2">TasteBuddy</h1>
             <p className="text-gray-600">Your Personal Recipe Companion</p>
           </div>
         )}
@@ -265,7 +265,7 @@ export const LoadingPage: React.FC<LoadingPageProps> = ({
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"
+              className="w-2 h-2 bg-green-700 rounded-full animate-pulse"
               style={{
                 animationDelay: `${index * 0.2}s`,
                 animationDuration: '1s',
