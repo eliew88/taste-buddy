@@ -347,7 +347,7 @@ export default function FoodFeedPage() {
     if (searchQuery || activeFilterCount > 0) {
       performSearch();
     }
-  }, [searchQuery, filters, sortBy, currentPage, resultsPerPage]);
+  }, [searchQuery, filters, sortBy, currentPage, resultsPerPage, activeFilterCount]);
 
   // Initial load - fetch some default recipes
   useEffect(() => {

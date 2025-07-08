@@ -17,6 +17,11 @@ export async function GET() {
     nextAuthSecret: process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET',
     nextAuthUrl: process.env.NEXTAUTH_URL || 'NOT SET',
     errors: [] as string[],
+    userCount: 0,
+    demoUsers: [] as Array<{ email: string; id: string; hasPassword: boolean; passwordLength: number }>,
+    demoPasswordTest: {} as Record<string, unknown>,
+    canCreateUsers: false,
+    databaseConnected: true,
   };
 
   try {
@@ -24,6 +29,22 @@ export async function GET() {
     console.log('[Debug] Testing database connection...');
     const userCount = await prisma.user.count();
     debug.userCount = userCount;
+    
+    // Test if demo users exist
+    const demoUsers = await prisma.user.findMany({
+      where: {
+        email: {
+          in: ['sarah@example.com', 'mike@example.com', 'david@example.com']
+        }
+      },
+      select: { email: true, id: true, password: true }
+    });
+    debug.demoUsers = demoUsers.map(user => ({
+      email: user.email,
+      id: user.id,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length || 0
+    }));
     
     // Test a sample demo user password
     if (demoUsers.length > 0) {
@@ -44,22 +65,6 @@ export async function GET() {
         };
       }
     }
-    
-    // Test if demo users exist
-    const demoUsers = await prisma.user.findMany({
-      where: {
-        email: {
-          in: ['sarah@example.com', 'mike@example.com', 'david@example.com']
-        }
-      },
-      select: { email: true, id: true, password: true }
-    });
-    debug.demoUsers = demoUsers.map(user => ({
-      email: user.email,
-      id: user.id,
-      hasPassword: !!user.password,
-      passwordLength: user.password?.length || 0
-    }));
     
     // Test user creation (dry run)
     const testEmail = `test-${Date.now()}@example.com`;
