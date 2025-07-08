@@ -167,7 +167,11 @@ class ApiClient {
     if (params.limit) searchParams.append('limit', params.limit.toString());
 
     const queryString = searchParams.toString();
-    const endpoint = `/recipes${queryString ? `?${queryString}` : ''}`;
+    
+    // Use search endpoint when there are search parameters, otherwise use regular endpoint
+    const hasSearchParams = params.search || params.difficulty;
+    const baseEndpoint = hasSearchParams ? '/recipes/search' : '/recipes';
+    const endpoint = `${baseEndpoint}${queryString ? `?${queryString}` : ''}`;
     
     return this.request<RecipeListResponse>(endpoint);
   }
