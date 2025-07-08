@@ -457,14 +457,16 @@ export default function RecipeDetailPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Ingredients ({recipe.ingredients.length})
               </h3>
-              <ul className="space-y-2">
+              <ol className="space-y-2">
                 {recipe.ingredients.map((ingredient, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                    <span className="min-w-6 h-6 bg-blue-600 text-white text-sm font-medium rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                      {index + 1}
+                    </span>
                     <span className="text-gray-700">{ingredient}</span>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
 
             {/* Tags */}

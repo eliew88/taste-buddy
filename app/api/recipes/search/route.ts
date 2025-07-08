@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { isPostgreSQL, transformRecipeFromDB } from '@/lib/db-helpers';
 
 /**
  * Enhanced search parameters validation schema
@@ -66,18 +67,48 @@ function parseCookTimeToMinutes(cookTime?: string): number | null {
 }
 
 /**
- * SQLite helper functions for array handling
+ * Build search conditions for ingredients and tags based on database type
  */
-function transformRecipeFromDB(recipe: Record<string, unknown>) {
-  return {
-    ...recipe,
-    ingredients: typeof recipe.ingredients === 'string' 
-      ? JSON.parse(recipe.ingredients) 
-      : recipe.ingredients,
-    tags: typeof recipe.tags === 'string' 
-      ? JSON.parse(recipe.tags) 
-      : recipe.tags,
-  };
+function buildArraySearchConditions(field: 'ingredients' | 'tags', searchTerms: string[]) {
+  const isPostgres = isPostgreSQL();
+  
+  if (isPostgres) {
+    // PostgreSQL: Use array operations for native arrays
+    return searchTerms.map(term => ({
+      [field]: { hasSome: [term.toLowerCase()] }
+    }));
+  } else {
+    // SQLite: Use string contains for JSON strings
+    return searchTerms.map(term => ({
+      [field]: { contains: term.toLowerCase() }
+    }));
+  }
+}
+
+/**
+ * Build text search conditions based on database type
+ */
+function buildTextSearchConditions(query: string) {
+  const isPostgres = isPostgreSQL();
+  const searchQuery = query.toLowerCase();
+  
+  if (isPostgres) {
+    // PostgreSQL: Use array operations for ingredients/tags, contains for text fields
+    return [
+      { title: { contains: query, mode: 'insensitive' as const } },
+      { description: { contains: query, mode: 'insensitive' as const } },
+      { ingredients: { hasSome: [searchQuery] } },
+      { tags: { hasSome: [searchQuery] } },
+    ];
+  } else {
+    // SQLite: Use contains for all fields (JSON strings for arrays)
+    return [
+      { title: { contains: query } },
+      { description: { contains: query } },
+      { ingredients: { contains: searchQuery } },
+      { tags: { contains: searchQuery } },
+    ];
+  }
 }
 
 /**
@@ -128,26 +159,10 @@ export async function GET(request: NextRequest) {
     const whereClause: Prisma.RecipeWhereInput = {};
     const searchConditions: Record<string, unknown>[] = [];
     
-    // Handle text search with case-insensitive approach
+    // Handle text search with database-specific approach
     if (params.query) {
-      const searchQuery = params.query.toLowerCase();
-      
-      // Use raw SQL for truly case-insensitive search
-      // const searchSql = Prisma.sql`
-      //   (LOWER(title) LIKE LOWER(${'%' + params.query + '%'}) OR 
-      //    LOWER(description) LIKE LOWER(${'%' + params.query + '%'}) OR 
-      //    LOWER(ingredients) LIKE LOWER(${'%' + params.query + '%'}) OR 
-      //    LOWER(tags) LIKE LOWER(${'%' + params.query + '%'}))
-      // `;
-      
-      // For now, let's use a simpler approach that works with the Prisma client
       searchConditions.push({
-        OR: [
-          { title: { contains: params.query } },
-          { description: { contains: params.query } },
-          { ingredients: { contains: searchQuery } },
-          { tags: { contains: searchQuery } },
-        ],
+        OR: buildTextSearchConditions(params.query),
       });
     }
     
@@ -160,20 +175,14 @@ export async function GET(request: NextRequest) {
     
     // Ingredients filter (must contain all specified ingredients)
     if (params.ingredients && params.ingredients.length > 0) {
-      for (const ingredient of params.ingredients) {
-        searchConditions.push({
-          ingredients: { contains: ingredient.toLowerCase() },
-        });
-      }
+      const ingredientConditions = buildArraySearchConditions('ingredients', params.ingredients);
+      searchConditions.push(...ingredientConditions);
     }
     
     // Tags filter (must contain all specified tags)
     if (params.tags && params.tags.length > 0) {
-      for (const tag of params.tags) {
-        searchConditions.push({
-          tags: { contains: tag.toLowerCase() },
-        });
-      }
+      const tagConditions = buildArraySearchConditions('tags', params.tags);
+      searchConditions.push(...tagConditions);
     }
     
     // Servings range filter
