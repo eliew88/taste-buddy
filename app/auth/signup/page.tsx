@@ -66,6 +66,8 @@ export default function SignUpPage() {
     }
 
     try {
+      console.log('[Frontend] Starting registration for:', formData.email);
+      
       // Create user account
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -79,11 +81,17 @@ export default function SignUpPage() {
         }),
       });
 
+      console.log('[Frontend] Registration response status:', response.status);
+      
       const data = await response.json();
+      console.log('[Frontend] Registration response data:', data);
 
       if (!response.ok) {
+        console.error('[Frontend] Registration failed:', data);
         throw new Error(data.error || 'Registration failed');
       }
+      
+      console.log('[Frontend] Registration successful');
 
       setSuccess(true);
       
@@ -104,7 +112,10 @@ export default function SignUpPage() {
       }, 1500);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      console.error('[Frontend] Registration error caught:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+      console.error('[Frontend] Setting error message:', errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
