@@ -59,9 +59,11 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (!isPasswordValid) {
+            console.log('[AUTH] Password validation failed');
             return null;
           }
-
+          
+          console.log('[AUTH] Authentication successful for user:', user.id);
           return {
             id: user.id,
             email: user.email,
@@ -69,7 +71,11 @@ export const authOptions: NextAuthOptions = {
             image: user.image,
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error('[AUTH] Authentication error:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+            email: credentials?.email
+          });
           return null;
         }
       }

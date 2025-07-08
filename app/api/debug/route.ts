@@ -25,6 +25,26 @@ export async function GET() {
     const userCount = await prisma.user.count();
     debug.userCount = userCount;
     
+    // Test a sample demo user password
+    if (demoUsers.length > 0) {
+      const sampleUser = demoUsers[0];
+      if (sampleUser.password) {
+        const bcrypt = require('bcryptjs');
+        const isDemoPasswordValid = await bcrypt.compare('demo', sampleUser.password);
+        debug.demoPasswordTest = {
+          email: sampleUser.email,
+          passwordHashExists: true,
+          demoPasswordValid: isDemoPasswordValid
+        };
+      } else {
+        debug.demoPasswordTest = {
+          email: sampleUser.email,
+          passwordHashExists: false,
+          note: 'No password hash - should accept "demo" as password'
+        };
+      }
+    }
+    
     // Test if demo users exist
     const demoUsers = await prisma.user.findMany({
       where: {
@@ -32,9 +52,14 @@ export async function GET() {
           in: ['sarah@example.com', 'mike@example.com', 'david@example.com']
         }
       },
-      select: { email: true, id: true }
+      select: { email: true, id: true, password: true }
     });
-    debug.demoUsers = demoUsers;
+    debug.demoUsers = demoUsers.map(user => ({
+      email: user.email,
+      id: user.id,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length || 0
+    }));
     
     // Test user creation (dry run)
     const testEmail = `test-${Date.now()}@example.com`;
