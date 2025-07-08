@@ -26,9 +26,6 @@ export const prisma = globalForPrisma.prisma ?? (() => {
   // Get the database URL
   const dbUrl = env.DATABASE_URL || process.env.DATABASE_URL;
   
-  // During builds, use placeholder URL to avoid initialization issues
-  const isBuilding = process.env.NODE_ENV === undefined || process.env.VERCEL_ENV === 'preview';
-  
   console.log('Creating Prisma client with PostgreSQL connection');
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
