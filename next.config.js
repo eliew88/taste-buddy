@@ -9,7 +9,8 @@ const nextConfig = {
   eslint: {
     // Don't fail builds on lint errors in development
     ignoreDuringBuilds: process.env.NODE_ENV === 'development'
-  }
+  },
+  // Ensure Prisma works with Vercel - already included in serverExternalPackages above
 }
 
 module.exports = nextConfig
