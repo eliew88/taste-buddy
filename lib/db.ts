@@ -26,22 +26,29 @@
    // Check if we have a valid database URL
    const dbUrl = env.DATABASE_URL;
    
-   if (!dbUrl || dbUrl === 'file:./dev.db' || dbUrl.includes('placeholder')) {
+   if (!dbUrl || dbUrl.includes('placeholder')) {
      console.warn('Invalid or missing DATABASE_URL, using mock client');
      // Return a mock client that won't crash
+     // Return a comprehensive mock client that won't crash
+     const mockModel = {
+       findUnique: async () => null,
+       findMany: async () => [],
+       create: async () => { throw new Error('Database not configured'); },
+       update: async () => { throw new Error('Database not configured'); },
+       delete: async () => { throw new Error('Database not configured'); },
+       count: async () => 0,
+       findFirst: async () => null,
+       upsert: async () => { throw new Error('Database not configured'); },
+     };
+     
      return {
-       user: { 
-         findUnique: async () => null,
-         findMany: async () => [],
-         create: async () => { throw new Error('Database not configured'); },
-         count: async () => 0
-       },
-       recipe: { 
-         findMany: async () => [], 
-         create: async () => { throw new Error('Database not configured'); },
-         findUnique: async () => null
-       },
-       $disconnect: async () => {}
+       user: mockModel,
+       recipe: { ...mockModel, count: async () => 0 },
+       favorite: mockModel,
+       rating: mockModel,
+       $disconnect: async () => {},
+       $connect: async () => {},
+       $transaction: async () => { throw new Error('Database not configured'); },
      } as unknown as PrismaClient;
    }
    
