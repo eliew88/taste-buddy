@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
+import { prepareRecipeForDB, transformRecipeFromDB } from '@/lib/db-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,23 +53,15 @@ export async function GET(request: NextRequest) {
 
     // Transform recipes from DB format to app format
     const transformedRecipes = recipes.map(recipe => {
-      // Parse JSON fields stored as strings in SQLite
-      const ingredients = typeof recipe.ingredients === 'string' 
-        ? JSON.parse(recipe.ingredients) 
-        : recipe.ingredients;
-      
-      const tags = typeof recipe.tags === 'string' 
-        ? JSON.parse(recipe.tags) 
-        : recipe.tags;
+      // Use helper function for data transformation
+      const transformed = transformRecipeFromDB(recipe);
 
       // Calculate average rating from ratings array
       const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
 
       return {
-        ...recipe,
-        ingredients,
-        tags,
+        ...transformed,
         avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
         // Remove ratings array from response for cleaner API
         ratings: undefined,
@@ -144,23 +137,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare data for database storage (handles both SQLite and PostgreSQL)
-    const isPostgreSQL = process.env.DATABASE_URL?.includes('postgresql');
-    const recipeData = {
+    // Prepare data for database storage using helper function
+    const recipeData = prepareRecipeForDB({
       title: title.trim(),
       description: description?.trim() || null,
-      ingredients: isPostgreSQL ? ingredients : JSON.stringify(ingredients), // Native arrays for PostgreSQL, JSON strings for SQLite
+      ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
       instructions: instructions.trim(),
       cookTime: cookTime?.trim() || null,
       servings: servings ? Math.max(1, parseInt(servings)) : null,
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
-      tags: isPostgreSQL ? (tags || []) : JSON.stringify(tags || []), // Native arrays for PostgreSQL, JSON strings for SQLite
+      tags: Array.isArray(tags) ? tags : [],
       authorId: userId,
-    };
+    });
 
     // Create recipe in database
     const recipe = await prisma.recipe.create({
-      data: recipeData,
+      data: recipeData as any, // Type assertion needed due to union type from helper
       include: {
         author: {
           select: { id: true, name: true, email: true },
@@ -171,15 +163,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Transform back to app format (handles both SQLite and PostgreSQL)
+    // Transform back to app format using helper function
     const transformedRecipe = {
-      ...recipe,
-      ingredients: typeof recipe.ingredients === 'string' 
-        ? JSON.parse(recipe.ingredients) 
-        : recipe.ingredients,
-      tags: typeof recipe.tags === 'string'
-        ? JSON.parse(recipe.tags)
-        : recipe.tags,
+      ...transformRecipeFromDB(recipe),
       avgRating: 0, // New recipes start with 0 rating
     };
 
@@ -188,9 +174,18 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating recipe:', error);
+    console.error('Error creating recipe:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      databaseUrl: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
+      databaseProtocol: process.env.DATABASE_URL?.split('://')[0] || 'UNKNOWN'
+    });
     return NextResponse.json(
-      { success: false, error: 'Failed to create recipe' },
+      { 
+        success: false, 
+        error: 'Failed to create recipe',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
