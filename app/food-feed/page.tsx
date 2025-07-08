@@ -28,7 +28,7 @@ import {
   Home
 } from 'lucide-react';
 
-import Navigation from '@/components/ui/navigation';
+import Navigation from '@/components/ui/Navigation';
 import AdvancedSearchFilters from '@/components/ui/advanced-search-filters';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';

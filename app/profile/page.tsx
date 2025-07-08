@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { User, Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2 } from 'lucide-react';
-import Navigation from '@/components/ui/navigation';
+import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 
 interface UserRecipe {

@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const difficulty = searchParams.get('difficulty') || '';
+    const featured = searchParams.get('featured') === 'true';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')));
     const skip = (page - 1) * limit;
@@ -29,6 +30,11 @@ export async function GET(request: NextRequest) {
 
     if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty)) {
       where.difficulty = difficulty;
+    }
+
+    // For featured recipes, only get recipes with images
+    if (featured) {
+      where.image = { not: null };
     }
 
     // Fetch recipes with rating aggregation

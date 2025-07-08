@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Search, Plus, AlertCircle, LogIn } from 'lucide-react';
@@ -26,9 +26,96 @@ import {
   RecipeGridSkeleton
 } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
-import Navigation from '@/components/ui/navigation';
+import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 
+// Fallback images in case database doesn't have enough recipes with images
+const FALLBACK_HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1980&q=80',
+  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
+  'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2181&q=80',
+  'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1965&q=80'
+];
+
+/**
+ * Hero Section Component with 4-Panel Background
+ */
+const HeroSection = ({ 
+  searchTerm, 
+  difficulty, 
+  onSearch, 
+  onDifficultyChange, 
+  searchLoading,
+  heroImages = FALLBACK_HERO_IMAGES
+}: {
+  searchTerm: string;
+  difficulty: string;
+  onSearch: (value: string) => void;
+  onDifficultyChange: (value: string) => void;
+  searchLoading: boolean;
+  heroImages?: string[];
+}) => {
+  return (
+    <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+      {/* 4-Panel Background Images */}
+      <div className="absolute inset-0 z-0">
+        <div className="grid grid-cols-2 grid-rows-2 h-full w-full">
+          {heroImages.map((image, index) => (
+            <div
+              key={index}
+              className="bg-cover bg-center transition-transform duration-700 hover:scale-105"
+              style={{ backgroundImage: `url(${image})` }}
+            />
+          ))}
+        </div>
+        
+        {/* Overlay for text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
+        {/* Hero Text */}
+        <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 drop-shadow-lg">
+          Discover, cook, and share amazing recipes!
+        </h1>
+        
+        {/* Search Section */}
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search recipes, ingredients, or tags..."
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+              className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500 shadow-lg backdrop-blur-sm bg-white/95 text-lg"
+            />
+            {searchLoading && (
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <LoadingSpinner size="sm" />
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-center">
+            <select
+              value={difficulty}
+              onChange={(e) => onDifficultyChange(e.target.value)}
+              className="px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white/95 shadow-lg backdrop-blur-sm text-lg"
+            >
+              <option value="">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 /**
  * Enhanced Error Message Component with Better UX
@@ -145,6 +232,7 @@ const EmptyState = ({
  */
 export default function HomePage() {
   const [searchLoading, setSearchLoading] = useState(false);
+  const [heroImages, setHeroImages] = useState<string[]>(FALLBACK_HERO_IMAGES);
   const { data: session } = useSession();
   
   // Use the custom hooks for state management
@@ -154,6 +242,35 @@ export default function HomePage() {
   const handleFavoriteToggle = async (recipeId: string) => {
     await toggleFavorite(recipeId);
   };
+
+  // Fetch featured recipes for hero background
+  const fetchFeaturedRecipes = async () => {
+    try {
+      const response = await fetch('/api/recipes?limit=4&featured=true');
+      if (response.ok) {
+        const data = await response.json();
+        const recipesWithImages = data.data.filter((recipe: any) => recipe.image);
+        
+        if (recipesWithImages.length >= 4) {
+          setHeroImages(recipesWithImages.slice(0, 4).map((recipe: any) => recipe.image));
+        } else if (recipesWithImages.length > 0) {
+          // Mix database images with fallback images
+          const dbImages = recipesWithImages.map((recipe: any) => recipe.image);
+          const neededFallbacks = FALLBACK_HERO_IMAGES.slice(0, 4 - dbImages.length);
+          setHeroImages([...dbImages, ...neededFallbacks]);
+        }
+        // If no recipes with images, keep fallback images
+      }
+    } catch (error) {
+      console.error('Error fetching featured recipes:', error);
+      // Keep fallback images on error
+    }
+  };
+
+  // Fetch featured recipes on component mount
+  useEffect(() => {
+    fetchFeaturedRecipes();
+  }, []);
   const {
     recipes,
     loading,
@@ -191,49 +308,18 @@ export default function HomePage() {
         {/* Navigation */}
         <Navigation />
 
+        {/* Hero Section with 4-Panel Background */}
+        <HeroSection 
+          searchTerm={searchTerm}
+          difficulty={difficulty}
+          onSearch={handleSearchWithLoading}
+          onDifficultyChange={handleDifficultyChange}
+          searchLoading={searchLoading}
+          heroImages={heroImages}
+        />
+
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
-          {/* Hero Section */}
-          <section className="text-center mb-12">
-            <h1 className="text-3xl md:text-5xl font-bold text-gray-900 max-w-2xl mx-auto">
-              Discover, cook, and share amazing recipes!
-            </h1>
-          </section>
-
-          {/* Search Section */}
-          <section className="mb-8">
-            <div className="max-w-2xl mx-auto space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search recipes, ingredients, or tags..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearchWithLoading(e.target.value)}
-                  className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500 shadow-sm"
-                />
-                {searchLoading && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <LoadingSpinner size="sm" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex justify-center">
-                <select
-                  value={difficulty}
-                  onChange={(e) => handleDifficultyChange(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white shadow-sm"
-                >
-                  <option value="">All Difficulties</option>
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </div>
-            </div>
-          </section>
-
           {/* Results Section */}
           <section>
             <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 space-y-4 sm:space-y-0">

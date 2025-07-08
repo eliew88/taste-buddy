@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, Search, Filter, Grid3X3, List, Loader2, AlertCircle } from 'lucide-react';
-import Navigation from '@/components/ui/navigation';
+import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 
 interface FavoriteRecipe {

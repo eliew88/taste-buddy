@@ -16,7 +16,7 @@
 
 'use client';
 
-import Navigation from '@/components/ui/navigation';
+import Navigation from '@/components/ui/Navigation';
 import RecipeForm from '@/components/recipe-form';
 import ErrorBoundary from '@/components/error-boundary';
 

@@ -172,6 +172,9 @@ export default function RecipeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRating, setUserRating] = useState(0);
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [avgRating, setAvgRating] = useState(0);
+  const [ratingCount, setRatingCount] = useState(0);
   
   // Use favorites hook
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -188,6 +191,8 @@ export default function RecipeDetailPage() {
       
       if (response.success && response.data) {
         setRecipe(response.data);
+        setAvgRating(response.data.avgRating || 0);
+        setRatingCount(response.data._count?.ratings || 0);
       } else {
         throw new Error(response.error || 'Recipe not found');
       }
@@ -199,6 +204,27 @@ export default function RecipeDetailPage() {
     }
   };
 
+  /**
+   * Fetches user's rating for this recipe
+   */
+  const fetchUserRating = async () => {
+    if (!session?.user?.id) return;
+    
+    try {
+      const response = await fetch(`/api/recipes/${recipeId}/rating`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUserRating(data.data.userRating);
+          setAvgRating(data.data.recipeStats.averageRating);
+          setRatingCount(data.data.recipeStats.ratingCount);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch user rating:', err);
+    }
+  };
+
   // Fetch recipe on component mount
   useEffect(() => {
     if (recipeId) {
@@ -206,19 +232,50 @@ export default function RecipeDetailPage() {
     }
   }, [recipeId]);
 
+  // Fetch user rating when session is available
+  useEffect(() => {
+    if (recipeId && session?.user?.id) {
+      fetchUserRating();
+    }
+  }, [recipeId, session?.user?.id]);
+
   /**
    * Handles user rating submission
    */
   const handleRating = async (rating: number) => {
+    if (!session?.user?.id) {
+      alert('Please sign in to rate recipes');
+      return;
+    }
+
     try {
-      setUserRating(rating);
-      // TODO: Implement API call when rating endpoint is ready
-      // await apiClient.rateRecipe(recipeId, rating);
-      console.log('Rating submitted:', rating);
+      setRatingLoading(true);
+      
+      const response = await fetch(`/api/recipes/${recipeId}/rating`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ rating }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUserRating(data.data.rating);
+          setAvgRating(data.data.recipeStats.averageRating);
+          setRatingCount(data.data.recipeStats.ratingCount);
+        } else {
+          throw new Error(data.error || 'Failed to submit rating');
+        }
+      } else {
+        throw new Error('Failed to submit rating');
+      }
     } catch (error) {
       console.error('Failed to submit rating:', error);
-      // Revert rating on error
-      setUserRating(0);
+      alert('Failed to submit rating. Please try again.');
+    } finally {
+      setRatingLoading(false);
     }
   };
 
@@ -358,22 +415,31 @@ export default function RecipeDetailPage() {
           {/* Rating and Favorite */}
           <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center space-x-4">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Rate this recipe:</p>
-                <StarRating
-                  rating={userRating}
-                  onRate={handleRating}
-                  size="lg"
-                />
-              </div>
-              <div className="h-8 w-px bg-gray-200"></div>
+              {session?.user?.id && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">
+                    {userRating > 0 ? 'Your rating:' : 'Rate this recipe:'}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <StarRating
+                      rating={userRating}
+                      onRate={handleRating}
+                      size="lg"
+                    />
+                    {ratingLoading && <span className="text-sm text-gray-500">Saving...</span>}
+                  </div>
+                </div>
+              )}
+              
+              {session?.user?.id && <div className="h-8 w-px bg-gray-200"></div>}
+              
               <div>
                 <p className="text-sm text-gray-600 mb-1">Average rating:</p>
                 <StarRating
-                  rating={recipe.avgRating || 0}
+                  rating={avgRating}
                   interactive={false}
                   showCount={true}
-                  ratingCount={recipe._count?.ratings || 0}
+                  ratingCount={ratingCount}
                 />
               </div>
             </div>
