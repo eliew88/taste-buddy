@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     
     // Parse and validate search parameters
     const rawParams = {
-      query: searchParams.get('query') || undefined,
+      query: searchParams.get('search') || searchParams.get('query') || undefined,
       difficulty: searchParams.getAll('difficulty').filter(Boolean),
       ingredients: searchParams.getAll('ingredients').filter(Boolean),
       tags: searchParams.getAll('tags').filter(Boolean),
