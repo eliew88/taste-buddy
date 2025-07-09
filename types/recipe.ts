@@ -6,6 +6,38 @@
  */
 
 /**
+ * IngredientEntry interface - represents a structured ingredient with amount, unit, and ingredient
+ */
+export interface IngredientEntry {
+  /** Unique identifier for the ingredient entry */
+  id: string;
+  
+  /** Numerical amount (e.g., 2, 1.5, 0.25) */
+  amount: number;
+  
+  /** Unit of measurement (e.g., "cups", "tsp", "pounds", "pieces") - optional */
+  unit?: string;
+  
+  /** The ingredient name (e.g., "flour", "salt", "chicken breast") */
+  ingredient: string;
+  
+  /** When the ingredient entry was created */
+  createdAt: Date;
+  
+  /** When the ingredient entry was last updated */
+  updatedAt: Date;
+}
+
+/**
+ * Data structure for creating a new ingredient entry
+ */
+export interface CreateIngredientEntryData {
+  amount: number;
+  unit?: string;
+  ingredient: string;
+}
+
+/**
  * Main Recipe interface - represents a complete recipe with all metadata
  */
  export interface Recipe {
@@ -18,8 +50,8 @@
     /** Optional description of the recipe */
     description?: string;
     
-    /** Array of ingredient strings (e.g., "2 cups flour") */
-    ingredients: string[];
+    /** Array of structured ingredient entries */
+    ingredients: IngredientEntry[];
     
     /** Step-by-step cooking instructions */
     instructions: string;
@@ -73,7 +105,7 @@
   export interface CreateRecipeData {
     title: string;
     description?: string;
-    ingredients: string[];
+    ingredients: CreateIngredientEntryData[];
     instructions: string;
     cookTime?: string;
     servings?: number;
@@ -89,7 +121,7 @@
   export interface UpdateRecipeData {
     title?: string;
     description?: string;
-    ingredients?: string[];
+    ingredients?: CreateIngredientEntryData[];
     instructions?: string;
     cookTime?: string;
     servings?: number;
@@ -186,4 +218,91 @@
   export interface UpdateCommentData {
     content?: string;
     visibility?: 'private' | 'author_only' | 'public';
+  }
+
+  /**
+   * Compliment interface - represents a chef appreciation message or tip
+   */
+  export interface Compliment {
+    /** Unique identifier for the compliment */
+    id: string;
+    
+    /** Type of compliment: message or tip */
+    type: 'message' | 'tip';
+    
+    /** The compliment message */
+    message: string;
+    
+    /** Tip amount in dollars (for tip type) */
+    tipAmount?: number;
+    
+    /** Currency code */
+    currency: string;
+    
+    /** Payment processing status */
+    paymentStatus: 'pending' | 'completed' | 'failed';
+    
+    /** External payment processor ID */
+    paymentId?: string;
+    
+    /** When payment was processed */
+    paymentDate?: Date;
+    
+    /** Whether sender chose to remain anonymous */
+    isAnonymous: boolean;
+    
+    /** When the compliment was created */
+    createdAt: Date;
+    
+    /** When the compliment was last updated */
+    updatedAt: Date;
+    
+    /** ID of the user giving the compliment */
+    fromUserId: string;
+    
+    /** ID of the chef receiving the compliment */
+    toUserId: string;
+    
+    /** Optional: ID of the recipe that inspired the compliment */
+    recipeId?: string;
+    
+    /** Sender information (populated from User table) */
+    fromUser: {
+      id: string;
+      name: string;
+      image?: string;
+    };
+    
+    /** Recipient information (populated from User table) */
+    toUser: {
+      id: string;
+      name: string;
+      image?: string;
+    };
+    
+    /** Optional recipe information (populated from Recipe table) */
+    recipe?: {
+      id: string;
+      title: string;
+      image?: string;
+    };
+  }
+
+  /**
+   * Data structure for creating a new compliment
+   */
+  export interface CreateComplimentData {
+    type: 'message' | 'tip';
+    message: string;
+    tipAmount?: number;
+    isAnonymous?: boolean;
+    toUserId: string;
+    recipeId?: string;
+  }
+
+  /**
+   * Data structure for updating an existing compliment (limited fields)
+   */
+  export interface UpdateComplimentData {
+    message?: string;
   }

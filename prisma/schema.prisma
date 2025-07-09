@@ -20,23 +20,48 @@ model User {
   updatedAt DateTime @updatedAt
   
   // === RELATIONSHIPS ===
-  recipes   Recipe[]
-  favorites Favorite[]
-  ratings   Rating[]
-  comments  Comment[]
+  recipes             Recipe[]
+  favorites           Favorite[]
+  ratings             Rating[]
+  comments            Comment[]
+  complimentsGiven    Compliment[] @relation("ComplimentsGiven")
+  complimentsReceived Compliment[] @relation("ComplimentsReceived")
 
   @@map("users")
+}
+
+/**
+ * IngredientEntry Model - Structured ingredient with amount, unit, and ingredient
+ */
+model IngredientEntry {
+  id         String @id @default(cuid())
+  amount     Float
+  unit       String?
+  ingredient String
+  
+  // === RECIPE RELATIONSHIP ===
+  recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  // === METADATA ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === INDEXES ===
+  @@index([recipeId])
+  @@index([ingredient])
+  @@map("ingredient_entries")
 }
 
 /**
  * Recipe Model - Production Version
  */
 model Recipe {
-  id           String   @id @default(cuid())
+  id           String            @id @default(cuid())
   title        String
   description  String?
-  // Keep simple string array for now
-  ingredients  String[]
+  // Structured ingredients instead of simple strings
+  ingredients  IngredientEntry[]
   instructions String
   cookTime     String?
   servings     Int?
@@ -48,10 +73,11 @@ model Recipe {
   authorId     String
   
   // === RELATIONSHIPS ===
-  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments  Comment[]
-  favorites Favorite[]
-  ratings   Rating[]
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+  favorites   Favorite[]
+  ratings     Rating[]
+  compliments Compliment[]
 
   @@index([authorId])
   @@index([difficulty])
@@ -114,5 +140,52 @@ model Comment {
   @@index([visibility])
   @@index([createdAt])
   @@map("comments")
+}
+
+/**
+ * Compliment Model - Private Chef Appreciation System
+ */
+model Compliment {
+  id String @id @default(cuid())
+  
+  // === COMPLIMENT TYPE ===
+  type String @default("message") // "message" or "tip"
+  
+  // === CONTENT ===
+  message String // The compliment message
+  
+  // === TIP DETAILS (for future payment processing) ===
+  tipAmount Decimal? // Amount in dollars (e.g., 2.50)
+  currency  String   @default("USD")
+  
+  // === PAYMENT STATUS (for future implementation) ===
+  paymentStatus String    @default("pending") // "pending", "completed", "failed"
+  paymentId     String?   // External payment processor ID
+  paymentDate   DateTime?
+  
+  // === PRIVACY OPTIONS ===
+  isAnonymous Boolean @default(false) // Whether sender wants to remain anonymous
+  
+  // === TIMESTAMPS ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === RELATIONSHIPS ===
+  fromUserId String  // User giving the compliment
+  toUserId   String  // Chef receiving the compliment  
+  recipeId   String? // Optional: specific recipe that inspired the compliment
+  
+  fromUser User    @relation("ComplimentsGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User    @relation("ComplimentsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  recipe   Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  
+  // === INDEXES ===
+  @@index([toUserId])
+  @@index([fromUserId])
+  @@index([recipeId])
+  @@index([type])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("compliments")
 }
 

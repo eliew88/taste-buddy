@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
         author: {
           select: { id: true, name: true, email: true },
         },
+        ingredients: true,
         _count: {
           select: { favorites: true, ratings: true, comments: true },
         },
@@ -116,11 +117,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!ingredients || (Array.isArray(ingredients) ? ingredients.length === 0 : !ingredients.trim())) {
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
       return NextResponse.json(
         { success: false, error: 'At least one ingredient is required' },
         { status: 400 }
       );
+    }
+
+    // Validate ingredients structure
+    for (const ingredient of ingredients) {
+      if (!ingredient.amount || !ingredient.ingredient?.trim()) {
+        return NextResponse.json(
+          { success: false, error: 'Each ingredient must have amount and ingredient name' },
+          { status: 400 }
+        );
+      }
     }
 
     if (!instructions?.trim()) {
@@ -140,11 +151,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare data for PostgreSQL database storage (native arrays)
+    // Prepare data for PostgreSQL database storage with structured ingredients
     const recipeData = {
       title: title.trim(),
       description: description?.trim() || null,
-      ingredients: Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean),
       instructions: instructions.trim(),
       cookTime: cookTime?.trim() || null,
       servings: servings ? Math.max(1, parseInt(servings)) : null,
@@ -152,6 +162,13 @@ export async function POST(request: NextRequest) {
       tags: Array.isArray(tags) ? tags : [],
       image: image?.trim() || null,
       authorId: userId,
+      ingredients: {
+        create: ingredients.map((ingredient: any) => ({
+          amount: parseFloat(ingredient.amount),
+          unit: ingredient.unit?.trim() || null,
+          ingredient: ingredient.ingredient.trim(),
+        }))
+      }
     };
 
     // Create recipe in database
@@ -161,6 +178,7 @@ export async function POST(request: NextRequest) {
         author: {
           select: { id: true, name: true, email: true },
         },
+        ingredients: true,
         _count: {
           select: { favorites: true, ratings: true, comments: true },
         },

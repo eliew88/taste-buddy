@@ -282,8 +282,44 @@ async function main() {
     // Create recipes
     console.log('🍳 Creating recipes...');
     for (const recipe of sampleRecipes) {
+      const { ingredients, ...recipeData } = recipe;
+      
+      // Convert string ingredients to structured format
+      const structuredIngredients = ingredients.map((ingredient, index) => {
+        // Simple parsing for ingredient string format "amount unit ingredient"
+        const parts = ingredient.split(' ');
+        let amount = 1;
+        let unit = undefined;
+        let ingredientName = ingredient;
+        
+        if (parts.length > 1) {
+          // Try to parse first part as number
+          const maybeAmount = parseFloat(parts[0]);
+          if (!isNaN(maybeAmount)) {
+            amount = maybeAmount;
+            if (parts.length > 2) {
+              unit = parts[1];
+              ingredientName = parts.slice(2).join(' ');
+            } else {
+              ingredientName = parts.slice(1).join(' ');
+            }
+          }
+        }
+        
+        return {
+          amount,
+          unit,
+          ingredient: ingredientName
+        };
+      });
+      
       await prisma.recipe.create({
-        data: recipe, // Native PostgreSQL arrays need no transformation
+        data: {
+          ...recipeData,
+          ingredients: {
+            create: structuredIngredients
+          }
+        }
       });
       console.log(`   ✓ Created recipe: ${recipe.title}`);
     }

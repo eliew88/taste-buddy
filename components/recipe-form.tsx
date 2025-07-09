@@ -19,7 +19,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Plus,
@@ -38,9 +38,10 @@ import {
 import { LoadingButton } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
 import ImageUpload from '@/components/ui/image-upload';
+import IngredientInput from '@/components/ui/ingredient-input';
 import { useImageUpload } from '@/hooks/use-image-upload';
 import apiClient from '@/lib/api-client';
-import { CreateRecipeData } from '@/types/recipe';
+import { CreateRecipeData, CreateIngredientEntryData } from '@/types/recipe';
 
 interface RecipeFormData extends CreateRecipeData {
   image?: string;
@@ -88,7 +89,7 @@ export default function RecipeForm({
   const [formData, setFormData] = useState<RecipeFormData>({
     title: '',
     description: '',
-    ingredients: [''],
+    ingredients: [{ amount: 0, unit: undefined, ingredient: '' }],
     instructions: '',
     cookTime: '',
     servings: undefined,
@@ -182,9 +183,11 @@ export default function RecipeForm({
     }
 
     // Ingredients validation
-    const validIngredients = formData.ingredients.filter(ing => ing.trim());
+    const validIngredients = formData.ingredients.filter(ing => 
+      ing.amount > 0 && ing.ingredient.trim()
+    );
     if (validIngredients.length === 0) {
-      newErrors.ingredients = 'At least one ingredient is required';
+      newErrors.ingredients = 'At least one complete ingredient is required (amount and ingredient name)';
     }
 
     // Instructions validation
@@ -206,22 +209,9 @@ export default function RecipeForm({
   /**
    * Handles ingredient list changes
    */
-  const updateIngredient = (index: number, value: string) => {
-    const newIngredients = [...formData.ingredients];
-    newIngredients[index] = value;
-    updateFormData({ ingredients: newIngredients });
-  };
-
-  const addIngredient = () => {
-    updateFormData({ ingredients: [...formData.ingredients, ''] });
-  };
-
-  const removeIngredient = (index: number) => {
-    if (formData.ingredients.length > 1) {
-      const newIngredients = formData.ingredients.filter((_, i) => i !== index);
-      updateFormData({ ingredients: newIngredients });
-    }
-  };
+  const handleIngredientsChange = useCallback((ingredients: CreateIngredientEntryData[]) => {
+    updateFormData({ ingredients });
+  }, []);
 
   /**
    * Handles tag management
@@ -263,7 +253,9 @@ export default function RecipeForm({
         ...formData,
         title: formData.title.trim(),
         description: formData.description?.trim() || undefined,
-        ingredients: formData.ingredients.filter(ing => ing.trim()),
+        ingredients: formData.ingredients.filter(ing => 
+          ing.amount > 0 && ing.ingredient.trim()
+        ),
         instructions: formData.instructions.trim(),
         cookTime: formData.cookTime?.trim() || undefined,
       };
@@ -470,42 +462,10 @@ export default function RecipeForm({
 
           {/* Ingredients */}
           <section className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Ingredients *
-            </h2>
-            
-            <div className="space-y-3">
-              {formData.ingredients.map((ingredient, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <span className="w-6 text-sm text-gray-500">{index + 1}.</span>
-                  <input
-                    type="text"
-                    value={ingredient}
-                    onChange={(e) => updateIngredient(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
-                    placeholder="e.g., 2 cups all-purpose flour"
-                  />
-                  {formData.ingredients.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeIngredient(index)}
-                      className="p-1 text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
-              
-              <button
-                type="button"
-                onClick={addIngredient}
-                className="flex items-center text-green-700 hover:text-green-800 text-sm"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Ingredient
-              </button>
-            </div>
+            <IngredientInput
+              ingredients={formData.ingredients}
+              onChange={handleIngredientsChange}
+            />
             
             {errors.ingredients && (
               <p className="mt-2 text-sm text-red-600 flex items-center">

@@ -14,12 +14,13 @@ import { Heart, Search, Filter, Grid3X3, List, Loader2, AlertCircle } from 'luci
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
+import { IngredientEntry } from '@/types/recipe';
 
 interface FavoriteRecipe {
   id: string;
   title: string;
   description?: string;
-  ingredients: string[];
+  ingredients: IngredientEntry[];
   instructions: string;
   cookTime?: string;
   servings?: number;
@@ -112,7 +113,7 @@ export default function FavoritesPage() {
         recipe.title.toLowerCase().includes(searchLower) ||
         recipe.description?.toLowerCase().includes(searchLower) ||
         recipe.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
-        recipe.ingredients.some(ingredient => ingredient.toLowerCase().includes(searchLower))
+        recipe.ingredients.some(ingredient => ingredient.ingredient.toLowerCase().includes(searchLower))
       );
     }
 

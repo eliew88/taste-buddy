@@ -26,19 +26,19 @@ export function prepareRecipeForDB(data: {
 
 /**
  * Transforms recipe data from database format to app format
- * With PostgreSQL native arrays, no transformation is needed
+ * Handles both structured ingredients and native array tags
  * @param recipe Recipe data from database
  * @returns Recipe data ready for the app
  */
 export function transformRecipeFromDB(recipe: {
-  ingredients: string[];
+  ingredients: { id: string; amount: number; unit: string | null; ingredient: string; }[];
   tags: string[];
   [key: string]: unknown;
 }) {
-  // With PostgreSQL native arrays, data is already in the correct format
+  // Transform structured ingredients back to the format expected by the app
   return {
     ...recipe,
-    ingredients: recipe.ingredients,
-    tags: recipe.tags,
+    ingredients: recipe.ingredients, // Keep structured ingredients
+    tags: recipe.tags, // Tags remain as native arrays
   };
 }

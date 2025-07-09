@@ -47,6 +47,7 @@ export async function GET(
             email: true 
           },
         },
+        ingredients: true,
         _count: {
           select: { 
             favorites: true, 
@@ -238,6 +239,7 @@ export async function PUT(
             email: true 
           },
         },
+        ingredients: true,
         _count: {
           select: { 
             favorites: true, 

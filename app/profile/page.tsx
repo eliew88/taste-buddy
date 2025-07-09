@@ -14,12 +14,14 @@ import { User, Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2 } from 'l
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
+import ComplimentsDisplay from '@/components/compliments-display';
+import { IngredientEntry } from '@/types/recipe';
 
 interface UserRecipe {
   id: string;
   title: string;
   description?: string;
-  ingredients: string[];
+  ingredients: IngredientEntry[];
   instructions: string;
   cookTime?: string;
   servings?: number;
@@ -231,6 +233,12 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+        
+        {/* Compliments Section */}
+        <ComplimentsDisplay 
+          userId={session.user.id}
+          isOwnProfile={true}
+        />
       </div>
     </div>
   );

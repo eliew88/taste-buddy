@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
         OR: [
           { title: { contains: params.query, mode: 'insensitive' } },
           { description: { contains: params.query, mode: 'insensitive' } },
-          { ingredients: { hasSome: [searchQuery] } },
+          { ingredients: { some: { ingredient: { contains: searchQuery, mode: 'insensitive' } } } },
           { tags: { hasSome: [searchQuery] } },
         ],
       });
@@ -138,7 +138,13 @@ export async function GET(request: NextRequest) {
     // Ingredients filter - PostgreSQL array operations
     if (params.ingredients && params.ingredients.length > 0) {
       andConditions.push({
-        ingredients: { hasEvery: params.ingredients },
+        ingredients: { 
+          every: { 
+            ingredient: { 
+              in: params.ingredients 
+            } 
+          } 
+        },
       });
     }
     
@@ -245,8 +251,9 @@ export async function GET(request: NextRequest) {
           author: {
             select: { id: true, name: true, email: true },
           },
+          ingredients: true,
           _count: {
-            select: { favorites: true, ratings: true },
+            select: { favorites: true, ratings: true, comments: true },
           },
           ratings: {
             select: { rating: true },

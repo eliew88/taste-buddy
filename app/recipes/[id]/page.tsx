@@ -33,7 +33,8 @@ import {
   AlertCircle,
   Printer,
   Share2,
-  Edit
+  Edit,
+  Gift
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
@@ -41,6 +42,7 @@ import { getOptimizedImageUrl } from '@/lib/image-client-utils';
 import { useFavorites } from '@/hooks/use-favorites';
 import CommentForm from '@/components/comment-form';
 import CommentsSection from '@/components/comments-section';
+import ComplimentForm from '@/components/compliment-form';
 
 /**
  * StarRating Component for recipe detail page
@@ -184,6 +186,9 @@ export default function RecipeDetailPage() {
   
   // Comments state
   const [newComment, setNewComment] = useState<any>(null);
+  
+  // Compliment modal state
+  const [showComplimentModal, setShowComplimentModal] = useState(false);
 
   /**
    * Fetches recipe data from the API
@@ -381,6 +386,18 @@ export default function RecipeDetailPage() {
             </Link>
             
             <div className="flex items-center space-x-3">
+              {/* Compliment Chef button - only show if user is not the recipe author */}
+              {session?.user?.id && session.user.id !== recipe.authorId && (
+                <button
+                  onClick={() => setShowComplimentModal(true)}
+                  className="flex items-center space-x-2 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
+                  title="Compliment the Chef"
+                >
+                  <Gift className="w-4 h-4" />
+                  <span>Compliment Chef</span>
+                </button>
+              )}
+              
               {/* Edit button - only show if user is the recipe author */}
               {session?.user?.id === recipe.authorId && (
                 <Link
@@ -391,6 +408,7 @@ export default function RecipeDetailPage() {
                   <span>Edit</span>
                 </Link>
               )}
+              
               <button
                 onClick={handlePrint}
                 className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -562,17 +580,21 @@ export default function RecipeDetailPage() {
             {/* Ingredients */}
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Ingredients ({recipe.ingredients.length})
+                Ingredients ({recipe.ingredients?.length || 0})
               </h3>
               <ol className="space-y-2">
-                {recipe.ingredients.map((ingredient, index) => (
-                  <li key={index} className="flex items-start">
+                {recipe.ingredients?.map((ingredient, index) => (
+                  <li key={ingredient.id || index} className="flex items-start">
                     <span className="min-w-6 h-6 bg-green-700 text-white text-sm font-medium rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                       {index + 1}
                     </span>
-                    <span className="text-gray-700">{ingredient}</span>
+                    <span className="text-gray-700">
+                      {ingredient.amount} {ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
+                    </span>
                   </li>
-                ))}
+                )) || (
+                  <li className="text-gray-500 italic">No ingredients listed</li>
+                )}
               </ol>
             </div>
 
@@ -609,6 +631,23 @@ export default function RecipeDetailPage() {
           />
         </div>
       </div>
+      
+      {/* Compliment Modal */}
+      <ComplimentForm
+        isOpen={showComplimentModal}
+        onClose={() => setShowComplimentModal(false)}
+        toUserId={recipe.authorId}
+        toUserName={recipe.author.name}
+        recipe={{
+          id: recipe.id,
+          title: recipe.title,
+          image: recipe.image
+        }}
+        onComplimentSent={() => {
+          // Could add a success notification here
+          console.log('Compliment sent successfully!');
+        }}
+      />
     </div>
   );
 }
