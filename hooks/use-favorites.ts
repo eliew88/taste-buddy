@@ -35,7 +35,9 @@ export function useFavorites(): UseFavoritesReturn {
         setFavorites(favoriteIds);
       }
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      console.warn('Favorites data unavailable:', error instanceof Error ? error.message : error);
+      // Set empty set so UI still works
+      setFavorites(new Set());
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +90,11 @@ export function useFavorites(): UseFavoritesReturn {
         throw new Error(data.error || 'Failed to update favorite');
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.warn('Favorite toggle failed:', error instanceof Error ? error.message : error);
+      // Show user-friendly message if it's a connectivity issue
+      if (error instanceof Error && (error.message.includes('fetch') || error.message.includes('network'))) {
+        console.log('Favorites service temporarily unavailable');
+      }
       return favorites.has(recipeId); // Return current state on error
     }
   }, [session?.user, favorites]);

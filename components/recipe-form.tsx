@@ -31,12 +31,14 @@ import {
   ArrowLeft,
   AlertCircle,
   // Check,
-  // Image as ImageIcon,
+  Image as ImageIcon,
   Tag,
   List
 } from 'lucide-react';
 import { LoadingButton } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
+import ImageUpload from '@/components/ui/image-upload';
+import { useImageUpload } from '@/hooks/use-image-upload';
 import apiClient from '@/lib/api-client';
 import { CreateRecipeData } from '@/types/recipe';
 
@@ -73,6 +75,15 @@ export default function RecipeForm({
 }: RecipeFormProps) {
   const router = useRouter();
   
+  // Image upload state
+  const {
+    imageUrl,
+    setImageUrl,
+    handleImageUploaded,
+    handleImageRemoved,
+    hasImage
+  } = useImageUpload(initialData.image);
+  
   // Form state
   const [formData, setFormData] = useState<RecipeFormData>({
     title: '',
@@ -96,6 +107,14 @@ export default function RecipeForm({
 
   // Auto-save key for localStorage
   const autoSaveKey = 'tastebuddy-recipe-draft';
+
+  // Sync image state with form data
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      image: imageUrl || ''
+    }));
+  }, [imageUrl]);
 
   /**
    * Load draft from localStorage on mount
@@ -431,6 +450,22 @@ export default function RecipeForm({
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Image Upload */}
+          <section className="bg-white rounded-lg shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+              <ImageIcon className="w-5 h-5 mr-2 text-green-700" />
+              Recipe Image
+            </h2>
+            
+            <ImageUpload
+              currentImage={imageUrl || undefined}
+              onImageUploaded={handleImageUploaded}
+              onImageRemoved={handleImageRemoved}
+              uploadText="Add a photo of your recipe"
+              className="w-full"
+            />
           </section>
 
           {/* Ingredients */}

@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { User, Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2 } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
+import { useFavorites } from '@/hooks/use-favorites';
 
 interface UserRecipe {
   id: string;
@@ -45,6 +46,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const [userRecipes, setUserRecipes] = useState<UserRecipe[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Use the favorites hook for persistent state management
+  const { isFavorited, toggleFavorite } = useFavorites();
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -210,7 +214,13 @@ export default function ProfilePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userRecipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
+                <RecipeCard 
+                  key={recipe.id} 
+                  recipe={recipe}
+                  showFavoriteButton={true}
+                  isFavorited={isFavorited(recipe.id)}
+                  onFavoriteToggle={toggleFavorite}
+                />
               ))}
             </div>
           )}

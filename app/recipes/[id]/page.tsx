@@ -218,10 +218,21 @@ export default function RecipeDetailPage() {
           setUserRating(data.data.userRating);
           setAvgRating(data.data.recipeStats.averageRating);
           setRatingCount(data.data.recipeStats.ratingCount);
+        } else {
+          // API returned error but request succeeded
+          console.warn('Rating API returned error:', data.error);
         }
+      } else {
+        // HTTP error response
+        console.warn('Rating API request failed:', response.status, response.statusText);
       }
     } catch (err) {
-      console.error('Failed to fetch user rating:', err);
+      // Network or other error - silently fail for better UX
+      console.warn('Rating data unavailable (network error):', err instanceof Error ? err.message : err);
+      // Set default values so UI still works
+      setUserRating(0);
+      setAvgRating(0);
+      setRatingCount(0);
     }
   };
 
@@ -269,11 +280,18 @@ export default function RecipeDetailPage() {
           throw new Error(data.error || 'Failed to submit rating');
         }
       } else {
-        throw new Error('Failed to submit rating');
+        throw new Error(`Server error: ${response.status}`);
       }
     } catch (error) {
-      console.error('Failed to submit rating:', error);
-      alert('Failed to submit rating. Please try again.');
+      console.warn('Rating submission failed:', error);
+      
+      // Check if it's a network/database connectivity issue
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('500')) {
+        alert('Rating service is temporarily unavailable. Please try again later.');
+      } else {
+        alert('Failed to submit rating. Please try again.');
+      }
     } finally {
       setRatingLoading(false);
     }
