@@ -344,18 +344,19 @@ export async function processStripeConnectTip({
     
     // Check if it's a Stripe error
     if (error && typeof error === 'object' && 'type' in error) {
+      const stripeError = error as any;
       console.error('Stripe error details:', {
-        type: error.type,
-        code: error.code,
-        message: error.message,
-        param: error.param
+        type: stripeError.type,
+        code: stripeError.code,
+        message: stripeError.message,
+        param: stripeError.param
       });
       
       // Return more specific error message
-      if (error.code === 'account_invalid') {
+      if (stripeError.code === 'account_invalid') {
         return { success: false, error: 'Recipient payment account is not set up properly' };
       }
-      if (error.code === 'transfer_group_invalid') {
+      if (stripeError.code === 'transfer_group_invalid') {
         return { success: false, error: 'Invalid transfer configuration' };
       }
     }

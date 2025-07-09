@@ -12,13 +12,13 @@ import { loadStripe } from '@stripe/stripe-js';
 // Server-side Stripe instance
 export const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-12-18.acacia',
+      apiVersion: '2025-06-30.basil',
       typescript: true,
     })
   : null;
 
 // Client-side Stripe instance
-let stripePromise: Promise<Stripe | null>;
+let stripePromise: Promise<import('@stripe/stripe-js').Stripe | null>;
 
 export const getStripe = () => {
   if (!stripePromise) {

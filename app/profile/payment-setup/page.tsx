@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import PaymentSetup from '@/components/payment/payment-setup';
 
-export default function PaymentSetupPage() {
+function PaymentSetupContent() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -90,5 +90,17 @@ export default function PaymentSetupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSetupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    }>
+      <PaymentSetupContent />
+    </Suspense>
   );
 }
