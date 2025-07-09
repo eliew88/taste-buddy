@@ -158,3 +158,13 @@ export async function cleanupOrphanedImages(referencedImages: string[]): Promise
     return 0;
   }
 }
+
+// ==================== B2 CLOUD STORAGE UTILITIES ====================
+
+// Re-export client-side functions for server-side use
+export { 
+  isB2ImageUrl,
+  transformLocalToB2Url,
+  getOptimizedImageUrl,
+  validateImageUrl
+} from './image-client-utils';

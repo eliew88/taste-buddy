@@ -23,6 +23,7 @@ B2_ACCESS_KEY_ID=your-production-b2-key-id
 B2_SECRET_ACCESS_KEY=your-production-b2-application-key
 B2_BUCKET_NAME=tastebuddy-images-prod
 B2_PUBLIC_URL=https://f005.backblazeb2.com/file/tastebuddy-images-prod
+NEXT_PUBLIC_B2_PUBLIC_URL=https://f005.backblazeb2.com/file/tastebuddy-images-prod
 ```
 
 ### Environment Settings

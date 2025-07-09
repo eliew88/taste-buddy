@@ -15,6 +15,7 @@
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
  import { useRatings } from '@/hooks/use-ratings';
+ import { getOptimizedImageUrl } from '@/lib/image-client-utils';
  
  interface RecipeCardProps {
    /** Recipe data to display */
@@ -147,10 +148,17 @@
          {recipe.image ? (
            <>
              <img 
-               src={recipe.image} 
+               src={getOptimizedImageUrl(recipe.image) || recipe.image || ''} 
                alt={`${recipe.title} recipe`}
                className="w-full h-full object-cover transition-transform group-hover:scale-105"
                loading="lazy"
+               onError={(e) => {
+                 // Fallback to original URL if optimized URL fails
+                 const target = e.target as HTMLImageElement;
+                 if (recipe.image && target.src !== recipe.image) {
+                   target.src = recipe.image;
+                 }
+               }}
              />
              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity" />
            </>
