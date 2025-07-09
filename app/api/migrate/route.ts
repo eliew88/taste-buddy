@@ -23,9 +23,10 @@ export async function POST() {
     const tables = await prisma.$queryRawUnsafe(tableQuery) as Array<{ table_name: string }>;
     console.log('📊 Existing tables:', tables.map(t => t.table_name));
     
-    // Check if ingredient_entries table exists
+    // Check if tables exist
     const hasIngredientEntries = tables.some(t => t.table_name === 'ingredient_entries');
     const hasCompliments = tables.some(t => t.table_name === 'compliments');
+    const hasComments = tables.some(t => t.table_name === 'comments');
     
     let operations = [];
     
@@ -120,6 +121,50 @@ export async function POST() {
         ALTER TABLE "compliments" 
         ADD CONSTRAINT "compliments_recipeId_fkey" 
         FOREIGN KEY ("recipeId") REFERENCES "recipes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+      `);
+    }
+    
+    if (!hasComments) {
+      console.log('🔧 Creating comments table...');
+      operations.push('comments table creation');
+      
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE "comments" (
+          "id" TEXT NOT NULL,
+          "content" TEXT NOT NULL,
+          "visibility" TEXT NOT NULL DEFAULT 'public',
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL,
+          "userId" TEXT NOT NULL,
+          "recipeId" TEXT NOT NULL,
+          CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
+        );
+      `);
+      
+      // Add indexes and foreign keys for comments
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX "comments_recipeId_idx" ON "comments"("recipeId");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX "comments_userId_idx" ON "comments"("userId");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX "comments_visibility_idx" ON "comments"("visibility");
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX "comments_createdAt_idx" ON "comments"("createdAt");
+      `);
+      
+      // Add foreign keys
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "comments" 
+        ADD CONSTRAINT "comments_userId_fkey" 
+        FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "comments" 
+        ADD CONSTRAINT "comments_recipeId_fkey" 
+        FOREIGN KEY ("recipeId") REFERENCES "recipes"("id") ON DELETE CASCADE ON UPDATE CASCADE;
       `);
     }
     
