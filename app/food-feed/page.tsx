@@ -213,15 +213,72 @@ export default function FoodFeedPage() {
   // Event handlers
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Create search params with the new query immediately
+    const params = new URLSearchParams();
+    
+    // Add the current local query (what user just typed)
+    if (localQuery.trim()) {
+      params.append('query', localQuery.trim());
+    }
+    
+    // Add current filters
+    if (filters.difficulty.length > 0) {
+      filters.difficulty.forEach(d => params.append('difficulty', d));
+    }
+    
+    if (filters.ingredients.length > 0) {
+      filters.ingredients.forEach(ing => params.append('ingredients', ing));
+    }
+    
+    if (filters.tags.length > 0) {
+      filters.tags.forEach(tag => params.append('tags', tag));
+    }
+    
+    if (filters.cookTimeRange[0] > 0) {
+      params.append('cookTimeMin', filters.cookTimeRange[0].toString());
+    }
+    
+    if (filters.cookTimeRange[1] < 300) {
+      params.append('cookTimeMax', filters.cookTimeRange[1].toString());
+    }
+    
+    if (filters.servingsRange[0] > 1) {
+      params.append('servingsMin', filters.servingsRange[0].toString());
+    }
+    
+    if (filters.servingsRange[1] < 12) {
+      params.append('servingsMax', filters.servingsRange[1].toString());
+    }
+    
+    if (filters.minRating > 0) {
+      params.append('minRating', filters.minRating.toString());
+    }
+    
+    if (filters.dateRange.start) {
+      params.append('createdAfter', filters.dateRange.start);
+    }
+    
+    if (filters.dateRange.end) {
+      params.append('createdBefore', filters.dateRange.end);
+    }
+    
+    // Add sorting and pagination
+    params.append('sortBy', sortBy);
+    params.append('page', '1'); // Reset to page 1 for new search
+    params.append('limit', resultsPerPage.toString());
+    
+    // Update state and perform search immediately
     setSearchQuery(localQuery);
     setCurrentPage(1);
-    performSearch();
+    performSearch(params);
   };
 
   const handleQuickSearch = (searchTerm: string) => {
     setLocalQuery(searchTerm);
     setSearchQuery(searchTerm);
     setCurrentPage(1);
+    // The useEffect will handle the search trigger
   };
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
@@ -311,13 +368,13 @@ export default function FoodFeedPage() {
   /**
    * Perform search API call
    */
-  const performSearch = async () => {
+  const performSearch = async (searchParams?: URLSearchParams) => {
     try {
       setLoading(true);
       setError(null);
       
-      const searchParams = buildSearchParams();
-      const response = await fetch(`/api/recipes/search?${searchParams.toString()}`);
+      const params = searchParams || buildSearchParams();
+      const response = await fetch(`/api/recipes/search?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`Search failed: ${response.status}`);
@@ -327,7 +384,17 @@ export default function FoodFeedPage() {
       
       if (data.success) {
         setRecipes(data.data || []);
-        setSearchMeta(data.meta || null);
+        // Map pagination data to searchMeta format
+        const pagination = data.pagination;
+        if (pagination) {
+          setSearchMeta({
+            total: pagination.total,
+            pages: pagination.totalPages,
+            currentPage: pagination.page,
+          });
+        } else {
+          setSearchMeta(null);
+        }
       } else {
         throw new Error(data.error || 'Search failed');
       }
@@ -344,10 +411,8 @@ export default function FoodFeedPage() {
 
   // Trigger search when dependencies change
   useEffect(() => {
-    if (searchQuery || activeFilterCount > 0) {
-      performSearch();
-    }
-  }, [searchQuery, filters, sortBy, currentPage, resultsPerPage, activeFilterCount]);
+    performSearch();
+  }, [searchQuery, filters, sortBy, currentPage, resultsPerPage]);
 
   // Initial load - fetch some default recipes
   useEffect(() => {
@@ -544,7 +609,7 @@ export default function FoodFeedPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Search Error</h3>
                 <p className="text-gray-600 mb-4">{error}</p>
                 <button
-                  onClick={performSearch}
+                  onClick={() => performSearch()}
                   className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
                 >
                   Try Again
