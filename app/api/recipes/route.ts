@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        // PostgreSQL: Search in native arrays
-        { ingredients: { hasSome: [searchLower] } },
+        // Search in structured ingredients
+        { ingredients: { some: { ingredient: { contains: search, mode: 'insensitive' } } } },
         { tags: { hasSome: [searchLower] } },
       ];
     }
