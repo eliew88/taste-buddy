@@ -204,16 +204,9 @@ export async function PUT(
         }
       }
       
-      // Handle structured ingredients - we need to replace all ingredients
-      updateData.ingredients = {
-        deleteMany: {}, // Delete all existing ingredients
-        create: Array.isArray(ingredients) ? ingredients.map((ingredient: any) => ({
-          amount: parseFloat(ingredient.amount),
-          unit: ingredient.unit?.trim() || null,
-          ingredient: ingredient.ingredient.trim(),
-        })) : []
-      };
-      console.log('Prepared ingredients for update:', updateData.ingredients);
+      // We can't update ingredients directly in the same query due to Prisma limitations
+      // We'll handle ingredients separately after the main update
+      console.log('Ingredients will be updated separately after main recipe update');
     }
 
     if (instructions !== undefined) {
@@ -258,9 +251,9 @@ export async function PUT(
       updateData.image = image || null;
     }
 
-    // Update recipe
+    // Update recipe (without ingredients first)
     console.log('Updating recipe with data:', updateData);
-    const updatedRecipe = await prisma.recipe.update({
+    let updatedRecipe = await prisma.recipe.update({
       where: { id },
       data: updateData,
       include: {
@@ -289,6 +282,60 @@ export async function PUT(
       title: updatedRecipe.title,
       ingredientsCount: updatedRecipe.ingredients.length
     });
+
+    // Handle ingredients update separately if provided
+    if (ingredients !== undefined) {
+      console.log('Updating ingredients separately...');
+      
+      // Delete all existing ingredients
+      await prisma.ingredientEntry.deleteMany({
+        where: { recipeId: id }
+      });
+      
+      // Create new ingredients
+      if (Array.isArray(ingredients) && ingredients.length > 0) {
+        await prisma.ingredientEntry.createMany({
+          data: ingredients.map((ingredient: any) => ({
+            recipeId: id,
+            amount: parseFloat(ingredient.amount),
+            unit: ingredient.unit?.trim() || null,
+            ingredient: ingredient.ingredient.trim(),
+          }))
+        });
+      }
+      
+      // Fetch updated recipe with new ingredients
+      const refreshedRecipe = await prisma.recipe.findUnique({
+        where: { id },
+        include: {
+          author: {
+            select: { 
+              id: true, 
+              name: true, 
+              email: true 
+            },
+          },
+          ingredients: true,
+          _count: {
+            select: { 
+              favorites: true, 
+              ratings: true 
+            },
+          },
+          ratings: {
+            select: { rating: true }
+          }
+        },
+      });
+      
+      if (!refreshedRecipe) {
+        throw new Error('Failed to fetch updated recipe');
+      }
+      
+      updatedRecipe = refreshedRecipe;
+      
+      console.log('Ingredients updated successfully. New count:', updatedRecipe?.ingredients.length || 0);
+    }
 
     // PostgreSQL native arrays need no transformation
     const transformedRecipe = {
