@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { Heart, Search, Filter, Grid3X3, List, Loader2, AlertCircle } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
+import { useFavorites } from '@/hooks/use-favorites';
 
 interface FavoriteRecipe {
   id: string;
@@ -46,6 +47,9 @@ type SortOption = 'newest' | 'oldest' | 'title' | 'difficulty';
 export default function FavoritesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  
+  // Use the favorites hook for consistent state management
+  const { isFavorited, toggleFavorite } = useFavorites();
   
   // State management
   const [favorites, setFavorites] = useState<FavoriteRecipe[]>([]);
@@ -137,21 +141,13 @@ export default function FavoritesPage() {
     setFilteredFavorites(filtered);
   }, [favorites, searchTerm, selectedDifficulty, sortBy]);
 
-  const handleRemoveFromFavorites = async (recipeId: string) => {
-    try {
-      const response = await fetch('/api/recipes/favorites', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipeId, action: 'remove' }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Remove from local state
-        setFavorites(prev => prev.filter(recipe => recipe.id !== recipeId));
-      }
-    } catch (error) {
-      console.error('Error removing favorite:', error);
+  const handleFavoriteToggle = async (recipeId: string) => {
+    // Use the global favorites hook to toggle favorite status
+    const isFavoritedAfterToggle = await toggleFavorite(recipeId);
+    
+    // If the recipe is no longer favorited, remove it from the local favorites list
+    if (!isFavoritedAfterToggle) {
+      setFavorites(prev => prev.filter(recipe => recipe.id !== recipeId));
     }
   };
 
@@ -350,8 +346,8 @@ export default function FavoritesPage() {
                     recipe={recipe}
                     className={viewMode === 'list' ? 'flex' : ''}
                     showFavoriteButton={true}
-                    isFavorited={true}
-                    onFavoriteToggle={(recipeId) => handleRemoveFromFavorites(recipeId)}
+                    isFavorited={isFavorited(recipe.id)}
+                    onFavoriteToggle={handleFavoriteToggle}
                   />
                 </div>
               ))}

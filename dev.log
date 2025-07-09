@@ -1,0 +1,16 @@
+
+> tastebuddy@0.1.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, using available port 3002 instead.
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3002
+   - Network:      http://192.168.1.202:3002
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1160ms
+ ○ Compiling /api/upload/recipe-image ...
+ ✓ Compiled /api/upload/recipe-image in 691ms (604 modules)
+Creating Prisma client with PostgreSQL connection
+ POST /api/upload/recipe-image 401 in 844ms

@@ -104,7 +104,8 @@ export async function POST(request: NextRequest) {
       cookTime, 
       servings, 
       difficulty, 
-      tags 
+      tags,
+      image 
     } = body;
 
     // Validation
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
       servings: servings ? Math.max(1, parseInt(servings)) : null,
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
       tags: Array.isArray(tags) ? tags : [],
+      image: image?.trim() || null,
       authorId: userId,
     };
 

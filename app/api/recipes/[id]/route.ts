@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
+import { deleteRecipeImage } from '@/lib/image-utils';
 
 /**
  * GET /api/recipes/[id]
@@ -151,7 +152,8 @@ export async function PUT(
       cookTime, 
       servings, 
       difficulty, 
-      tags 
+      tags,
+      image 
     } = body;
 
     // Prepare update data (only include provided fields)
@@ -213,6 +215,15 @@ export async function PUT(
     if (tags !== undefined) {
       // PostgreSQL native array support
       updateData.tags = Array.isArray(tags) ? tags : [];
+    }
+
+    // Handle image updates
+    if (image !== undefined) {
+      // If new image is provided, delete old image (if it's a local image)
+      if (image && existingRecipe.image && existingRecipe.image !== image) {
+        await deleteRecipeImage(existingRecipe.image);
+      }
+      updateData.image = image || null;
     }
 
     // Update recipe
@@ -314,6 +325,11 @@ export async function DELETE(
         { success: false, error: 'Only the recipe author can delete this recipe' },
         { status: 403 }
       );
+    }
+
+    // Delete associated image file if it exists
+    if (existingRecipe.image) {
+      await deleteRecipeImage(existingRecipe.image);
     }
 
     // Delete recipe (this will also delete related favorites and ratings due to CASCADE)
