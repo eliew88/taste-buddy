@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -43,6 +43,8 @@ import { useFavorites } from '@/hooks/use-favorites';
 import CommentForm from '@/components/comment-form';
 import CommentsSection from '@/components/comments-section';
 import ComplimentForm from '@/components/compliment-form';
+import RecipeScaleSlider from '@/components/ui/recipe-scale-slider';
+import { scaleIngredients, formatAsFraction } from '@/lib/recipe-scaling';
 
 /**
  * StarRating Component for recipe detail page
@@ -189,6 +191,15 @@ export default function RecipeDetailPage() {
   
   // Compliment modal state
   const [showComplimentModal, setShowComplimentModal] = useState(false);
+  
+  // Recipe scaling state (local only, not persisted)
+  const [recipeScale, setRecipeScale] = useState(1);
+  
+  // Calculate scaled ingredients when scale or recipe changes
+  const scaledIngredients = useMemo(() => {
+    if (!recipe) return [];
+    return scaleIngredients(recipe.ingredients, recipeScale);
+  }, [recipe?.ingredients, recipeScale]);
 
   /**
    * Fetches recipe data from the API
@@ -577,19 +588,30 @@ export default function RecipeDetailPage() {
               </div>
             </div>
 
+            {/* Recipe Scale Control */}
+            <RecipeScaleSlider
+              scale={recipeScale}
+              onScaleChange={setRecipeScale}
+            />
+
             {/* Ingredients */}
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Ingredients ({recipe.ingredients?.length || 0})
+                {recipeScale !== 1 && (
+                  <span className="ml-2 text-sm font-normal text-green-700">
+                    (scaled {recipeScale}x)
+                  </span>
+                )}
               </h3>
               <ol className="space-y-2">
-                {recipe.ingredients?.map((ingredient, index) => (
+                {scaledIngredients?.map((ingredient, index) => (
                   <li key={ingredient.id || index} className="flex items-start">
                     <span className="min-w-6 h-6 bg-green-700 text-white text-sm font-medium rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                       {index + 1}
                     </span>
                     <span className="text-gray-700">
-                      {ingredient.amount} {ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
+                      {formatAsFraction(ingredient.amount)} {ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
                     </span>
                   </li>
                 )) || (
