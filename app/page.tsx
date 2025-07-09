@@ -87,7 +87,7 @@ const HeroSection = ({
       {/* Content */}
       <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
         {/* Hero Text */}
-        <h1 className="text-4xl md:text-6xl font-bold text-purple-900 mb-8 drop-shadow-lg">
+        <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-8 drop-shadow-lg font-serif italic">
           Discover, cook, and share amazing recipes!
         </h1>
         
@@ -100,7 +100,7 @@ const HeroSection = ({
               placeholder="Search recipes, ingredients, or tags..."
               value={searchTerm}
               onChange={(e) => onSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500 shadow-lg backdrop-blur-sm bg-white/95 text-lg"
+              className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500 shadow-lg backdrop-blur-sm bg-purple-200/90 text-lg"
             />
             {searchLoading && (
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -113,7 +113,7 @@ const HeroSection = ({
             <select
               value={difficulty}
               onChange={(e) => onDifficultyChange(e.target.value)}
-              className="px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white/95 shadow-lg backdrop-blur-sm text-lg"
+              className="px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-purple-200/90 shadow-lg backdrop-blur-sm text-lg"
             >
               <option value="">All Difficulties</option>
               <option value="easy">Easy</option>
