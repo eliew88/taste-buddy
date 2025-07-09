@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, Instagram, Globe, ExternalLink, Edit2 } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2 } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -386,7 +386,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Link
             href="/recipes/new"
             className="bg-green-700 text-white p-4 rounded-lg hover:bg-green-800 transition-colors flex items-center space-x-3"
@@ -407,6 +407,13 @@ export default function ProfilePage() {
           >
             <ChefHat className="w-5 h-5" />
             <span className="font-medium">Discover Recipes</span>
+          </Link>
+          <Link
+            href="/profile/payment-setup"
+            className="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-3"
+          >
+            <CreditCard className="w-5 h-5" />
+            <span className="font-medium">Payment Setup</span>
           </Link>
         </div>
 

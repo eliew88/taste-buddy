@@ -34,6 +34,9 @@ model User {
   // Following relationships
   following Follow[] @relation("UserFollowing")
   followers Follow[] @relation("UserFollowers")
+  
+  // Payment relationship
+  paymentAccount PaymentAccount?
 
   @@map("users")
 }
@@ -167,9 +170,15 @@ model Compliment {
   currency  String   @default("USD")
   
   // === PAYMENT STATUS (for future implementation) ===
-  paymentStatus String    @default("pending") // "pending", "completed", "failed"
-  paymentId     String?   // External payment processor ID
+  paymentStatus String    @default("pending") // "pending", "succeeded", "failed", "refunded"
+  paymentId     String?   // External payment processor ID (Stripe Payment Intent)
+  paymentIntentId String? // Stripe Payment Intent ID for tips
   paymentDate   DateTime?
+  paidAt        DateTime? // When payment was completed
+  
+  // === PLATFORM FEE DETAILS ===
+  platformFeeAmount Decimal? // Amount kept by platform (e.g., 0.25 for 5% of $5 tip)
+  netAmount        Decimal? // Amount received by chef after fees
   
   // === PRIVACY OPTIONS ===
   isAnonymous Boolean @default(false) // Whether sender wants to remain anonymous
@@ -214,5 +223,43 @@ model Follow {
   @@index([followerId])
   @@index([followingId])
   @@map("follows")
+}
+
+/**
+ * PaymentAccount Model - For TasteBuddy payment processing and tipping
+ */
+model PaymentAccount {
+  id String @id @default(cuid())
+  
+  // === ACCOUNT DETAILS ===
+  userId String @unique
+  stripeAccountId String? // Stripe Connect Express account ID
+  accountStatus String @default("pending") // "pending", "active", "restricted", "inactive"
+  
+  // === ONBOARDING STATUS ===
+  onboardingComplete Boolean @default(false)
+  detailsSubmitted Boolean @default(false)
+  payoutsEnabled Boolean @default(false)
+  
+  // === PAYMENT PREFERENCES ===
+  acceptsTips Boolean @default(true)
+  minimumTipAmount Decimal @default(1.00)
+  
+  // === PLATFORM FEE STRUCTURE ===
+  platformFeePercent Decimal @default(5.00) // 5% platform fee
+  
+  // === TIMESTAMPS ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === RELATIONSHIPS ===
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // === INDEXES ===
+  @@index([userId])
+  @@index([accountStatus])
+  @@index([onboardingComplete])
+  @@index([acceptsTips])
+  @@map("payment_accounts")
 }
 

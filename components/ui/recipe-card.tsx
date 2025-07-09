@@ -18,6 +18,7 @@
  import { useRatings } from '@/hooks/use-ratings';
  import { getOptimizedImageUrl } from '@/lib/image-client-utils';
 import Avatar from '@/components/ui/avatar';
+import TipButton from '@/components/payment/tip-button';
  
  interface RecipeCardProps {
    /** Recipe data to display */
@@ -289,10 +290,22 @@ import Avatar from '@/components/ui/avatar';
              </span>
            </div>
            
-           {/* View count (if available) */}
-           <div className="flex items-center text-sm text-gray-500">
-             <Eye className="w-3 h-3 mr-1" />
-             <span>{recipe._count?.favorites || 0} favorites</span>
+           <div className="flex items-center space-x-3">
+             {/* Tip Button */}
+             <TipButton
+               recipientId={recipe.author.id}
+               recipientName={recipe.author.name}
+               recipeId={recipe.id}
+               recipeTitle={recipe.title}
+               variant="compact"
+               className="text-xs"
+             />
+             
+             {/* View count (if available) */}
+             <div className="flex items-center text-sm text-gray-500">
+               <Eye className="w-3 h-3 mr-1" />
+               <span>{recipe._count?.favorites || 0} favorites</span>
+             </div>
            </div>
          </footer>
        </div>
