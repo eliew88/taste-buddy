@@ -106,8 +106,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('=== RECIPE UPDATE START ===');
+    console.log('Timestamp:', new Date().toISOString());
+    
     const { id } = await params;
+    console.log('Recipe ID:', id);
+    
     const body = await request.json();
+    console.log('Update request body:', JSON.stringify(body, null, 2));
 
     if (!id) {
       return NextResponse.json(
@@ -175,14 +181,39 @@ export async function PUT(
     }
 
     if (ingredients !== undefined) {
+      console.log('Processing ingredients update:', ingredients);
       if (!ingredients || (Array.isArray(ingredients) && ingredients.length === 0)) {
+        console.log('Ingredients validation failed: empty ingredients');
         return NextResponse.json(
           { success: false, error: 'At least one ingredient is required' },
           { status: 400 }
         );
       }
-      // PostgreSQL native array support
-      updateData.ingredients = Array.isArray(ingredients) ? ingredients : [ingredients].filter(Boolean);
+      
+      // Validate structured ingredients
+      if (Array.isArray(ingredients)) {
+        for (let i = 0; i < ingredients.length; i++) {
+          const ingredient = ingredients[i];
+          if (!ingredient.amount || !ingredient.ingredient?.trim()) {
+            console.log(`Ingredients validation failed: Invalid ingredient ${i}`, ingredient);
+            return NextResponse.json(
+              { success: false, error: 'Each ingredient must have amount and ingredient name' },
+              { status: 400 }
+            );
+          }
+        }
+      }
+      
+      // Handle structured ingredients - we need to replace all ingredients
+      updateData.ingredients = {
+        deleteMany: {}, // Delete all existing ingredients
+        create: Array.isArray(ingredients) ? ingredients.map((ingredient: any) => ({
+          amount: parseFloat(ingredient.amount),
+          unit: ingredient.unit?.trim() || null,
+          ingredient: ingredient.ingredient.trim(),
+        })) : []
+      };
+      console.log('Prepared ingredients for update:', updateData.ingredients);
     }
 
     if (instructions !== undefined) {
@@ -228,6 +259,7 @@ export async function PUT(
     }
 
     // Update recipe
+    console.log('Updating recipe with data:', updateData);
     const updatedRecipe = await prisma.recipe.update({
       where: { id },
       data: updateData,
@@ -251,6 +283,12 @@ export async function PUT(
         }
       },
     });
+    
+    console.log('Recipe updated successfully:', {
+      id: updatedRecipe.id,
+      title: updatedRecipe.title,
+      ingredientsCount: updatedRecipe.ingredients.length
+    });
 
     // PostgreSQL native arrays need no transformation
     const transformedRecipe = {
@@ -263,15 +301,29 @@ export async function PUT(
       ratings: undefined,
     };
 
+    console.log('Returning successful update response');
+    console.log('=== RECIPE UPDATE SUCCESS ===');
     return NextResponse.json({
       success: true,
       data: transformedRecipe,
     });
 
   } catch (error) {
+    console.error('=== RECIPE UPDATE ERROR ===');
     console.error('Error updating recipe:', error);
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+    });
+    console.error('=== END RECIPE UPDATE ERROR ===');
     return NextResponse.json(
-      { success: false, error: 'Failed to update recipe' },
+      { 
+        success: false, 
+        error: 'Failed to update recipe',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }

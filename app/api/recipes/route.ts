@@ -96,7 +96,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== RECIPE CREATION START ===');
+    console.log('Timestamp:', new Date().toISOString());
+    
     const body = await request.json();
+    console.log('Request body received:', JSON.stringify(body, null, 2));
+    
     const { 
       title, 
       description, 
@@ -108,9 +113,23 @@ export async function POST(request: NextRequest) {
       tags,
       image 
     } = body;
+    
+    console.log('Extracted fields:', {
+      title: title?.slice(0, 50) + '...',
+      hasDescription: !!description,
+      ingredientsCount: Array.isArray(ingredients) ? ingredients.length : 'not array',
+      hasInstructions: !!instructions,
+      cookTime,
+      servings,
+      difficulty,
+      tagsCount: Array.isArray(tags) ? tags.length : 'not array',
+      hasImage: !!image
+    });
 
     // Validation
+    console.log('Starting validation...');
     if (!title?.trim()) {
+      console.log('Validation failed: No title');
       return NextResponse.json(
         { success: false, error: 'Recipe title is required' },
         { status: 400 }
@@ -118,6 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+      console.log('Validation failed: Invalid ingredients', { ingredients });
       return NextResponse.json(
         { success: false, error: 'At least one ingredient is required' },
         { status: 400 }
@@ -125,8 +145,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate ingredients structure
-    for (const ingredient of ingredients) {
+    console.log('Validating ingredients structure...');
+    for (let i = 0; i < ingredients.length; i++) {
+      const ingredient = ingredients[i];
+      console.log(`Ingredient ${i}:`, ingredient);
       if (!ingredient.amount || !ingredient.ingredient?.trim()) {
+        console.log(`Validation failed: Invalid ingredient ${i}`, ingredient);
         return NextResponse.json(
           { success: false, error: 'Each ingredient must have amount and ingredient name' },
           { status: 400 }
@@ -135,16 +159,21 @@ export async function POST(request: NextRequest) {
     }
 
     if (!instructions?.trim()) {
+      console.log('Validation failed: No instructions');
       return NextResponse.json(
         { success: false, error: 'Cooking instructions are required' },
         { status: 400 }
       );
     }
+    console.log('All validation passed!');
 
     // Get authenticated user ID
+    console.log('Getting user ID...');
     const userId = await getCurrentUserId();
+    console.log('User ID:', userId);
     
     if (!userId) {
+      console.log('Authentication failed: No user ID');
       return NextResponse.json(
         { success: false, error: 'Authentication required to create recipes' },
         { status: 401 }
@@ -152,6 +181,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare data for PostgreSQL database storage with structured ingredients
+    console.log('Preparing recipe data...');
     const recipeData = {
       title: title.trim(),
       description: description?.trim() || null,
@@ -163,15 +193,29 @@ export async function POST(request: NextRequest) {
       image: image?.trim() || null,
       authorId: userId,
       ingredients: {
-        create: ingredients.map((ingredient: any) => ({
-          amount: parseFloat(ingredient.amount),
-          unit: ingredient.unit?.trim() || null,
-          ingredient: ingredient.ingredient.trim(),
-        }))
+        create: ingredients.map((ingredient: any, index: number) => {
+          const parsed = {
+            amount: parseFloat(ingredient.amount),
+            unit: ingredient.unit?.trim() || null,
+            ingredient: ingredient.ingredient.trim(),
+          };
+          console.log(`Mapped ingredient ${index}:`, parsed);
+          return parsed;
+        })
       }
     };
+    
+    console.log('Recipe data prepared:', {
+      title: recipeData.title,
+      hasDescription: !!recipeData.description,
+      ingredientsCount: recipeData.ingredients.create.length,
+      hasInstructions: !!recipeData.instructions,
+      authorId: recipeData.authorId,
+      hasImage: !!recipeData.image
+    });
 
     // Create recipe in database
+    console.log('Creating recipe in database...');
     const recipe = await prisma.recipe.create({
       data: recipeData,
       include: {
@@ -184,6 +228,13 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+    
+    console.log('Recipe created successfully:', {
+      id: recipe.id,
+      title: recipe.title,
+      ingredientsCount: recipe.ingredients.length,
+      authorId: recipe.authorId
+    });
 
     // Recipe data is ready for response (no transformation needed with PostgreSQL)
     const transformedRecipe = {
@@ -191,22 +242,27 @@ export async function POST(request: NextRequest) {
       avgRating: 0, // New recipes start with 0 rating
     };
 
+    console.log('Returning successful response');
+    console.log('=== RECIPE CREATION SUCCESS ===');
     return NextResponse.json(
       { success: true, data: transformedRecipe }, 
       { status: 201 }
     );
   } catch (error) {
+    console.error('=== RECIPE CREATION ERROR ===');
     console.error('Error creating recipe:', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       databaseUrl: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
       databaseProtocol: process.env.DATABASE_URL?.split('://')[0] || 'UNKNOWN'
     });
+    console.error('=== END RECIPE CREATION ERROR ===');
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to create recipe',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
