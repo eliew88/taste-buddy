@@ -588,12 +588,6 @@ export default function RecipeDetailPage() {
               </div>
             </div>
 
-            {/* Recipe Scale Control */}
-            <RecipeScaleSlider
-              scale={recipeScale}
-              onScaleChange={setRecipeScale}
-            />
-
             {/* Ingredients */}
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -636,6 +630,12 @@ export default function RecipeDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Recipe Scale Control */}
+            <RecipeScaleSlider
+              scale={recipeScale}
+              onScaleChange={setRecipeScale}
+            />
           </div>
         </div>
 
