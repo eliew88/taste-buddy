@@ -9,8 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Recipe } from '@/types/recipe';
 import { 
   Search, 
@@ -23,8 +22,7 @@ import {
   TrendingUp,
   Clock,
   Users as UsersIcon,
-  SortAsc,
-  ArrowLeft
+  SortAsc
 } from 'lucide-react';
 
 import Navigation from '@/components/ui/Navigation';
@@ -41,6 +39,7 @@ type ViewMode = 'grid' | 'list';
 interface SearchFilters {
   difficulty: string[];
   ingredients: string[];
+  excludedIngredients: string[];
   tags: string[];
   cookTimeRange: [number, number];
   servingsRange: [number, number];
@@ -58,6 +57,7 @@ interface SearchFilters {
 const defaultFilters: SearchFilters = {
   difficulty: [],
   ingredients: [],
+  excludedIngredients: [],
   tags: [],
   cookTimeRange: [0, 300],
   servingsRange: [1, 12],
@@ -184,6 +184,7 @@ export default function FoodFeedPage() {
     let count = 0;
     if (filters.difficulty.length > 0) count++;
     if (filters.ingredients.length > 0) count++;
+    if (filters.excludedIngredients.length > 0) count++;
     if (filters.tags.length > 0) count++;
     if (filters.cookTimeRange[0] > 0 || filters.cookTimeRange[1] < 300) count++;
     if (filters.servingsRange[0] > 1 || filters.servingsRange[1] < 12) count++;
@@ -247,6 +248,10 @@ export default function FoodFeedPage() {
     
     if (filters.ingredients.length > 0) {
       filters.ingredients.forEach(ing => params.append('ingredients', ing));
+    }
+    
+    if (filters.excludedIngredients.length > 0) {
+      filters.excludedIngredients.forEach(ing => params.append('excludedIngredients', ing));
     }
     
     if (filters.tags.length > 0) {
@@ -345,6 +350,10 @@ export default function FoodFeedPage() {
     
     if (filters.ingredients.length > 0) {
       filters.ingredients.forEach(ing => params.append('ingredients', ing));
+    }
+    
+    if (filters.excludedIngredients.length > 0) {
+      filters.excludedIngredients.forEach(ing => params.append('excludedIngredients', ing));
     }
     
     if (filters.tags.length > 0) {

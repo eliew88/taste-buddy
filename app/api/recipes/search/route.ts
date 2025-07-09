@@ -22,6 +22,7 @@ const enhancedSearchSchema = z.object({
   query: z.string().optional(),
   difficulty: z.array(z.enum(['easy', 'medium', 'hard'])).optional(),
   ingredients: z.array(z.string()).optional(),
+  excludedIngredients: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   cookTimeMin: z.number().min(0).optional(),
   cookTimeMax: z.number().min(0).optional(),
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
       query: searchParams.get('search') || searchParams.get('query') || undefined,
       difficulty: searchParams.get('difficulty') ? [searchParams.get('difficulty')].filter(Boolean) : searchParams.getAll('difficulty').filter(Boolean),
       ingredients: searchParams.getAll('ingredients').filter(Boolean),
+      excludedIngredients: searchParams.getAll('excludedIngredients').filter(Boolean),
       tags: searchParams.getAll('tags').filter(Boolean),
       cookTimeMin: searchParams.get('cookTimeMin') ? parseInt(searchParams.get('cookTimeMin')!) : undefined,
       cookTimeMax: searchParams.get('cookTimeMax') ? parseInt(searchParams.get('cookTimeMax')!) : undefined,
@@ -153,6 +155,25 @@ export async function GET(request: NextRequest) {
             } 
           }
         }))
+      });
+    }
+    
+    // Excluded ingredients filter - PostgreSQL array operations
+    if (params.excludedIngredients && params.excludedIngredients.length > 0) {
+      // For each excluded ingredient, ensure the recipe does NOT contain it
+      params.excludedIngredients.forEach(excludedIng => {
+        andConditions.push({
+          NOT: {
+            ingredients: {
+              some: {
+                ingredient: {
+                  contains: excludedIng,
+                  mode: 'insensitive'
+                }
+              }
+            }
+          }
+        });
       });
     }
     

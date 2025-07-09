@@ -23,7 +23,8 @@ import {
   ChefHat,
   Tag,
   Utensils,
-  Heart
+  Heart,
+  Shield
 } from 'lucide-react';
 
 /**
@@ -32,6 +33,7 @@ import {
 interface SearchFilters {
   difficulty: string[];
   ingredients: string[];
+  excludedIngredients: string[];
   tags: string[];
   cookTimeRange: [number, number];
   servingsRange: [number, number];
@@ -325,6 +327,7 @@ export default function AdvancedSearchFilters({
     servings: false,
     rating: false,
     ingredients: false,
+    excludedIngredients: false,
     tags: false,
     date: false,
   });
@@ -513,6 +516,31 @@ export default function AdvancedSearchFilters({
           />
         </FilterSection>
 
+        {/* Excluded Ingredients Filter */}
+        <FilterSection
+          title="Exclude Ingredients"
+          icon={<Shield className="w-4 h-4" />}
+          isOpen={openSections.excludedIngredients}
+          onToggle={() => toggleSection('excludedIngredients')}
+          badgeCount={filters.excludedIngredients.length}
+        >
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Select ingredients to exclude from recipes. Great for allergies and dietary restrictions.
+            </p>
+            <MultiSelect
+              options={filterOptions?.popularIngredients.map(ing => ({
+                value: ing.name,
+                label: ing.name,
+                count: ing.count,
+              })) || []}
+              selectedValues={filters.excludedIngredients}
+              onChange={(values) => updateFilters({ excludedIngredients: values })}
+              placeholder="No ingredients available to exclude"
+            />
+          </div>
+        </FilterSection>
+
         {/* Tags Filter */}
         <FilterSection
           title="Tags"
@@ -620,6 +648,25 @@ export default function AdvancedSearchFilters({
                   })}
                   className="hover:text-green-900 transition-colors"
                   aria-label={`Remove ${ingredient} filter`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            
+            {filters.excludedIngredients.map(ingredient => (
+              <span
+                key={`exclude-${ingredient}`}
+                className="inline-flex items-center space-x-1 bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full"
+              >
+                <Shield className="w-3 h-3" />
+                <span>No {ingredient}</span>
+                <button
+                  onClick={() => updateFilters({
+                    excludedIngredients: filters.excludedIngredients.filter(i => i !== ingredient)
+                  })}
+                  className="hover:text-red-900 transition-colors"
+                  aria-label={`Remove ${ingredient} exclusion filter`}
                 >
                   <X className="w-3 h-3" />
                 </button>
