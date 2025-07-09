@@ -5,7 +5,10 @@ import { getCurrentUserId } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('=== RECIPES API START ===');
     console.log('Recipes API - Starting request processing');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('URL:', request.url);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const difficulty = searchParams.get('difficulty') || '';
@@ -64,26 +67,40 @@ export async function GET(request: NextRequest) {
     // Transform recipes for response (native PostgreSQL arrays need no transformation)
     const transformedRecipes = recipes.map((recipe, index) => {
       try {
-        // Calculate average rating from ratings array
-        const totalRating = recipe.ratings?.reduce((sum, r) => sum + r.rating, 0) || 0;
-        const avgRating = recipe.ratings?.length > 0 ? totalRating / recipe.ratings.length : 0;
+        console.log(`DEBUG: Processing recipe ${index}/${recipes.length}: ${recipe.title}`);
+        console.log(`DEBUG: Recipe ${index} ratings:`, recipe.ratings?.length || 0);
+        
+        // Calculate average rating from ratings array with safety checks
+        const ratingsArray = Array.isArray(recipe.ratings) ? recipe.ratings : [];
+        const totalRating = ratingsArray.reduce((sum, r) => {
+          if (typeof r?.rating === 'number') {
+            return sum + r.rating;
+          }
+          console.warn(`DEBUG: Invalid rating found in recipe ${index}:`, r);
+          return sum;
+        }, 0);
+        const avgRating = ratingsArray.length > 0 ? totalRating / ratingsArray.length : 0;
 
-        return {
+        const transformedRecipe = {
           ...recipe,
           avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
           // Remove ratings array from response for cleaner API
           ratings: undefined,
         };
+        
+        console.log(`DEBUG: Recipe ${index} transformed successfully`);
+        return transformedRecipe;
       } catch (error) {
-        console.error(`Error transforming recipe ${index}:`, error);
-        console.error('Recipe data:', JSON.stringify(recipe, null, 2));
+        console.error(`DEBUG: Error transforming recipe ${index}:`, error);
+        console.error('DEBUG: Recipe data:', JSON.stringify(recipe, null, 2));
         throw error;
       }
     });
 
     const total = await prisma.recipe.count({ where });
+    console.log('DEBUG: Total count:', total);
 
-    return NextResponse.json({
+    const response = {
       success: true,
       data: transformedRecipes,
       pagination: {
@@ -94,19 +111,26 @@ export async function GET(request: NextRequest) {
         hasNextPage: page < Math.ceil(total / limit),
         hasPrevPage: page > 1,
       },
-    });
+    };
+    
+    console.log('DEBUG: About to return response with', transformedRecipes.length, 'recipes');
+    console.log('=== RECIPES API END SUCCESS ===');
+    return NextResponse.json(response);
   } catch (error) {
+    console.error('=== RECIPES API ERROR ===');
     console.error('Error fetching recipes:', error);
     console.error('Error details:', {
       name: error instanceof Error ? error.name : 'Unknown',
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : 'No stack trace',
     });
+    console.error('=== END RECIPES API ERROR ===');
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to fetch recipes',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
