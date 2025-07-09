@@ -5,8 +5,8 @@
 export interface PaymentAccount {
   id: string;
   userId: string;
-  stripeAccountId?: string;
-  accountStatus: 'pending' | 'active' | 'restricted' | 'inactive';
+  stripeAccountId: string | null;
+  accountStatus: string;
   onboardingComplete: boolean;
   detailsSubmitted: boolean;
   payoutsEnabled: boolean;
