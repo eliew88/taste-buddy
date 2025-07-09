@@ -12,6 +12,7 @@
  import { useSession } from 'next-auth/react';
  import { Heart, Clock, Users, ChefHat, Eye, Loader2 } from 'lucide-react';
  import StarRating from './star-rating';
+ import { FollowButton } from './follow-button';
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
  import { useRatings } from '@/hooks/use-ratings';
@@ -205,10 +206,17 @@
           )}
         </header>
          
-         {/* Author */}
-         <p className="text-gray-600 mb-3">
-           By <span className="font-medium">{recipe.author.name}</span>
-         </p>
+         {/* Author with follow button */}
+         <div className="flex items-center justify-between mb-3">
+           <div className="flex items-center space-x-2">
+             <p className="text-gray-600">
+               By <Link href={`/profile/${recipe.author.id}`} className="font-medium text-gray-800 hover:text-blue-600 transition-colors">
+                 {recipe.author.name}
+               </Link>
+             </p>
+           </div>
+           <FollowButton userId={recipe.author.id} variant="compact" />
+         </div>
          
          {/* Description */}
          {recipe.description && (

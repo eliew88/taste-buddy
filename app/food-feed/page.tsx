@@ -45,6 +45,7 @@ interface SearchFilters {
   cookTimeRange: [number, number];
   servingsRange: [number, number];
   minRating: number;
+  tastebuddiesOnly: boolean;
   dateRange: {
     start: string | null;
     end: string | null;
@@ -61,6 +62,7 @@ const defaultFilters: SearchFilters = {
   cookTimeRange: [0, 300],
   servingsRange: [1, 12],
   minRating: 0,
+  tastebuddiesOnly: false,
   dateRange: {
     start: null,
     end: null,
@@ -186,6 +188,7 @@ export default function FoodFeedPage() {
     if (filters.cookTimeRange[0] > 0 || filters.cookTimeRange[1] < 300) count++;
     if (filters.servingsRange[0] > 1 || filters.servingsRange[1] < 12) count++;
     if (filters.minRating > 0) count++;
+    if (filters.tastebuddiesOnly) count++;
     if (filters.dateRange.start || filters.dateRange.end) count++;
     return count;
   }, [filters]);
@@ -268,6 +271,10 @@ export default function FoodFeedPage() {
     
     if (filters.minRating > 0) {
       params.append('minRating', filters.minRating.toString());
+    }
+    
+    if (filters.tastebuddiesOnly) {
+      params.append('tastebuddiesOnly', 'true');
     }
     
     if (filters.dateRange.start) {
@@ -362,6 +369,10 @@ export default function FoodFeedPage() {
     
     if (filters.minRating > 0) {
       params.append('minRating', filters.minRating.toString());
+    }
+    
+    if (filters.tastebuddiesOnly) {
+      params.append('tastebuddiesOnly', 'true');
     }
     
     if (filters.dateRange.start) {
