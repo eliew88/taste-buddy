@@ -66,6 +66,12 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     ));
   };
 
+  const updateEntryMultiple = (id: string, updates: Partial<IngredientEntryState>) => {
+    setEntries(entries.map(entry => 
+      entry.id === id ? { ...entry, ...updates } : entry
+    ));
+  };
+
   const handleAmountKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -96,13 +102,12 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
   const handleAmountChange = (id: string, value: string) => {
     // Allow empty string or valid numbers (including decimals)
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      // Update both the raw input string and the numeric amount
-      updateEntry(id, 'amountInput', value);
-      // Only update the numeric amount if the value is a complete number
-      const numericValue = value === '' ? 0 : parseFloat(value);
-      if (!isNaN(numericValue)) {
-        updateEntry(id, 'amount', numericValue);
-      }
+      // Update both the raw input string and numeric amount in one state update
+      const numericValue = value === '' ? 0 : parseFloat(value) || 0;
+      updateEntryMultiple(id, {
+        amountInput: value,
+        amount: numericValue
+      });
     }
   };
 
@@ -110,9 +115,11 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     // On blur, ensure the final value is properly formatted
     const numericValue = value === '' ? 0 : parseFloat(value);
     if (!isNaN(numericValue)) {
-      updateEntry(id, 'amount', numericValue);
-      // Update the input string to the formatted number (removes trailing decimals)
-      updateEntry(id, 'amountInput', numericValue === 0 ? '' : numericValue.toString());
+      const formattedInput = numericValue === 0 ? '' : numericValue.toString();
+      updateEntryMultiple(id, {
+        amountInput: formattedInput,
+        amount: numericValue
+      });
     }
   };
 
