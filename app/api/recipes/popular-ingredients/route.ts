@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     
     // Get all recipes with their ingredients
     const recipes = await prisma.recipe.findMany({
-      select: {
+      include: {
         ingredients: true,
       },
     });
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     recipes.forEach(recipe => {
       recipe.ingredients.forEach(ingredient => {
         // Normalize ingredient name (lowercase, trim)
-        const normalizedIngredient = ingredient.toLowerCase().trim();
+        const normalizedIngredient = ingredient.ingredient.toLowerCase().trim();
         if (normalizedIngredient) {
           ingredientCounts.set(
             normalizedIngredient,

@@ -54,12 +54,8 @@ export async function GET(request: NextRequest) {
     
     // Get all recipes with their data
     const recipes = await prisma.recipe.findMany({
-      select: {
+      include: {
         ingredients: true,
-        tags: true,
-        difficulty: true,
-        cookTime: true,
-        servings: true,
         _count: {
           select: { favorites: true, ratings: true },
         },
@@ -77,7 +73,7 @@ export async function GET(request: NextRequest) {
     recipes.forEach(recipe => {
       // Count ingredients
       recipe.ingredients.forEach(ingredient => {
-        const normalizedIngredient = ingredient.toLowerCase().trim();
+        const normalizedIngredient = ingredient.ingredient.toLowerCase().trim();
         if (normalizedIngredient) {
           ingredientCounts.set(
             normalizedIngredient,
