@@ -10,12 +10,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { User, Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2 } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
 import ComplimentsDisplay from '@/components/compliments-display';
 import { IngredientEntry } from '@/types/recipe';
+import Avatar from '@/components/ui/avatar';
+import ProfilePhotoUpload from '@/components/ui/profile-photo-upload';
 
 interface UserRecipe {
   id: string;
@@ -49,6 +51,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const [userRecipes, setUserRecipes] = useState<UserRecipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [currentProfilePhoto, setCurrentProfilePhoto] = useState<string | null>(null);
   
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -57,6 +61,28 @@ export default function ProfilePage() {
   const handleFavoriteToggle = async (recipeId: string): Promise<void> => {
     await toggleFavorite(recipeId);
   };
+  
+  // Handle profile photo upload success
+  const handlePhotoUploaded = (photoUrl: string) => {
+    setCurrentProfilePhoto(photoUrl);
+    setShowPhotoUpload(false);
+    // Update the session data if needed
+    if (session) {
+      session.user.image = photoUrl;
+    }
+  };
+  
+  // Handle photo upload error
+  const handlePhotoUploadError = (error: string) => {
+    console.error('Photo upload error:', error);
+  };
+
+  // Initialize profile photo from session
+  useEffect(() => {
+    if (session?.user?.image) {
+      setCurrentProfilePhoto(session.user.image);
+    }
+  }, [session]);
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -120,8 +146,19 @@ export default function ProfilePage() {
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-green-700" />
+              <div className="relative">
+                <Avatar
+                  imageUrl={currentProfilePhoto}
+                  name={session.user?.name}
+                  size="xl"
+                />
+                <button
+                  onClick={() => setShowPhotoUpload(true)}
+                  className="absolute bottom-0 right-0 p-1.5 bg-green-700 text-white rounded-full hover:bg-green-800 transition-colors shadow-lg"
+                  title="Change profile photo"
+                >
+                  <Camera className="w-3 h-3" />
+                </button>
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{session.user?.name}</h1>
@@ -239,6 +276,30 @@ export default function ProfilePage() {
           userId={session.user.id}
           isOwnProfile={true}
         />
+        
+        {/* Profile Photo Upload Modal */}
+        {showPhotoUpload && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Update Profile Photo</h2>
+                <button
+                  onClick={() => setShowPhotoUpload(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <ProfilePhotoUpload
+                currentPhotoUrl={currentProfilePhoto}
+                userName={session.user?.name}
+                onPhotoUploaded={handlePhotoUploaded}
+                onUploadError={handlePhotoUploadError}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

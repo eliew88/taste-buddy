@@ -17,6 +17,17 @@ export function isLocalRecipeImage(imageUrl: string): boolean {
 }
 
 /**
+ * Validate if an image URL points to a local profile image
+ * @param imageUrl - The image URL to validate
+ * @returns boolean - True if it's a local profile image
+ */
+export function isLocalProfileImage(imageUrl: string): boolean {
+  return imageUrl.startsWith('/images/profiles/') && 
+         !imageUrl.startsWith('http://') && 
+         !imageUrl.startsWith('https://');
+}
+
+/**
  * Check if URL is a B2 CDN URL
  */
 export function isB2ImageUrl(url: string): boolean {
@@ -43,25 +54,40 @@ function getB2PublicUrl(): string | null {
  * to 'https://f005.backblazeb2.com/file/bucket/recipes/recipe-123.jpg'
  */
 export function transformLocalToB2Url(localUrl: string): string | null {
-  if (!isLocalRecipeImage(localUrl)) {
-    return null;
-  }
-
   const b2PublicUrl = getB2PublicUrl();
   if (!b2PublicUrl) {
     return null;
   }
 
-  // Extract the filename from local URL
-  // '/images/recipes/recipe-123.jpg' -> 'recipe-123.jpg'
-  const filename = localUrl.replace(/^\/images\/recipes\//, '');
-  
-  if (!filename) {
-    return null;
-  }
+  // Handle recipe images
+  if (isLocalRecipeImage(localUrl)) {
+    // Extract the filename from local URL
+    // '/images/recipes/recipe-123.jpg' -> 'recipe-123.jpg'
+    const filename = localUrl.replace(/^\/images\/recipes\//, '');
+    
+    if (!filename) {
+      return null;
+    }
 
-  // Construct B2 URL: B2_PUBLIC_URL/recipes/filename
-  return `${b2PublicUrl}/recipes/${filename}`;
+    // Construct B2 URL: B2_PUBLIC_URL/recipes/filename
+    return `${b2PublicUrl}/recipes/${filename}`;
+  }
+  
+  // Handle profile images
+  if (isLocalProfileImage(localUrl)) {
+    // Extract the filename from local URL
+    // '/images/profiles/profile-123.jpg' -> 'profile-123.jpg'
+    const filename = localUrl.replace(/^\/images\/profiles\//, '');
+    
+    if (!filename) {
+      return null;
+    }
+
+    // Construct B2 URL: B2_PUBLIC_URL/profiles/filename
+    return `${b2PublicUrl}/profiles/${filename}`;
+  }
+  
+  return null;
 }
 
 /**

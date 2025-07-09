@@ -79,6 +79,7 @@ export interface CreateIngredientEntryData {
       id: string;
       name: string;
       email: string;
+      image?: string;
     };
     
     /** When the recipe was created */

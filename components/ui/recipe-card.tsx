@@ -16,6 +16,7 @@
  import { truncateText } from '@/lib/utils';
  import { useRatings } from '@/hooks/use-ratings';
  import { getOptimizedImageUrl } from '@/lib/image-client-utils';
+import Avatar from '@/components/ui/avatar';
  
  interface RecipeCardProps {
    /** Recipe data to display */
@@ -206,9 +207,16 @@
         </header>
          
          {/* Author */}
-         <p className="text-gray-600 mb-3">
-           By <span className="font-medium">{recipe.author.name}</span>
-         </p>
+         <div className="flex items-center space-x-2 mb-3">
+           <Avatar
+             imageUrl={recipe.author.image}
+             name={recipe.author.name}
+             size="sm"
+           />
+           <p className="text-gray-600">
+             By <span className="font-medium">{recipe.author.name}</span>
+           </p>
+         </div>
          
          {/* Description */}
          {recipe.description && (
