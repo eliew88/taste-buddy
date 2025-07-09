@@ -76,21 +76,29 @@ export async function createStripeConnectAccount(
   } catch (error) {
     console.error('Error creating Stripe Connect account:', error);
     
-    // Log more detailed error information
-    if (error && typeof error === 'object') {
+    // Type-safe error logging
+    if (error instanceof Error) {
       console.error('Error details:', {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        type: error.type,
-        code: error.code,
-        param: error.param,
-        statusCode: error.statusCode
+      });
+    }
+    
+    // Log additional Stripe error details if available
+    if (error && typeof error === 'object' && 'type' in error) {
+      const stripeError = error as any;
+      console.error('Stripe error details:', {
+        type: stripeError.type,
+        code: stripeError.code,
+        param: stripeError.param,
+        statusCode: stripeError.statusCode
       });
     }
     
     // Pass through the original error message for better debugging
-    throw new Error(`Failed to create payment account: ${error.message || 'Unknown error'}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to create payment account: ${errorMessage}`);
   }
 }
 

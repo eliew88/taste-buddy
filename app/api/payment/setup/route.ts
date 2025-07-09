@@ -59,12 +59,16 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Payment setup API error:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      cause: error.cause
-    });
+    
+    // Type-safe error logging
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause
+      });
+    }
     
     // Return more specific error message
     const errorMessage = error instanceof Error ? error.message : 'Failed to setup payment account';
