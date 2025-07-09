@@ -7,8 +7,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let session: any = null;
+  
   try {
-    const session = await getServerSession(authOptions);
+    session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
       return NextResponse.json(
