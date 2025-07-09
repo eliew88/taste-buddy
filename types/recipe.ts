@@ -78,6 +78,7 @@
     servings?: number;
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
+    image?: string;
   }
 
   /**
@@ -93,6 +94,7 @@
     servings?: number;
     difficulty?: 'easy' | 'medium' | 'hard';
     tags?: string[];
+    image?: string;
   }
   
   /**

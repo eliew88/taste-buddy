@@ -1,13 +1,14 @@
 /**
- * Recipe Image Upload API
+ * Recipe Image Upload API with B2 Cloud Storage
  * 
- * Handles file uploads for recipe images with validation and storage.
+ * Handles file uploads for recipe images with validation and cloud storage.
  * 
  * Features:
  * - File type validation (JPEG, PNG, WebP)
  * - File size validation (max 5MB)
  * - Unique filename generation
- * - Local storage in public/images/recipes/
+ * - B2 cloud storage with local fallback
+ * - CDN URL generation
  * - Error handling and validation
  */
 
@@ -16,6 +17,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { getCurrentUserId } from '@/lib/auth';
+import { uploadImageToB2, testB2Connection } from '@/lib/b2-storage';
 
 // Configuration
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate the file
+    // Validate the file (basic validation before processing)
     const validation = validateFile(file);
     if (!validation.valid) {
       return NextResponse.json(
@@ -112,22 +114,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Try B2 upload first
+    console.log('🔄 Attempting B2 upload...');
+    const b2Result = await uploadImageToB2(file, buffer);
+    
+    if (b2Result.success && b2Result.url) {
+      console.log(`✅ Image uploaded to B2: ${b2Result.url} (${file.size} bytes)`);
+      
+      return NextResponse.json({
+        success: true,
+        data: {
+          filename: b2Result.url.split('/').pop() || 'unknown',
+          url: b2Result.url,
+          size: file.size,
+          type: file.type,
+          originalName: file.name,
+          storage: 'b2'
+        }
+      });
+    }
+
+    // Fallback to local storage if B2 fails
+    console.log('⚠️ B2 upload failed, falling back to local storage...');
+    console.log('B2 Error:', b2Result.error);
+
     // Ensure upload directory exists
     await ensureUploadDirectory();
 
-    // Generate unique filename
+    // Generate unique filename for local storage
     const uniqueFilename = generateUniqueFilename(file.name);
     const filePath = path.join(UPLOAD_DIR, uniqueFilename);
     const publicUrl = `/images/recipes/${uniqueFilename}`;
-
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
     
     await writeFile(filePath, buffer);
 
-    // Log successful upload
-    console.log(`✅ Image uploaded successfully: ${publicUrl} (${file.size} bytes)`);
+    console.log(`✅ Image uploaded locally: ${publicUrl} (${file.size} bytes)`);
 
     return NextResponse.json({
       success: true,
@@ -136,7 +161,8 @@ export async function POST(request: NextRequest) {
         url: publicUrl,
         size: file.size,
         type: file.type,
-        originalName: file.name
+        originalName: file.name,
+        storage: 'local'
       }
     });
 

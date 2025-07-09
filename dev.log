@@ -2,15 +2,33 @@
 > tastebuddy@0.1.0 dev
 > next dev
 
- ⚠ Port 3000 is in use, using available port 3002 instead.
+ ⚠ Port 3000 is in use, using available port 3001 instead.
    ▲ Next.js 15.3.5
-   - Local:        http://localhost:3002
-   - Network:      http://192.168.1.202:3002
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.202:3001
    - Environments: .env.local, .env
 
  ✓ Starting...
- ✓ Ready in 1160ms
- ○ Compiling /api/upload/recipe-image ...
- ✓ Compiled /api/upload/recipe-image in 691ms (604 modules)
+ ✓ Ready in 1282ms
+ ○ Compiling /api/recipes ...
+ ✓ Compiled /api/recipes in 714ms (601 modules)
 Creating Prisma client with PostgreSQL connection
- POST /api/upload/recipe-image 401 in 844ms
+prisma:query SELECT "public"."recipes"."id", "public"."recipes"."title", "public"."recipes"."description", "public"."recipes"."ingredients", "public"."recipes"."instructions", "public"."recipes"."cookTime", "public"."recipes"."servings", "public"."recipes"."difficulty", "public"."recipes"."tags", "public"."recipes"."image", "public"."recipes"."createdAt", "public"."recipes"."updatedAt", "public"."recipes"."authorId", COALESCE("aggr_selection_0_Favorite"."_aggr_count_favorites", 0) AS "_aggr_count_favorites", COALESCE("aggr_selection_1_Rating"."_aggr_count_ratings", 0) AS "_aggr_count_ratings" FROM "public"."recipes" LEFT JOIN (SELECT "public"."favorites"."recipeId", COUNT(*) AS "_aggr_count_favorites" FROM "public"."favorites" WHERE 1=1 GROUP BY "public"."favorites"."recipeId") AS "aggr_selection_0_Favorite" ON ("public"."recipes"."id" = "aggr_selection_0_Favorite"."recipeId") LEFT JOIN (SELECT "public"."ratings"."recipeId", COUNT(*) AS "_aggr_count_ratings" FROM "public"."ratings" WHERE 1=1 GROUP BY "public"."ratings"."recipeId") AS "aggr_selection_1_Rating" ON ("public"."recipes"."id" = "aggr_selection_1_Rating"."recipeId") WHERE 1=1 ORDER BY "public"."recipes"."createdAt" DESC LIMIT $1 OFFSET $2
+prisma:query SELECT "public"."users"."id", "public"."users"."name", "public"."users"."email" FROM "public"."users" WHERE "public"."users"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."ratings"."id", "public"."ratings"."rating", "public"."ratings"."recipeId" FROM "public"."ratings" WHERE "public"."ratings"."recipeId" IN ($1,$2) OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count._all" FROM (SELECT "public"."recipes"."id" FROM "public"."recipes" WHERE 1=1 OFFSET $1) AS "sub"
+ GET /api/recipes?limit=2 200 in 1901ms
+ ○ Compiling / ...
+ ✓ Compiled / in 845ms (1166 modules)
+🎨 HeroSection rendering with images: [
+  'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1980&q=80',
+  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
+  'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2181&q=80',
+  'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1965&q=80'
+]
+🖼️ Panel 0: https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1980&q=80
+🖼️ Panel 1: https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80
+🖼️ Panel 2: https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2181&q=80
+🖼️ Panel 3: https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1965&q=80
+ GET / 200 in 1017ms
+[?25h

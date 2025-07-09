@@ -143,17 +143,26 @@
        aria-label={`Recipe: ${recipe.title}`}
      >
        {/* Recipe Image */}
-       {recipe.image && (
-         <div className="h-48 bg-gray-200 overflow-hidden relative group">
-           <img 
-             src={recipe.image} 
-             alt={`${recipe.title} recipe`}
-             className="w-full h-full object-cover transition-transform group-hover:scale-105"
-             loading="lazy"
-           />
-           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity" />
-         </div>
-       )}
+       <div className="h-48 bg-gray-200 overflow-hidden relative group">
+         {recipe.image ? (
+           <>
+             <img 
+               src={recipe.image} 
+               alt={`${recipe.title} recipe`}
+               className="w-full h-full object-cover transition-transform group-hover:scale-105"
+               loading="lazy"
+             />
+             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity" />
+           </>
+         ) : (
+           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+             <div className="text-center text-gray-400">
+               <ChefHat className="w-16 h-16 mx-auto mb-2 opacity-50" />
+               <p className="text-sm font-medium">No image</p>
+             </div>
+           </div>
+         )}
+       </div>
        
        <div className="p-6">
          {/* Header with title and favorite button */}
