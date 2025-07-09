@@ -57,7 +57,7 @@ export async function createStripeConnectAccount(
     console.log('PaymentAccount created in database');
 
     // Create account link for onboarding
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const baseUrl = process.env.VERCEL_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
     console.log('Creating account link with baseUrl:', baseUrl);
     
     const accountLink = await stripe.accountLinks.create({
@@ -114,7 +114,7 @@ export async function getStripeAccountLink(
       throw new Error('Stripe is not configured');
     }
     
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    const baseUrl = process.env.VERCEL_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${baseUrl}/profile/payment-setup?refresh=true`,
