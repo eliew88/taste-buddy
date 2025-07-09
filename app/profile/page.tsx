@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, Instagram, Globe, ExternalLink, Edit2 } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -53,6 +53,20 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [currentProfilePhoto, setCurrentProfilePhoto] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    instagramUrl: '',
+    websiteUrl: ''
+  });
+  const [formErrors, setFormErrors] = useState({
+    instagramUrl: '',
+    websiteUrl: ''
+  });
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [userSocialLinks, setUserSocialLinks] = useState({
+    instagramUrl: null as string | null,
+    websiteUrl: null as string | null
+  });
   
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -82,6 +96,33 @@ export default function ProfilePage() {
     if (session?.user?.image) {
       setCurrentProfilePhoto(session.user.image);
     }
+  }, [session]);
+
+  // Fetch user's social links
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch(`/api/users/${session.user.id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setUserSocialLinks({
+            instagramUrl: data.data.instagramUrl,
+            websiteUrl: data.data.websiteUrl
+          });
+          setEditFormData({
+            instagramUrl: data.data.instagramUrl || '',
+            websiteUrl: data.data.websiteUrl || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
   }, [session]);
 
   // Redirect to sign-in if not authenticated
@@ -121,6 +162,114 @@ export default function ProfilePage() {
 
     fetchUserRecipes();
   }, [session]);
+
+  // Social links functions
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session?.user?.id) return;
+
+    // Validate form before submission
+    const instagramValidation = validateUrl(editFormData.instagramUrl, 'instagram');
+    const websiteValidation = validateUrl(editFormData.websiteUrl, 'website');
+    
+    if (!instagramValidation.valid || !websiteValidation.valid) {
+      setFormErrors({
+        instagramUrl: instagramValidation.error || '',
+        websiteUrl: websiteValidation.error || ''
+      });
+      return;
+    }
+
+    setUpdateLoading(true);
+    try {
+      // Normalize URLs before sending
+      const normalizedData = {
+        instagramUrl: editFormData.instagramUrl ? normalizeUrl(editFormData.instagramUrl) : '',
+        websiteUrl: editFormData.websiteUrl ? normalizeUrl(editFormData.websiteUrl) : ''
+      };
+
+      const response = await fetch(`/api/users/${session.user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(normalizedData),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update profile');
+      }
+
+      // Update local state
+      setUserSocialLinks(normalizedData);
+      setShowEditModal(false);
+      setFormErrors({ instagramUrl: '', websiteUrl: '' });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const normalizeUrl = (url: string) => {
+    if (!url.trim()) return '';
+    
+    // Remove any whitespace
+    url = url.trim();
+    
+    // For Instagram URLs, normalize to proper format
+    if (url.includes('instagram.com') || url.includes('instagr.am')) {
+      // Extract username if it's just a username without domain
+      if (!url.includes('.com') && !url.includes('.am')) {
+        return `https://instagram.com/${url.replace('@', '')}`;
+      }
+      return url.startsWith('http') ? url : `https://${url}`;
+    }
+    
+    // For other URLs, ensure they start with https:// if not already
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    
+    return url;
+  };
+
+  const validateUrl = (url: string, type: 'instagram' | 'website') => {
+    if (!url.trim()) return { valid: true, error: null };
+    
+    try {
+      const normalizedUrl = normalizeUrl(url);
+      const urlObj = new URL(normalizedUrl);
+      
+      if (type === 'instagram') {
+        const validInstagramDomains = ['instagram.com', 'www.instagram.com', 'instagr.am', 'www.instagr.am'];
+        if (!validInstagramDomains.includes(urlObj.hostname)) {
+          return { valid: false, error: 'Please enter a valid Instagram URL' };
+        }
+      }
+      
+      return { valid: true, error: null };
+    } catch {
+      return { valid: false, error: `Please enter a valid ${type} URL` };
+    }
+  };
+
+  const handleFormChange = (field: string, value: string) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear errors when user starts typing
+    if (formErrors[field as keyof typeof formErrors]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
 
   if (status === 'loading') {
     return (
@@ -172,9 +321,45 @@ export default function ProfilePage() {
                     <span>Member since {new Date().getFullYear()}</span>
                   </div>
                 </div>
+                
+                {/* Social Links */}
+                {(userSocialLinks.instagramUrl || userSocialLinks.websiteUrl) && (
+                  <div className="flex items-center space-x-3 mt-3">
+                    {userSocialLinks.instagramUrl && (
+                      <a
+                        href={userSocialLinks.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-pink-600 hover:text-pink-700 transition-colors"
+                        title="Instagram"
+                      >
+                        <Instagram className="w-4 h-4" />
+                        <span className="text-sm">Instagram</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {userSocialLinks.websiteUrl && (
+                      <a
+                        href={userSocialLinks.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 transition-colors"
+                        title="Website"
+                      >
+                        <Globe className="w-4 h-4" />
+                        <span className="text-sm">Website</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-            <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors">
+            <button 
+              onClick={() => setShowEditModal(true)}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              title="Edit Profile"
+            >
               <Settings className="w-5 h-5" />
             </button>
           </div>
@@ -297,6 +482,77 @@ export default function ProfilePage() {
                 onPhotoUploaded={handlePhotoUploaded}
                 onUploadError={handlePhotoUploadError}
               />
+            </div>
+          </div>
+        )}
+        
+        {/* Edit Profile Modal */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Edit Profile</h2>
+              
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <div>
+                  <label htmlFor="instagramUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                    Instagram URL
+                  </label>
+                  <input
+                    type="text"
+                    id="instagramUrl"
+                    value={editFormData.instagramUrl}
+                    onChange={(e) => handleFormChange('instagramUrl', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      formErrors.instagramUrl 
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    placeholder="https://instagram.com/yourusername or just @yourusername"
+                  />
+                  {formErrors.instagramUrl && (
+                    <p className="mt-1 text-sm text-red-600">{formErrors.instagramUrl}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                    Website URL
+                  </label>
+                  <input
+                    type="text"
+                    id="websiteUrl"
+                    value={editFormData.websiteUrl}
+                    onChange={(e) => handleFormChange('websiteUrl', e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      formErrors.websiteUrl 
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    placeholder="https://yourwebsite.com"
+                  />
+                  {formErrors.websiteUrl && (
+                    <p className="mt-1 text-sm text-red-600">{formErrors.websiteUrl}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    disabled={updateLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updateLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {updateLoading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
