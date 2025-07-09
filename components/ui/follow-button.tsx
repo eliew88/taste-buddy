@@ -45,7 +45,35 @@ export function FollowButton({ userId, className = '', variant = 'default' }: Fo
     }
   };
 
+  // Debug logging for production troubleshooting
+  if (process.env.NODE_ENV === 'development') {
+    console.log('FollowButton Debug:', {
+      userId,
+      isAuthenticated,
+      canFollow,
+      statusLoading,
+      isFollowing
+    });
+  }
+
   if (!isAuthenticated || !canFollow || statusLoading) {
+    // For debugging in production, show a temporary indicator
+    if (!isAuthenticated) {
+      return (
+        <div className="text-xs text-gray-400 px-2 py-1">
+          Sign in to follow
+        </div>
+      );
+    }
+    
+    // Return a visible debug element in development
+    if (process.env.NODE_ENV === 'development') {
+      return (
+        <div className="text-xs text-gray-400 px-2 py-1 border border-gray-200 rounded">
+          {!canFollow ? 'Cannot follow' : 'Loading...'}
+        </div>
+      );
+    }
     return null;
   }
 
