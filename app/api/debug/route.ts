@@ -16,6 +16,21 @@ export async function GET() {
     databaseUrlProtocol: process.env.DATABASE_URL?.split('://')[0] || 'UNKNOWN',
     nextAuthSecret: process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET',
     nextAuthUrl: process.env.NEXTAUTH_URL || 'NOT SET',
+    // B2 Configuration status
+    b2Status: {
+      configured: !!(process.env.B2_ENDPOINT && process.env.B2_ACCESS_KEY_ID && process.env.B2_SECRET_ACCESS_KEY && process.env.B2_BUCKET_NAME && process.env.B2_PUBLIC_URL),
+      endpoint: process.env.B2_ENDPOINT ? 'Set' : 'Missing',
+      region: process.env.B2_REGION ? 'Set' : 'Missing',
+      accessKeyId: process.env.B2_ACCESS_KEY_ID ? 'Set' : 'Missing',
+      secretAccessKey: process.env.B2_SECRET_ACCESS_KEY ? 'Set' : 'Missing',
+      bucketName: process.env.B2_BUCKET_NAME ? 'Set' : 'Missing',
+      publicUrl: process.env.B2_PUBLIC_URL ? 'Set' : 'Missing',
+      // Show partial values for debugging (but not full secrets)
+      endpointValue: process.env.B2_ENDPOINT,
+      regionValue: process.env.B2_REGION,
+      bucketNameValue: process.env.B2_BUCKET_NAME,
+      publicUrlValue: process.env.B2_PUBLIC_URL,
+    },
     errors: [] as string[],
     userCount: 0,
     demoUsers: [] as Array<{ email: string; id: string; hasPassword: boolean; passwordLength: number }>,
