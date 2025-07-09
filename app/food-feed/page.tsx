@@ -451,12 +451,12 @@ export default function FoodFeedPage() {
   }, [searchQuery, filters, sortBy, currentPage, resultsPerPage]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Main Navigation */}
       <Navigation />
       
       {/* Page Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-blue-100 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="space-y-6">
             {/* Page Title and Description */}

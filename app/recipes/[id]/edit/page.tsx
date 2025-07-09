@@ -22,7 +22,7 @@ import apiClient from '@/lib/api-client';
  * Loading Skeleton Component
  */
 const EditRecipePageSkeleton = () => (
-  <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen">
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="w-20 h-4 bg-gray-200 rounded animate-pulse mb-4"></div>
@@ -57,7 +57,7 @@ const ErrorDisplay = ({
   message: string; 
   onRetry: () => void; 
 }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  <div className="min-h-screen flex items-center justify-center">
     <div className="max-w-md w-full mx-4">
       <div className="bg-white rounded-lg shadow-md p-6 text-center">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -202,7 +202,7 @@ export default function EditRecipePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">

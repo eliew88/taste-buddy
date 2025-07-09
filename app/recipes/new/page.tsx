@@ -30,7 +30,7 @@ import ErrorBoundary from '@/components/error-boundary';
 export default function NewRecipePage() {
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         {/* Navigation */}
         <Navigation />
         

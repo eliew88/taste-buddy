@@ -73,7 +73,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-50" role="navigation">
+    <nav className="bg-blue-100 shadow-sm border-b sticky top-0 z-50" role="navigation">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Brand Logo */}
@@ -191,7 +191,7 @@ export default function Navigation() {
 
         {/* Mobile Navigation Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t bg-white py-4" role="menu">
+          <div className="md:hidden border-t bg-blue-100 py-4" role="menu">
             <div className="flex flex-col space-y-2">
               <Link
                 href="/"

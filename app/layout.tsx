@@ -81,7 +81,7 @@ export default function RootLayout({
         {/* Viewport for responsive design */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-blue-100`}>
         {/* Global Error Boundary - No function props passed */}
         <ErrorBoundary>
           {/* Session Provider for Authentication */}

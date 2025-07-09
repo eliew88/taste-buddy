@@ -273,7 +273,7 @@ export default function ProfilePage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         <Navigation />
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-green-700" />
@@ -287,7 +287,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Navigation />
       
       <div className="max-w-4xl mx-auto px-4 py-8">

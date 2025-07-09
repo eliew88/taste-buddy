@@ -102,7 +102,7 @@ const StarRating = ({
  * Loading Skeleton Component
  */
 const RecipeDetailSkeleton = () => (
-  <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen">
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center">
@@ -141,7 +141,7 @@ const ErrorDisplay = ({
   message: string; 
   onRetry: () => void; 
 }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  <div className="min-h-screen flex items-center justify-center">
     <div className="max-w-md w-full mx-4">
       <div className="bg-white rounded-lg shadow-md p-6 text-center">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -383,7 +383,7 @@ export default function RecipeDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b print:hidden">
         <div className="max-w-4xl mx-auto px-4 py-4">
