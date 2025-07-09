@@ -87,7 +87,10 @@ const HeroSection = ({
       {/* Content */}
       <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
         {/* Hero Text */}
-        <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-8 drop-shadow-lg font-serif italic">
+        <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-8 font-serif italic" style={{
+          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
+          WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
+        }}>
           Discover, cook, and share amazing recipes!
         </h1>
         

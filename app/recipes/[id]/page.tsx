@@ -683,14 +683,7 @@ export default function RecipeDetailPage() {
                 <div className="prose max-w-none">
                   {recipe.instructions.split('\n').map((step, index) => (
                     <p key={index} className="mb-4 leading-relaxed">
-                      {step.trim() && (
-                        <>
-                          <span className="font-semibold text-green-700">
-                            {index + 1}.
-                          </span>{' '}
-                          {step.trim()}
-                        </>
-                      )}
+                      {step.trim() && step.trim()}
                     </p>
                   ))}
                 </div>
@@ -726,11 +719,6 @@ export default function RecipeDetailPage() {
               </ol>
             </div>
 
-            {/* Advanced Recipe Scale Control */}
-            <RecipeScaleSlider
-              scale={recipeScale}
-              onScaleChange={setRecipeScale}
-            />
           </div>
         </div>
 

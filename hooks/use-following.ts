@@ -101,10 +101,18 @@ export function useFollowing() {
 
     try {
       const response = await fetch(`/api/users/${userId}/follow-status`);
+      
+      // Check if response is ok before parsing JSON
+      if (!response.ok) {
+        console.error('Follow status API returned error:', response.status, response.statusText);
+        return null;
+      }
+
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to get follow status');
+        console.error('Follow status API error:', data.error || 'Unknown error');
+        return null;
       }
 
       return data.data;

@@ -46,6 +46,12 @@ export async function GET(
     });
   } catch (error) {
     console.error('Get follow status API error:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      userId: await params.then(p => p.id).catch(() => 'unknown'),
+      sessionUserId: session?.user?.id || 'unauthenticated'
+    });
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
