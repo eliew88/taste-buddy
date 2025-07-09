@@ -5,6 +5,7 @@ import { getCurrentUserId } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Recipes API - Starting request processing');
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const difficulty = searchParams.get('difficulty') || '';
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch recipes with rating aggregation
+    console.log('Recipes API - Executing database query with where:', JSON.stringify(where, null, 2));
     const recipes = await prisma.recipe.findMany({
       where,
       include: {
@@ -56,19 +58,27 @@ export async function GET(request: NextRequest) {
       skip,
       take: limit,
     });
+    
+    console.log(`Recipes API - Found ${recipes.length} recipes`);
 
     // Transform recipes for response (native PostgreSQL arrays need no transformation)
-    const transformedRecipes = recipes.map(recipe => {
-      // Calculate average rating from ratings array
-      const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
-      const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
+    const transformedRecipes = recipes.map((recipe, index) => {
+      try {
+        // Calculate average rating from ratings array
+        const totalRating = recipe.ratings?.reduce((sum, r) => sum + r.rating, 0) || 0;
+        const avgRating = recipe.ratings?.length > 0 ? totalRating / recipe.ratings.length : 0;
 
-      return {
-        ...recipe,
-        avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
-        // Remove ratings array from response for cleaner API
-        ratings: undefined,
-      };
+        return {
+          ...recipe,
+          avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
+          // Remove ratings array from response for cleaner API
+          ratings: undefined,
+        };
+      } catch (error) {
+        console.error(`Error transforming recipe ${index}:`, error);
+        console.error('Recipe data:', JSON.stringify(recipe, null, 2));
+        throw error;
+      }
     });
 
     const total = await prisma.recipe.count({ where });
@@ -87,8 +97,17 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching recipes:', error);
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+    });
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch recipes' },
+      { 
+        success: false, 
+        error: 'Failed to fetch recipes',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
