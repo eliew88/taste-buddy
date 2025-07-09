@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn } from 'lucide-react';
 import { NotificationBell } from './notification-bell';
+import Avatar from '@/components/ui/avatar';
 
 /**
  * Navigation Component
@@ -137,7 +138,11 @@ export default function Navigation() {
                     className={`p-2 rounded-md ${getLinkClasses('/profile')} flex items-center space-x-2`}
                     aria-label="User Profile"
                   >
-                    <User className="w-5 h-5" />
+                    <Avatar
+                      imageUrl={session.user?.image}
+                      name={session.user?.name}
+                      size="sm"
+                    />
                     <span className="hidden lg:block text-sm font-medium">{session.user?.name}</span>
                   </Link>
                 </div>
@@ -226,7 +231,12 @@ export default function Navigation() {
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
-                    <User className="w-4 h-4 mr-2" />
+                    <Avatar
+                      imageUrl={session.user?.image}
+                      name={session.user?.name}
+                      size="sm"
+                      className="mr-2"
+                    />
                     Profile ({session.user?.name})
                   </Link>
                   

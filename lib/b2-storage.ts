@@ -85,13 +85,13 @@ const SUPPORTED_MIME_TYPES = [
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 /**
- * Generate unique filename for recipe image
+ * Generate unique filename for upload
  */
-function generateUniqueFilename(originalName: string): string {
+function generateUniqueFilename(originalName: string, folder: string = 'recipes'): string {
   const timestamp = Date.now();
   const uuid = uuidv4().substring(0, 8);
   const extension = getFileExtension(originalName);
-  return `recipes/${timestamp}-${uuid}${extension}`;
+  return `${folder}/${timestamp}-${uuid}${extension}`;
 }
 
 /**
@@ -155,7 +155,8 @@ function validateFile(file: File, buffer: Buffer): { valid: boolean; error?: str
  */
 export async function uploadImageToB2(
   file: File,
-  buffer: Buffer
+  buffer: Buffer,
+  folder: string = 'recipes'
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     // Validate file
@@ -166,7 +167,7 @@ export async function uploadImageToB2(
 
     const config = getB2Config();
     const client = createB2Client();
-    const filename = generateUniqueFilename(file.name);
+    const filename = generateUniqueFilename(file.name, folder);
 
     // Upload to B2
     const uploadCommand = new PutObjectCommand({

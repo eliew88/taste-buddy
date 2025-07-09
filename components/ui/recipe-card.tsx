@@ -17,6 +17,7 @@
  import { truncateText } from '@/lib/utils';
  import { useRatings } from '@/hooks/use-ratings';
  import { getOptimizedImageUrl } from '@/lib/image-client-utils';
+import Avatar from '@/components/ui/avatar';
  
  interface RecipeCardProps {
    /** Recipe data to display */
@@ -209,6 +210,11 @@
          {/* Author with follow button */}
          <div className="flex items-center justify-between mb-3">
            <div className="flex items-center space-x-2">
+             <Avatar
+               imageUrl={recipe.author.image}
+               name={recipe.author.name}
+               size="sm"
+             />
              <p className="text-gray-600">
                By <Link href={`/profile/${recipe.author.id}`} className="font-medium text-gray-800 hover:text-blue-600 transition-colors">
                  {recipe.author.name}
