@@ -54,6 +54,7 @@ export const STRIPE_CONNECT_CONFIG = {
     payouts: {
       schedule: {
         interval: 'weekly' as const,
+        weekly_anchor: 'friday' as const, // Payouts on Fridays
       },
     },
   },
