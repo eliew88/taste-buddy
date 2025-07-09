@@ -28,7 +28,15 @@ export async function GET(
         image: true,
         createdAt: true,
         instagramUrl: true,
-        websiteUrl: true
+        websiteUrl: true,
+        paymentAccount: {
+          select: {
+            accountStatus: true,
+            onboardingComplete: true,
+            payoutsEnabled: true,
+            acceptsTips: true
+          }
+        }
       }
     });
 
@@ -109,7 +117,15 @@ export async function PUT(
         image: true,
         createdAt: true,
         instagramUrl: true,
-        websiteUrl: true
+        websiteUrl: true,
+        paymentAccount: {
+          select: {
+            accountStatus: true,
+            onboardingComplete: true,
+            payoutsEnabled: true,
+            acceptsTips: true
+          }
+        }
       }
     });
 

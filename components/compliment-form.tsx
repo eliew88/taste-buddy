@@ -62,6 +62,40 @@ export default function ComplimentForm({
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<{
+    canSendTips: boolean;
+    canReceiveTips: boolean;
+    loading: boolean;
+  }>({ canSendTips: false, canReceiveTips: false, loading: true });
+
+  // Check payment status when modal opens
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (isOpen && session?.user?.id) {
+        try {
+          // Check sender's payment status
+          const senderResponse = await fetch('/api/payment/status');
+          const senderData = await senderResponse.json();
+          
+          // Check recipient's payment status
+          const recipientResponse = await fetch(`/api/users/${toUserId}`);
+          const recipientData = await recipientResponse.json();
+          
+          setPaymentStatus({
+            canSendTips: senderData.success && senderData.data?.canSendTips,
+            canReceiveTips: recipientData.success && recipientData.data?.paymentAccount?.acceptsTips && 
+                           recipientData.data?.paymentAccount?.accountStatus === 'active',
+            loading: false
+          });
+        } catch (err) {
+          console.error('Failed to check payment status:', err);
+          setPaymentStatus({ canSendTips: false, canReceiveTips: false, loading: false });
+        }
+      }
+    };
+    
+    checkPaymentStatus();
+  }, [isOpen, session?.user?.id, toUserId]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -186,7 +220,7 @@ export default function ComplimentForm({
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Compliment Type
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid ${paymentStatus.canSendTips && paymentStatus.canReceiveTips ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 <button
                   type="button"
                   onClick={() => setType('message')}
@@ -201,20 +235,36 @@ export default function ComplimentForm({
                   <div className="text-xs text-gray-500">Share your appreciation</div>
                 </button>
                 
-                <button
-                  type="button"
-                  onClick={() => setType('tip')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    type === 'tip'
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <DollarSign className="w-6 h-6 mx-auto mb-2" />
-                  <div className="text-sm font-medium">Send Tip</div>
-                  <div className="text-xs text-gray-500">Show appreciation with a tip</div>
-                </button>
+                {paymentStatus.canSendTips && paymentStatus.canReceiveTips && (
+                  <button
+                    type="button"
+                    onClick={() => setType('tip')}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      type === 'tip'
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <DollarSign className="w-6 h-6 mx-auto mb-2" />
+                    <div className="text-sm font-medium">Send Tip</div>
+                    <div className="text-xs text-gray-500">Show appreciation with a tip</div>
+                  </button>
+                )}
               </div>
+              
+              {/* Info message when tips are not available */}
+              {!paymentStatus.loading && (!paymentStatus.canSendTips || !paymentStatus.canReceiveTips) && (
+                <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <p className="text-xs text-gray-600">
+                    <AlertCircle className="w-3 h-3 inline mr-1" />
+                    {!paymentStatus.canReceiveTips 
+                      ? `${toUserName} hasn't set up their payment account yet, so tips are not available.`
+                      : !paymentStatus.canSendTips
+                      ? 'You need to set up your payment account to send tips.'
+                      : 'Tips are currently unavailable.'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Message */}
