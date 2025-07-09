@@ -1,26 +1,3 @@
-/**
- * TasteBuddy Database Schema - PostgreSQL Production Edition
- * 
- * This is the production version of the schema optimized for PostgreSQL.
- * Key differences from SQLite version:
- * - Uses PostgreSQL as datasource
- * - Native array types for ingredients/tags instead of JSON strings
- * - Enhanced performance with proper indexing
- * - Full-text search capabilities
- * 
- * To switch to this schema:
- * 1. Replace prisma/schema.prisma with this file
- * 2. Update DATABASE_URL to PostgreSQL connection string
- * 3. Run: npx prisma migrate deploy
- * 4. Update helper functions to handle native arrays
- * 
- * @file prisma/schema-postgres.prisma
- * @version 2.0.0 (PostgreSQL)
- * @database PostgreSQL
- */
-
-// ===== PRISMA CONFIGURATION =====
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -30,25 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===== DATABASE MODELS =====
-
 /**
  * User Model - Production Version
  */
 model User {
-  // === PRIMARY KEY ===
-  id String @id @default(cuid())
-
-  // === AUTHENTICATION FIELDS ===
-  email    String  @unique
-  name     String?
-  image    String?
-  password String? // Hashed password for credentials provider
-
-  // === METADATA ===
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   // === RELATIONSHIPS ===
   recipes   Recipe[]
   favorites Favorite[]
@@ -59,46 +29,33 @@ model User {
 }
 
 /**
- * Recipe Model - Production Version with Native Arrays
+ * Recipe Model - Production Version
  */
 model Recipe {
-  // === PRIMARY KEY ===
-  id String @id @default(cuid())
-
-  // === CORE CONTENT ===
-  title       String
-  description String?
-  
-  // PostgreSQL native array types - much better than JSON strings
-  ingredients String[] // Native PostgreSQL array
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  // Keep simple string array for now
+  ingredients  String[]
   instructions String
-
-  // === RECIPE METADATA ===
-  cookTime   String?
-  servings   Int?
-  difficulty String  @default("easy")
-  tags       String[] @default([]) // Native PostgreSQL array
-  image      String?
-
-  // === TIMESTAMPS ===
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // === AUTHOR RELATIONSHIP ===
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  // === SOCIAL FEATURES ===
+  cookTime     String?
+  servings     Int?
+  difficulty   String            @default("easy")
+  tags         String[]          @default([])
+  image        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  authorId     String
+  
+  // === RELATIONSHIPS ===
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
   favorites Favorite[]
   ratings   Rating[]
-  comments  Comment[]
 
-  // === INDEXES FOR PERFORMANCE ===
   @@index([authorId])
   @@index([difficulty])
   @@index([createdAt])
-  // PostgreSQL GIN indexes for array fields and full-text search
-  @@index([ingredients], type: Gin)
   @@index([tags], type: Gin)
   @@map("recipes")
 }
@@ -110,12 +67,9 @@ model Favorite {
   id       String @id @default(cuid())
   userId   String
   recipeId String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // === RELATIONSHIPS ===
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-
-  // === CONSTRAINTS ===
   @@unique([userId, recipeId])
   @@index([userId])
   @@index([recipeId])
@@ -126,20 +80,15 @@ model Favorite {
  * Rating Model - Production Version
  */
 model Rating {
-  id       String @id @default(cuid())
-  rating   Int    @default(1) // 1-5 star rating
-  userId   String
-  recipeId String
-
-  // === TIMESTAMPS ===
+  id        String   @id @default(cuid())
+  rating    Int      @default(1)
+  userId    String
+  recipeId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // === RELATIONSHIPS ===
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-
-  // === CONSTRAINTS ===
   @@unique([userId, recipeId])
   @@index([recipeId])
   @@index([rating])
@@ -150,23 +99,16 @@ model Rating {
  * Comment Model - Production Version
  */
 model Comment {
-  id      String @id @default(cuid())
-  content String
-  
-  // === VISIBILITY OPTIONS ===
-  visibility String @default("public") // "private", "author_only", "public"
-  
-  // === TIMESTAMPS ===
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // === RELATIONSHIPS ===
-  userId   String
-  recipeId String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  
-  // === INDEXES ===
+  id         String   @id @default(cuid())
+  content    String
+  visibility String   @default("public")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String
+  recipeId   String
+  recipe     Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([recipeId])
   @@index([userId])
   @@index([visibility])
@@ -174,37 +116,3 @@ model Comment {
   @@map("comments")
 }
 
-/**
- * POSTGRESQL-SPECIFIC OPTIMIZATIONS:
- * 
- * 1. Native Array Support:
- *    - ingredients: String[] instead of JSON string
- *    - tags: String[] instead of JSON string
- *    - Much better performance and querying capabilities
- * 
- * 2. Advanced Indexing:
- *    - GIN indexes on array fields for fast array queries
- *    - B-tree indexes on commonly queried fields
- *    - Composite indexes for complex queries
- * 
- * 3. Full-Text Search:
- *    - Can add tsvector columns for advanced search
- *    - Much faster than LIKE queries
- * 
- * 4. Concurrent Connections:
- *    - PostgreSQL handles multiple users much better than SQLite
- *    - Connection pooling support
- * 
- * 5. Data Integrity:
- *    - Better constraint enforcement
- *    - Transactional safety
- *    - Foreign key performance
- * 
- * MIGRATION NOTES:
- * 
- * When migrating from SQLite to PostgreSQL:
- * 1. Update all API routes to handle String[] instead of JSON.parse()
- * 2. Update Prisma queries to use array operators
- * 3. Migrate existing data with custom scripts
- * 4. Update search functionality to use PostgreSQL features
- */
