@@ -138,13 +138,16 @@ export async function GET(request: NextRequest) {
     // Ingredients filter - PostgreSQL array operations
     if (params.ingredients && params.ingredients.length > 0) {
       andConditions.push({
-        ingredients: { 
-          every: { 
-            ingredient: { 
-              in: params.ingredients 
+        OR: params.ingredients.map(ing => ({
+          ingredients: { 
+            some: { 
+              ingredient: { 
+                contains: ing,
+                mode: 'insensitive'
+              } 
             } 
-          } 
-        },
+          }
+        }))
       });
     }
     
