@@ -180,7 +180,7 @@ export async function uploadImageToB2(
       ACL: 'public-read',
       // Add metadata
       Metadata: {
-        'original-name': file.name,
+        'original-name': encodeURIComponent(file.name),
         'upload-timestamp': Date.now().toString(),
         'content-type': file.type
       }
