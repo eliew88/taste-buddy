@@ -34,7 +34,7 @@ import {
   Printer,
   Share2,
   Edit,
-  Gift
+  Coins
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
@@ -401,11 +401,11 @@ export default function RecipeDetailPage() {
               {session?.user?.id && session.user.id !== recipe.authorId && (
                 <button
                   onClick={() => setShowComplimentModal(true)}
-                  className="flex items-center space-x-2 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
-                  title="Compliment the Chef"
+                  className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  title="Compliments to the Chef"
                 >
-                  <Gift className="w-4 h-4" />
-                  <span>Compliment Chef</span>
+                  <Coins className="w-4 h-4" />
+                  <span className="font-serif italic">Compliments to the chef</span>
                 </button>
               )}
               

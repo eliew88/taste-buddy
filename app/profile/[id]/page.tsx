@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useFollowing } from '@/hooks/use-following';
 import { FollowButton } from '@/components/ui/follow-button';
-import { Instagram, Globe, ExternalLink, Edit2 } from 'lucide-react';
+import ComplimentForm from '@/components/compliment-form';
+import { Instagram, Globe, ExternalLink, Edit2, Coins } from 'lucide-react';
 
 interface User {
   id: string;
@@ -36,6 +37,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showComplimentModal, setShowComplimentModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     instagramUrl: '',
     websiteUrl: ''
@@ -319,7 +321,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <span>Edit Profile</span>
               </button>
             ) : (
-              <FollowButton userId={user.id} />
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowComplimentModal(true)}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  title="Compliments to the Chef"
+                >
+                  <Coins className="w-4 h-4" />
+                  <span className="font-serif italic">Compliments to the chef</span>
+                </button>
+                <FollowButton userId={user.id} />
+              </div>
             )}
           </div>
         </div>
@@ -498,6 +510,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       )}
+      
+      {/* Compliment Modal */}
+      <ComplimentForm
+        isOpen={showComplimentModal}
+        onClose={() => setShowComplimentModal(false)}
+        toUserId={user.id}
+        toUserName={user.name || user.email}
+        onComplimentSent={() => {
+          console.log('Compliment sent successfully!');
+        }}
+      />
     </div>
   );
 }
