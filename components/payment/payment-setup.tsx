@@ -81,9 +81,30 @@ export default function PaymentSetup() {
     }
   };
 
-  const handleContinueOnboarding = () => {
-    if (paymentStatus?.onboardingUrl) {
-      window.location.href = paymentStatus.onboardingUrl;
+  const handleContinueOnboarding = async () => {
+    try {
+      setSetupLoading(true);
+      setError(null);
+      
+      // Generate a fresh onboarding URL
+      const response = await fetch('/api/payment/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: 'US' })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.data.onboardingUrl) {
+        // Redirect to Stripe onboarding
+        window.location.href = data.data.onboardingUrl;
+      } else {
+        setError(data.error || 'Failed to generate onboarding link');
+      }
+    } catch (err) {
+      setError('Failed to continue onboarding');
+    } finally {
+      setSetupLoading(false);
     }
   };
 
@@ -205,7 +226,7 @@ export default function PaymentSetup() {
                 Complete your account setup to start receiving tips.
               </p>
               <LoadingButton
-                loading={false}
+                loading={setupLoading}
                 onClick={handleContinueOnboarding}
                 className="w-full bg-yellow-600 text-white hover:bg-yellow-700"
               >

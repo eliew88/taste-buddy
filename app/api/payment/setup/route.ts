@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { createStripeConnectAccount, getPaymentStatus } from '@/lib/stripe-connect';
+import { createStripeConnectAccount, getPaymentStatus, getStripeAccountLink } from '@/lib/stripe-connect';
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,8 +34,30 @@ export async function POST(req: NextRequest) {
     
     if (existingStatus.paymentAccount?.stripeAccountId) {
       console.log('Payment account already exists:', existingStatus.paymentAccount.stripeAccountId);
+      
+      // If account exists but onboarding is incomplete, generate new onboarding URL
+      if (!existingStatus.paymentAccount.onboardingComplete) {
+        console.log('Generating new onboarding URL for existing account...');
+        try {
+          const onboardingUrl = await getStripeAccountLink(existingStatus.paymentAccount.stripeAccountId);
+          return NextResponse.json({
+            success: true,
+            data: {
+              accountId: existingStatus.paymentAccount.stripeAccountId,
+              onboardingUrl,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to generate onboarding URL:', error);
+          return NextResponse.json(
+            { success: false, error: 'Failed to generate onboarding link' },
+            { status: 500 }
+          );
+        }
+      }
+      
       return NextResponse.json(
-        { success: false, error: 'Payment account already exists' },
+        { success: false, error: 'Payment account already exists and is complete' },
         { status: 400 }
       );
     }
