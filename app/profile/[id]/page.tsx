@@ -21,7 +21,7 @@ interface FollowStatus {
   canFollow: boolean;
 }
 
-export default function UserProfilePage({ params }: { params: { id: string } }) {
+export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession();
   const { getFollowStatus, getFollowing, getFollowers } = useFollowing();
   const [user, setUser] = useState<User | null>(null);
@@ -31,12 +31,23 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
   const [followers, setFollowers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string>('');
 
   useEffect(() => {
+    const initializeParams = async () => {
+      const resolvedParams = await params;
+      setUserId(resolvedParams.id);
+    };
+    initializeParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!userId) return;
+    
     const fetchUserData = async () => {
       try {
         // Fetch user info (we'll need to create this API endpoint)
-        const userResponse = await fetch(`/api/users/${params.id}`);
+        const userResponse = await fetch(`/api/users/${userId}`);
         const userData = await userResponse.json();
 
         if (!userData.success) {
@@ -46,15 +57,15 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
         setUser(userData.data);
 
         // Fetch follow status
-        const status = await getFollowStatus(params.id);
+        const status = await getFollowStatus(userId);
         if (status) {
           setFollowStatus(status);
         }
 
         // Fetch following and followers lists
         const [followingData, followersData] = await Promise.all([
-          getFollowing(params.id),
-          getFollowers(params.id)
+          getFollowing(userId),
+          getFollowers(userId)
         ]);
 
         setFollowing(followingData);
@@ -69,7 +80,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
     if (session) {
       fetchUserData();
     }
-  }, [params.id, session, getFollowStatus, getFollowing, getFollowers]);
+  }, [userId, session, getFollowStatus, getFollowing, getFollowers]);
 
   if (loading) {
     return (
