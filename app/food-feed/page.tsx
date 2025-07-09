@@ -80,32 +80,16 @@ const sortOptions: Array<{ value: SortOption; label: string; icon: React.ReactNo
 ];
 
 /**
- * Mock filter options for demonstration
+ * Default filter options (fallback)
  */
-const mockFilterOptions = {
+const defaultFilterOptions = {
   difficulties: [
-    { value: 'easy', label: 'Easy', count: 156 },
-    { value: 'medium', label: 'Medium', count: 89 },
-    { value: 'hard', label: 'Hard', count: 34 },
+    { value: 'easy', label: 'Easy', count: 0 },
+    { value: 'medium', label: 'Medium', count: 0 },
+    { value: 'hard', label: 'Hard', count: 0 },
   ],
-  popularIngredients: [
-    { name: 'chicken', count: 45 },
-    { name: 'garlic', count: 78 },
-    { name: 'onion', count: 92 },
-    { name: 'tomato', count: 56 },
-    { name: 'cheese', count: 34 },
-    { name: 'flour', count: 67 },
-    { name: 'olive oil', count: 89 },
-    { name: 'salt', count: 134 },
-  ],
-  tags: [
-    { name: 'vegetarian', count: 67 },
-    { name: 'quick meals', count: 89 },
-    { name: 'healthy', count: 45 },
-    { name: 'comfort food', count: 34 },
-    { name: 'dessert', count: 56 },
-    { name: 'gluten-free', count: 23 },
-  ],
+  popularIngredients: [],
+  tags: [],
   cookTimeStats: {
     min: 5,
     max: 300,
@@ -190,6 +174,8 @@ export default function FoodFeedPage() {
   const [searchMeta, setSearchMeta] = useState<{total: number, pages: number, currentPage: number, suggestions?: string[]} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState(defaultFilterOptions);
+  const [filterOptionsLoading, setFilterOptionsLoading] = useState(true);
 
   // Computed values
   const activeFilterCount = useMemo(() => {
@@ -208,6 +194,36 @@ export default function FoodFeedPage() {
   useEffect(() => {
     setLocalQuery(searchQuery);
   }, [searchQuery]);
+
+  // Fetch filter options on mount
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        setFilterOptionsLoading(true);
+        const response = await fetch('/api/recipes/filter-options');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch filter options: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setFilterOptions(data.data);
+        } else {
+          console.error('Filter options fetch failed:', data.error);
+          // Keep using default options
+        }
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
+        // Keep using default options
+      } finally {
+        setFilterOptionsLoading(false);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
 
   // Event handlers
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -482,8 +498,8 @@ export default function FoodFeedPage() {
               <AdvancedSearchFilters
                 filters={filters}
                 onFiltersChange={handleFiltersChange}
-                filterOptions={mockFilterOptions}
-                loading={false}
+                filterOptions={filterOptions}
+                loading={filterOptionsLoading}
                 onResetFilters={handleResetFilters}
                 activeFilterCount={activeFilterCount}
               />
@@ -567,8 +583,8 @@ export default function FoodFeedPage() {
                 <AdvancedSearchFilters
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
-                  filterOptions={mockFilterOptions}
-                  loading={false}
+                  filterOptions={filterOptions}
+                  loading={filterOptionsLoading}
                   onResetFilters={handleResetFilters}
                   activeFilterCount={activeFilterCount}
                 />
