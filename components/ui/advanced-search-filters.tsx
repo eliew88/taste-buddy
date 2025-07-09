@@ -22,7 +22,8 @@ import {
   Calendar,
   ChefHat,
   Tag,
-  Utensils
+  Utensils,
+  Heart
 } from 'lucide-react';
 
 /**
@@ -35,6 +36,7 @@ interface SearchFilters {
   cookTimeRange: [number, number];
   servingsRange: [number, number];
   minRating: number;
+  tastebuddiesOnly: boolean;
   dateRange: {
     start: string | null;
     end: string | null;
@@ -318,6 +320,7 @@ export default function AdvancedSearchFilters({
   // Collapsible section states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     difficulty: true,
+    tastebuddies: false,
     cookTime: false,
     servings: false,
     rating: false,
@@ -408,6 +411,34 @@ export default function AdvancedSearchFilters({
             onChange={(values) => updateFilters({ difficulty: values })}
             placeholder="No difficulty options available"
           />
+        </FilterSection>
+
+        {/* TasteBuddies Filter */}
+        <FilterSection
+          title="TasteBuddies"
+          icon={<Heart className="w-4 h-4" />}
+          isOpen={openSections.tastebuddies}
+          onToggle={() => toggleSection('tastebuddies')}
+          badgeCount={filters.tastebuddiesOnly ? 1 : 0}
+        >
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filters.tastebuddiesOnly}
+                onChange={(e) => updateFilters({ tastebuddiesOnly: e.target.checked })}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700">
+                  Only show recipes from people I follow
+                </span>
+                <p className="text-xs text-gray-500 mt-1">
+                  Filter to see recipes only from your TasteBuddies
+                </p>
+              </div>
+            </label>
+          </div>
         </FilterSection>
 
         {/* Cook Time Filter */}
@@ -656,6 +687,20 @@ export default function AdvancedSearchFilters({
                   })}
                   className="hover:text-green-900 transition-colors"
                   aria-label="Remove servings filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            
+            {filters.tastebuddiesOnly && (
+              <span className="inline-flex items-center space-x-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                <Heart className="w-3 h-3" />
+                <span>TasteBuddies only</span>
+                <button
+                  onClick={() => updateFilters({ tastebuddiesOnly: false })}
+                  className="hover:text-blue-900 transition-colors"
+                  aria-label="Remove TasteBuddies filter"
                 >
                   <X className="w-3 h-3" />
                 </button>

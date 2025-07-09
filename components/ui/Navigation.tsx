@@ -13,6 +13,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn } from 'lucide-react';
+import { NotificationBell } from './notification-bell';
 
 /**
  * Navigation Component
@@ -125,6 +126,9 @@ export default function Navigation() {
                   <Plus className="w-4 h-4 mr-1" />
                   Add Recipe
                 </Link>
+                
+                {/* Notification Bell */}
+                <NotificationBell />
                 
                 {/* User Profile Dropdown */}
                 <div className="relative">

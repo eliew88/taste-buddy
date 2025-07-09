@@ -114,11 +114,13 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
               <input
                 ref={el => { amountRefs.current[index] = el; }}
                 type="text"
-                placeholder="2"
+                inputMode="decimal"
+                placeholder="1.5"
                 value={entry.amount || ''}
                 onChange={(e) => handleAmountChange(entry.id, e.target.value)}
                 onKeyDown={(e) => handleAmountKeyDown(e, index)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                title="Enter amount (decimals allowed, e.g., 1.5, 0.25)"
               />
             </div>
 
@@ -178,7 +180,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
       </button>
 
       <div className="text-xs text-gray-500 mt-2">
-        Tip: Press Tab, Enter, or Space to move between fields. Filling out the last ingredient will automatically add a new one.
+        Tip: Use decimals for amounts (e.g., 1.5, 0.25). Press Tab, Enter, or Space to move between fields. Filling out the last ingredient will automatically add a new one.
       </div>
     </div>
   );
