@@ -550,7 +550,14 @@ export default function RecipeDetailPage() {
                     {recipe.servings && (
                       <div className="flex items-center">
                         <Users className="w-3 h-3 text-gray-400 mr-2" />
-                        <span className="text-gray-600">{recipe.servings} servings</span>
+                        <span className="text-gray-600">
+                          {Math.round(recipe.servings * recipeScale)} servings
+                          {recipeScale !== 1 && (
+                            <span className="ml-1 text-xs text-green-700">
+                              (scaled {recipeScale}x)
+                            </span>
+                          )}
+                        </span>
                       </div>
                     )}
                     
@@ -625,9 +632,9 @@ export default function RecipeDetailPage() {
                       <div className="text-lg font-bold text-green-700">
                         {recipeScale === 1 ? '1x (Original)' : `${recipeScale}x`}
                       </div>
-                      {recipeScale !== 1 && (
+                      {recipeScale !== 1 && recipe.servings && (
                         <div className="text-xs text-gray-600">
-                          {recipeScale > 1 ? 'More servings' : 'Fewer servings'}
+                          {Math.round(recipe.servings * recipeScale)} servings
                         </div>
                       )}
                     </div>
