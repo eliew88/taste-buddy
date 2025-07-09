@@ -49,6 +49,11 @@ export default function ProfilePage() {
   
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
+  
+  // Wrapper function to match the expected signature
+  const handleFavoriteToggle = async (recipeId: string): Promise<void> => {
+    await toggleFavorite(recipeId);
+  };
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -219,7 +224,7 @@ export default function ProfilePage() {
                   recipe={recipe}
                   showFavoriteButton={true}
                   isFavorited={isFavorited(recipe.id)}
-                  onFavoriteToggle={toggleFavorite}
+                  onFavoriteToggle={handleFavoriteToggle}
                 />
               ))}
             </div>

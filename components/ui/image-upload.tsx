@@ -144,11 +144,13 @@ export default function ImageUpload({
     const fileUrl = URL.createObjectURL(file);
     setPreviewUrl(fileUrl);
 
+    let progressInterval: NodeJS.Timeout | null = null;
+
     try {
       setUploadState(prev => ({ ...prev, uploading: true, progress: 10 }));
 
       // Simulate progress (since we can't track actual upload progress easily)
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setUploadState(prev => {
           if (prev.progress < 90) {
             return { ...prev, progress: prev.progress + 10 };
@@ -160,7 +162,7 @@ export default function ImageUpload({
       // Upload file
       const imageUrl = await uploadFile(file);
       
-      clearInterval(progressInterval);
+      if (progressInterval) clearInterval(progressInterval);
 
       // Success state
       setUploadState({
@@ -182,7 +184,7 @@ export default function ImageUpload({
       }, 2000);
 
     } catch (error) {
-      clearInterval(progressInterval!);
+      if (progressInterval) clearInterval(progressInterval);
       
       // Clean up blob URL on error
       URL.revokeObjectURL(fileUrl);
