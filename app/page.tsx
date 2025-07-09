@@ -55,34 +55,39 @@ const HeroSection = ({
   searchLoading: boolean;
   heroImages?: string[];
 }) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  // Select random image on client side only
+  useEffect(() => {
+    if (heroImages && heroImages.length > 0) {
+      const randomImage = heroImages[Math.floor(Math.random() * heroImages.length)];
+      setSelectedImage(randomImage);
+    }
+  }, [heroImages]);
+  
   console.log('🎨 HeroSection rendering with images:', heroImages);
   
   return (
     <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
-      {/* 4-Panel Background Images */}
+      {/* Single Random Recipe Background */}
       <div className="absolute inset-0 z-0">
-        <div className="grid grid-cols-2 grid-rows-2 h-full w-full">
-          {heroImages.map((image, index) => {
-            console.log(`🖼️ Panel ${index}: ${image}`);
-            return (
-              <div
-                key={index}
-                className="bg-cover bg-center transition-transform duration-700 hover:scale-105"
-                style={{ backgroundImage: `url(${image})` }}
-              />
-            );
-          })}
-        </div>
-        
-        {/* Overlay for text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60" />
+        {selectedImage ? (
+          <div 
+            className="w-full h-full bg-cover bg-center transition-transform duration-700"
+            style={{ 
+              backgroundImage: `url(${selectedImage})` 
+            }}
+          />
+        ) : (
+          /* Fallback gradient background */
+          <div className="w-full h-full bg-gradient-to-br from-green-600 to-green-800" />
+        )}
       </div>
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
         {/* Hero Text */}
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 drop-shadow-lg">
+        <h1 className="text-4xl md:text-6xl font-bold text-purple-900 mb-8 drop-shadow-lg">
           Discover, cook, and share amazing recipes!
         </h1>
         
@@ -260,23 +265,21 @@ export default function HomePage() {
         console.log('🖼️ Recipes with images:', recipesWithImages.length);
         console.log('📸 Image URLs:', recipesWithImages.map((recipe: any) => recipe.image));
         
-        if (recipesWithImages.length >= 4) {
-          const newHeroImages = recipesWithImages.slice(0, 4).map((recipe: any) => recipe.image);
-          console.log('✅ Setting hero images:', newHeroImages);
-          setHeroImages(newHeroImages);
-        } else if (recipesWithImages.length > 0) {
-          // Mix database images with fallback images
+        if (recipesWithImages.length > 0) {
           const dbImages = recipesWithImages.map((recipe: any) => recipe.image);
-          const neededFallbacks = FALLBACK_HERO_IMAGES.slice(0, 4 - dbImages.length);
-          const mixedImages = [...dbImages, ...neededFallbacks];
-          console.log('🔄 Mixed images:', mixedImages);
-          setHeroImages(mixedImages);
+          const allImages = [...dbImages, ...FALLBACK_HERO_IMAGES];
+          console.log('✅ Setting hero images:', allImages);
+          setHeroImages(allImages);
+        } else {
+          // Use fallback images if no recipes with images
+          console.log('🔄 Using fallback images');
+          setHeroImages(FALLBACK_HERO_IMAGES);
         }
-        // If no recipes with images, keep fallback images
       }
     } catch (error) {
       console.error('Error fetching featured recipes:', error);
       // Keep fallback images on error
+      setHeroImages(FALLBACK_HERO_IMAGES);
     }
   };
 

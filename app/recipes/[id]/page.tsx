@@ -441,96 +441,242 @@ export default function RecipeDetailPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Recipe Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {recipe.title}
-          </h1>
-          
-          {recipe.description && (
-            <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-              {recipe.description}
-            </p>
-          )}
+        {/* Recipe Content with Background Image */}
+        <div className="relative">
+          {/* Background Image Section */}
+          <div 
+            className="relative min-h-[85vh] rounded-xl overflow-hidden mb-8"
+            style={{
+              backgroundImage: recipe.image && getOptimizedImageUrl(recipe.image) 
+                ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${getOptimizedImageUrl(recipe.image)})`
+                : 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            {/* Content Overlay */}
+            <div className="absolute inset-0 p-6 flex flex-col justify-between">
+              {/* Recipe Header Content */}
+              <div className="flex-1 flex flex-col justify-center text-white">
+                <div className="max-w-4xl">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white drop-shadow-lg">
+                    {recipe.title}
+                  </h1>
+                  
+                  {recipe.description && (
+                    <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-3xl drop-shadow">
+                      {recipe.description}
+                    </p>
+                  )}
 
-          {/* Recipe Meta Info */}
-          <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
-            <div className="flex items-center">
-              <User className="w-4 h-4 mr-2" />
-              <span>By {recipe.author.name}</span>
-            </div>
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2" />
-              <span>Created {formatDate(recipe.createdAt)}</span>
-            </div>
-          </div>
+                  {/* Recipe Meta Info */}
+                  <div className="flex flex-wrap items-center gap-6 text-sm text-white/80 mb-8">
+                    <div className="flex items-center bg-black/20 backdrop-blur-sm rounded-full px-3 py-1">
+                      <User className="w-4 h-4 mr-2" />
+                      <span>By {recipe.author.name}</span>
+                    </div>
+                    <div className="flex items-center bg-black/20 backdrop-blur-sm rounded-full px-3 py-1">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span>Created {formatDate(recipe.createdAt)}</span>
+                    </div>
+                  </div>
 
-          {/* Rating and Favorite */}
-          <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
-            <div className="flex items-center space-x-4">
-              {session?.user?.id && (
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">
-                    {userRating > 0 ? 'Your rating:' : 'Rate this recipe:'}
-                  </p>
-                  <div className="flex items-center space-x-2">
-                    <StarRating
-                      rating={userRating}
-                      onRate={handleRating}
-                      size="lg"
-                    />
-                    {ratingLoading && <span className="text-sm text-gray-500">Saving...</span>}
+                  {/* Rating and Favorite */}
+                  <div className="flex items-center justify-between bg-black/30 backdrop-blur-sm rounded-lg p-6 max-w-4xl">
+                    <div className="flex items-center space-x-6">
+                      {session?.user?.id && (
+                        <div>
+                          <p className="text-sm text-white/90 mb-2">
+                            {userRating > 0 ? 'Your rating:' : 'Rate this recipe:'}
+                          </p>
+                          <div className="flex items-center space-x-2">
+                            <StarRating
+                              rating={userRating}
+                              onRate={handleRating}
+                              size="lg"
+                            />
+                            {ratingLoading && <span className="text-sm text-white/70">Saving...</span>}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {session?.user?.id && <div className="h-12 w-px bg-white/20"></div>}
+                      
+                      <div>
+                        <p className="text-sm text-white/90 mb-2">Average rating:</p>
+                        <StarRating
+                          rating={avgRating}
+                          interactive={false}
+                          showCount={true}
+                          ratingCount={ratingCount}
+                        />
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={handleFavorite}
+                      className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors backdrop-blur-sm ${
+                        isFavorited(recipeId) 
+                          ? 'bg-red-600/80 text-white hover:bg-red-600/90' 
+                          : 'bg-white/20 text-white hover:bg-white/30'
+                      }`}
+                    >
+                      <Heart className={`w-5 h-5 ${isFavorited(recipeId) ? 'fill-white' : ''}`} />
+                      <span>{isFavorited(recipeId) ? 'Favorited' : 'Add to Favorites'}</span>
+                    </button>
                   </div>
                 </div>
-              )}
-              
-              {session?.user?.id && <div className="h-8 w-px bg-gray-200"></div>}
-              
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Average rating:</p>
-                <StarRating
-                  rating={avgRating}
-                  interactive={false}
-                  showCount={true}
-                  ratingCount={ratingCount}
-                />
+              </div>
+
+              {/* Bottom Components Row */}
+              <div className="mt-8">
+                {/* Horizontal Components Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Recipe Quick Info */}
+                <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                    <ChefHat className="w-4 h-4 mr-2" />
+                    Recipe Info
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    {recipe.cookTime && (
+                      <div className="flex items-center">
+                        <Clock className="w-3 h-3 text-gray-400 mr-2" />
+                        <span className="text-gray-600">{recipe.cookTime}</span>
+                      </div>
+                    )}
+                    
+                    {recipe.servings && (
+                      <div className="flex items-center">
+                        <Users className="w-3 h-3 text-gray-400 mr-2" />
+                        <span className="text-gray-600">{recipe.servings} servings</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center">
+                      <span className="text-gray-600 capitalize">{recipe.difficulty}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ingredients */}
+                <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                    Ingredients ({recipe.ingredients?.length || 0})
+                    {recipeScale !== 1 && (
+                      <span className="ml-1 text-xs font-normal text-green-700">
+                        ({recipeScale}x)
+                      </span>
+                    )}
+                  </h3>
+                  <div className="max-h-32 overflow-y-auto">
+                    <ol className="space-y-1 text-xs">
+                      {scaledIngredients?.slice(0, 6).map((ingredient, index) => (
+                        <li key={ingredient.id || index} className="flex items-start">
+                          <span className="min-w-4 h-4 bg-green-700 text-white text-xs font-medium rounded-full flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
+                            {index + 1}
+                          </span>
+                          <span className="text-gray-700 leading-tight">
+                            {formatAsFraction(ingredient.amount)} {ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
+                          </span>
+                        </li>
+                      )) || (
+                        <li className="text-gray-500 italic">No ingredients listed</li>
+                      )}
+                      {scaledIngredients && scaledIngredients.length > 6 && (
+                        <li className="text-gray-500 italic text-xs">
+                          +{scaledIngredients.length - 6} more ingredients...
+                        </li>
+                      )}
+                    </ol>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {recipe.tags.length > 0 ? (
+                      recipe.tags.slice(0, 4).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-500 italic text-xs">No tags</span>
+                    )}
+                    {recipe.tags.length > 4 && (
+                      <span className="text-gray-500 italic text-xs">
+                        +{recipe.tags.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Recipe Scale Control */}
+                <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Scale Recipe</h3>
+                  <div className="space-y-2">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-700">
+                        {recipeScale === 1 ? '1x (Original)' : `${recipeScale}x`}
+                      </div>
+                      {recipeScale !== 1 && (
+                        <div className="text-xs text-gray-600">
+                          {recipeScale > 1 ? 'More servings' : 'Fewer servings'}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setRecipeScale(Math.max(0.25, recipeScale - 0.25))}
+                        disabled={recipeScale <= 0.25}
+                        className="w-6 h-6 rounded-full border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-xs"
+                      >
+                        -
+                      </button>
+                      
+                      <div className="flex-1 flex justify-center space-x-1">
+                        {[0.5, 1, 2].map(preset => (
+                          <button
+                            key={preset}
+                            onClick={() => setRecipeScale(preset)}
+                            className={`px-2 py-1 rounded text-xs transition-colors ${
+                              Math.abs(recipeScale - preset) < 0.01
+                                ? 'bg-green-700 text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {preset}x
+                          </button>
+                        ))}
+                      </div>
+                      
+                      <button
+                        onClick={() => setRecipeScale(Math.min(10, recipeScale + 0.25))}
+                        disabled={recipeScale >= 10}
+                        className="w-6 h-6 rounded-full border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center text-xs"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               </div>
             </div>
-            
-            <button
-              onClick={handleFavorite}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                isFavorited(recipeId) 
-                  ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Heart className={`w-5 h-5 ${isFavorited(recipeId) ? 'fill-red-600' : ''}`} />
-              <span>{isFavorited(recipeId) ? 'Favorited' : 'Add to Favorites'}</span>
-            </button>
           </div>
-        </header>
+        </div>
 
-        {/* Recipe Content Grid */}
+        {/* Detailed Sections Below */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content (Instructions) */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Recipe Image */}
-            {recipe.image && getOptimizedImageUrl(recipe.image) && (
-              <div className="aspect-video rounded-lg overflow-hidden shadow-md">
-                <img
-                  src={getOptimizedImageUrl(recipe.image)!}
-                  alt={recipe.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Hide image if B2 loading fails
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Instructions */}
+          {/* Instructions (Main Content) */}
+          <div className="lg:col-span-2">
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Instructions</h2>
               <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -552,46 +698,12 @@ export default function RecipeDetailPage() {
             </section>
           </div>
 
-          {/* Sidebar */}
+          {/* Detailed Sidebar */}
           <div className="space-y-6">
-            {/* Recipe Quick Info */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recipe Info</h3>
-              <div className="space-y-3">
-                {recipe.cookTime && (
-                  <div className="flex items-center">
-                    <Clock className="w-5 h-5 text-gray-400 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">Cook Time</p>
-                      <p className="font-medium">{recipe.cookTime}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {recipe.servings && (
-                  <div className="flex items-center">
-                    <Users className="w-5 h-5 text-gray-400 mr-3" />
-                    <div>
-                      <p className="text-sm text-gray-600">Servings</p>
-                      <p className="font-medium">{recipe.servings}</p>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex items-center">
-                  <ChefHat className="w-5 h-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-600">Difficulty</p>
-                    <p className="font-medium capitalize">{recipe.difficulty}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Ingredients */}
+            {/* Full Ingredients List */}
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Ingredients ({recipe.ingredients?.length || 0})
+                Complete Ingredients List
                 {recipeScale !== 1 && (
                   <span className="ml-2 text-sm font-normal text-green-700">
                     (scaled {recipeScale}x)
@@ -614,24 +726,7 @@ export default function RecipeDetailPage() {
               </ol>
             </div>
 
-            {/* Tags */}
-            {recipe.tags.length > 0 && (
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {recipe.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Recipe Scale Control */}
+            {/* Advanced Recipe Scale Control */}
             <RecipeScaleSlider
               scale={recipeScale}
               onScaleChange={setRecipeScale}

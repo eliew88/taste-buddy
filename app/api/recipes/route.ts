@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
       const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
 
+
       return {
         ...recipe,
         avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place

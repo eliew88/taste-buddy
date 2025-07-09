@@ -84,6 +84,7 @@ const sampleRecipes = [
     servings: 36,
     difficulty: 'easy',
     tags: ['dessert', 'cookies', 'chocolate', 'baking', 'family-friendly'],
+    image: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user1',
   },
   {
@@ -123,6 +124,7 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'medium',
     tags: ['dinner', 'pasta', 'chicken', 'italian', 'creamy'],
+    image: 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user2',
   },
   {
@@ -168,6 +170,7 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'medium',
     tags: ['asian', 'curry', 'spicy', 'thai', 'coconut', 'dinner'],
+    image: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user3',
   },
   {
@@ -206,6 +209,7 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'easy',
     tags: ['breakfast', 'pancakes', 'weekend', 'family-friendly', 'quick'],
+    image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user1',
   },
   {
@@ -250,6 +254,7 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'easy',
     tags: ['healthy', 'mediterranean', 'vegetarian', 'quinoa', 'lunch', 'meal-prep'],
+    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user2',
   },
 ];

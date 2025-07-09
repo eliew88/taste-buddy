@@ -168,10 +168,8 @@ class ApiClient {
 
     const queryString = searchParams.toString();
     
-    // Use search endpoint when there are search parameters, otherwise use regular endpoint
-    const hasSearchParams = params.search || params.difficulty;
-    const baseEndpoint = hasSearchParams ? '/recipes/search' : '/recipes';
-    const endpoint = `${baseEndpoint}${queryString ? `?${queryString}` : ''}`;
+    // Use the main recipes endpoint for all requests (it handles search parameters)
+    const endpoint = `/recipes${queryString ? `?${queryString}` : ''}`;
     
     return this.request<RecipeListResponse>(endpoint);
   }

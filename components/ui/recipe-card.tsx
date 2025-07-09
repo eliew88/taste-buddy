@@ -154,19 +154,16 @@ import Avatar from '@/components/ui/avatar';
        {/* Recipe Image */}
        <div className="h-48 bg-gray-200 overflow-hidden relative group">
          {recipe.image && !imageError && getOptimizedImageUrl(recipe.image) ? (
-           <>
-             <img 
-               src={getOptimizedImageUrl(recipe.image)!} 
-               alt={`${recipe.title} recipe`}
-               className="w-full h-full object-cover transition-transform group-hover:scale-105"
-               loading="lazy"
-               onError={() => {
-                 // If B2 image fails, show placeholder immediately
-                 setImageError(true);
-               }}
-             />
-             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity" />
-           </>
+           <img 
+             src={getOptimizedImageUrl(recipe.image)!} 
+             alt={`${recipe.title} recipe`}
+             className="w-full h-full object-cover transition-transform group-hover:scale-105"
+             loading="lazy"
+             onError={() => {
+               // If B2 image fails, show placeholder immediately
+               setImageError(true);
+             }}
+           />
          ) : (
            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
              <div className="text-center text-gray-400">
