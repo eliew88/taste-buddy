@@ -87,7 +87,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
   };
 
   const handleIngredientKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') {
+    if (e.key === 'Tab' || e.key === 'Enter') {
       e.preventDefault();
       // If this is the last ingredient and it's not empty, add a new one
       if (index === entries.length - 1 && entries[index].ingredient.trim()) {
@@ -210,7 +210,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
       </button>
 
       <div className="text-xs text-gray-500 mt-2">
-        Tip: Use decimals for amounts (e.g., 1.5, 0.25). Press Tab, Enter, or Space to move between fields. Filling out the last ingredient will automatically add a new one.
+        Tip: Use decimals for amounts (e.g., 1.5, 0.25). Press Tab or Enter to move between fields. Space moves between amount/unit fields only. Filling out the last ingredient will automatically add a new one.
       </div>
     </div>
   );
