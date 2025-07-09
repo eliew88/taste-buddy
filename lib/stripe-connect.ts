@@ -18,9 +18,14 @@ export async function createStripeConnectAccount(
   country: string = 'US'
 ): Promise<{ accountId: string; onboardingUrl: string }> {
   try {
+    console.log('createStripeConnectAccount called with:', { userId, email, country });
+    
     if (!stripe) {
+      console.error('Stripe is not configured - stripe instance is null');
       throw new Error('Stripe is not configured');
     }
+    
+    console.log('Stripe instance exists, creating account...');
     
     // Create Stripe Connect Express account
     const account = await stripe.accounts.create({
@@ -32,7 +37,10 @@ export async function createStripeConnectAccount(
       settings: STRIPE_CONNECT_CONFIG.settings,
     });
 
+    console.log('Stripe account created:', { accountId: account.id });
+
     // Create or update PaymentAccount in database
+    console.log('Creating PaymentAccount in database...');
     await prisma.paymentAccount.upsert({
       where: { userId },
       update: {
@@ -46,8 +54,12 @@ export async function createStripeConnectAccount(
       },
     });
 
+    console.log('PaymentAccount created in database');
+
     // Create account link for onboarding
     const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+    console.log('Creating account link with baseUrl:', baseUrl);
+    
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: `${baseUrl}/profile/payment-setup?refresh=true`,
@@ -55,13 +67,30 @@ export async function createStripeConnectAccount(
       type: 'account_onboarding',
     });
 
+    console.log('Account link created:', accountLink.url);
+
     return {
       accountId: account.id,
       onboardingUrl: accountLink.url,
     };
   } catch (error) {
     console.error('Error creating Stripe Connect account:', error);
-    throw new Error('Failed to create payment account');
+    
+    // Log more detailed error information
+    if (error && typeof error === 'object') {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        type: error.type,
+        code: error.code,
+        param: error.param,
+        statusCode: error.statusCode
+      });
+    }
+    
+    // Pass through the original error message for better debugging
+    throw new Error(`Failed to create payment account: ${error.message || 'Unknown error'}`);
   }
 }
 
