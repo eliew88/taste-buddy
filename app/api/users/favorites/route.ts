@@ -32,7 +32,7 @@ export async function GET() {
               select: { id: true, name: true, email: true }
             },
             _count: {
-              select: { favorites: true, ratings: true }
+              select: { favorites: true, ratings: true, comments: true }
             },
             ratings: {
               select: { rating: true }

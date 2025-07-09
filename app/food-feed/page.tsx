@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Recipe } from '@/types/recipe';
 import { 
@@ -24,8 +24,7 @@ import {
   Clock,
   Users as UsersIcon,
   SortAsc,
-  ArrowLeft,
-  Home
+  ArrowLeft
 } from 'lucide-react';
 
 import Navigation from '@/components/ui/Navigation';
@@ -411,33 +410,15 @@ export default function FoodFeedPage() {
 
   // Trigger search when dependencies change
   useEffect(() => {
-    performSearch();
+    const searchParams = buildSearchParams();
+    performSearch(searchParams);
   }, [searchQuery, filters, sortBy, currentPage, resultsPerPage]);
-
-  // Initial load - fetch some default recipes
-  useEffect(() => {
-    performSearch();
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Navigation */}
       <Navigation />
       
-      {/* Back to Home Navigation */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <Link 
-            href="/"
-            className="inline-flex items-center text-gray-600 hover:text-green-700 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            <Home className="w-4 h-4 mr-2" />
-            <span className="font-medium">Back to Home</span>
-          </Link>
-        </div>
-      </div>
-
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">

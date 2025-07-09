@@ -37,7 +37,10 @@ import {
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
+import { getOptimizedImageUrl } from '@/lib/image-client-utils';
 import { useFavorites } from '@/hooks/use-favorites';
+import CommentForm from '@/components/comment-form';
+import CommentsSection from '@/components/comments-section';
 
 /**
  * StarRating Component for recipe detail page
@@ -178,6 +181,9 @@ export default function RecipeDetailPage() {
   
   // Use favorites hook
   const { isFavorited, toggleFavorite } = useFavorites();
+  
+  // Comments state
+  const [newComment, setNewComment] = useState<any>(null);
 
   /**
    * Fetches recipe data from the API
@@ -481,12 +487,16 @@ export default function RecipeDetailPage() {
           {/* Main Content (Instructions) */}
           <div className="lg:col-span-2 space-y-8">
             {/* Recipe Image */}
-            {recipe.image && (
+            {recipe.image && getOptimizedImageUrl(recipe.image) && (
               <div className="aspect-video rounded-lg overflow-hidden shadow-md">
                 <img
-                  src={recipe.image}
+                  src={getOptimizedImageUrl(recipe.image)!}
                   alt={recipe.title}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Hide image if B2 loading fails
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               </div>
             )}
@@ -583,6 +593,20 @@ export default function RecipeDetailPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Comments Section */}
+        <div className="mt-12 space-y-6">
+          <CommentForm 
+            recipeId={recipeId}
+            onCommentCreated={setNewComment}
+          />
+          
+          <CommentsSection 
+            recipeId={recipeId}
+            recipeAuthorId={recipe.authorId}
+            newComment={newComment}
+          />
         </div>
       </div>
     </div>

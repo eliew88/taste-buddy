@@ -67,11 +67,17 @@
   // Local state for user interactions
    const [isFavorite, setIsFavorite] = useState(isFavorited);
    const [isLoading, setIsLoading] = useState(false);
+   const [imageError, setImageError] = useState(false);
   
   // Update local state when props change
   useEffect(() => {
     setIsFavorite(isFavorited);
   }, [isFavorited]);
+
+  // Reset image error when recipe changes
+  useEffect(() => {
+    setImageError(false);
+  }, [recipe.id]);
  
    /**
     * Handles favorite toggle
@@ -145,19 +151,16 @@
      >
        {/* Recipe Image */}
        <div className="h-48 bg-gray-200 overflow-hidden relative group">
-         {recipe.image ? (
+         {recipe.image && !imageError && getOptimizedImageUrl(recipe.image) ? (
            <>
              <img 
-               src={getOptimizedImageUrl(recipe.image) || recipe.image || ''} 
+               src={getOptimizedImageUrl(recipe.image)!} 
                alt={`${recipe.title} recipe`}
                className="w-full h-full object-cover transition-transform group-hover:scale-105"
                loading="lazy"
-               onError={(e) => {
-                 // Fallback to original URL if optimized URL fails
-                 const target = e.target as HTMLImageElement;
-                 if (recipe.image && target.src !== recipe.image) {
-                   target.src = recipe.image;
-                 }
+               onError={() => {
+                 // If B2 image fails, show placeholder immediately
+                 setImageError(true);
                }}
              />
              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity" />

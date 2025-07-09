@@ -60,8 +60,8 @@ export function transformLocalToB2Url(localUrl: string): string | null {
     return null;
   }
 
-  // Construct B2 URL: B2_PUBLIC_URL/filename
-  return `${b2PublicUrl}/${filename}`;
+  // Construct B2 URL: B2_PUBLIC_URL/recipes/filename
+  return `${b2PublicUrl}/recipes/${filename}`;
 }
 
 /**
@@ -90,9 +90,8 @@ export function getOptimizedImageUrl(imageUrl: string | null | undefined): strin
       return b2Url;
     }
     
-    // If B2 transformation fails, return the local URL
-    // This provides fallback for development or if B2 is not configured
-    return imageUrl;
+    // If B2 transformation fails, return null to show placeholder
+    return null;
   }
 
   // If it's an external URL (like Unsplash), return as-is
@@ -100,8 +99,8 @@ export function getOptimizedImageUrl(imageUrl: string | null | undefined): strin
     return imageUrl;
   }
 
-  // Default case - treat as local path
-  return imageUrl;
+  // For any other case, return null to show placeholder
+  return null;
 }
 
 /**

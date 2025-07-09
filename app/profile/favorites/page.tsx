@@ -37,6 +37,7 @@ interface FavoriteRecipe {
   _count: {
     favorites: number;
     ratings: number;
+    comments: number;
   };
   avgRating?: number;
 }

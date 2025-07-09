@@ -59,6 +59,7 @@
     _count?: {
       favorites: number;
       ratings: number;
+      comments: number;
     };
     
     /** Calculated average rating (computed from ratings) */
@@ -135,4 +136,54 @@
     
     /** Array of required tags */
     tags: string[];
+  }
+
+  /**
+   * Comment interface - represents a user comment on a recipe
+   */
+  export interface Comment {
+    /** Unique identifier for the comment */
+    id: string;
+    
+    /** The comment content */
+    content: string;
+    
+    /** Who can see this comment */
+    visibility: 'private' | 'author_only' | 'public';
+    
+    /** When the comment was created */
+    createdAt: Date;
+    
+    /** When the comment was last updated */
+    updatedAt: Date;
+    
+    /** ID of the user who wrote this comment */
+    userId: string;
+    
+    /** ID of the recipe this comment is on */
+    recipeId: string;
+    
+    /** Author information (populated from User table) */
+    user: {
+      id: string;
+      name: string;
+      image?: string;
+    };
+  }
+
+  /**
+   * Data structure for creating a new comment
+   */
+  export interface CreateCommentData {
+    content: string;
+    visibility: 'private' | 'author_only' | 'public';
+    recipeId: string;
+  }
+
+  /**
+   * Data structure for updating an existing comment
+   */
+  export interface UpdateCommentData {
+    content?: string;
+    visibility?: 'private' | 'author_only' | 'public';
   }

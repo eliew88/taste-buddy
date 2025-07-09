@@ -75,54 +75,97 @@ async function ensureUploadDirectory(): Promise<void> {
 }
 
 export async function POST(request: NextRequest) {
+  const uploadLog: any = {
+    timestamp: new Date().toISOString(),
+    steps: []
+  };
+
   try {
-    // Check authentication
+    // Step 1: Check authentication
+    uploadLog.steps.push({ step: 'auth_check', status: 'starting' });
     const userId = await getCurrentUserId();
     if (!userId) {
+      uploadLog.steps.push({ step: 'auth_check', status: 'failed', error: 'No user ID' });
+      console.error('❌ Upload failed - Authentication required', uploadLog);
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
+        { success: false, error: 'Authentication required', debug: uploadLog },
         { status: 401 }
       );
     }
+    uploadLog.steps.push({ step: 'auth_check', status: 'success', userId });
 
-    // Parse form data
+    // Step 2: Parse form data
+    uploadLog.steps.push({ step: 'form_parse', status: 'starting' });
     let formData: FormData;
     try {
       formData = await request.formData();
+      uploadLog.steps.push({ step: 'form_parse', status: 'success' });
     } catch (error) {
+      uploadLog.steps.push({ step: 'form_parse', status: 'failed', error: error instanceof Error ? error.message : 'Unknown error' });
+      console.error('❌ Upload failed - Invalid form data', uploadLog);
       return NextResponse.json(
-        { success: false, error: 'Invalid form data' },
+        { success: false, error: 'Invalid form data', debug: uploadLog },
         { status: 400 }
       );
     }
 
-    // Get the uploaded file
+    // Step 3: Get the uploaded file
+    uploadLog.steps.push({ step: 'file_extract', status: 'starting' });
     const file = formData.get('image') as File | null;
     if (!file) {
+      uploadLog.steps.push({ step: 'file_extract', status: 'failed', error: 'No file in form data' });
+      console.error('❌ Upload failed - No image file provided', uploadLog);
       return NextResponse.json(
-        { success: false, error: 'No image file provided' },
+        { success: false, error: 'No image file provided', debug: uploadLog },
         { status: 400 }
       );
     }
+    uploadLog.steps.push({ 
+      step: 'file_extract', 
+      status: 'success', 
+      fileInfo: {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      }
+    });
 
-    // Validate the file (basic validation before processing)
+    // Step 4: Validate the file
+    uploadLog.steps.push({ step: 'file_validation', status: 'starting' });
     const validation = validateFile(file);
     if (!validation.valid) {
+      uploadLog.steps.push({ step: 'file_validation', status: 'failed', error: validation.error });
+      console.error('❌ Upload failed - File validation failed', uploadLog);
       return NextResponse.json(
-        { success: false, error: validation.error },
+        { success: false, error: validation.error, debug: uploadLog },
         { status: 400 }
       );
     }
+    uploadLog.steps.push({ step: 'file_validation', status: 'success' });
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Step 5: Convert file to buffer
+    uploadLog.steps.push({ step: 'buffer_conversion', status: 'starting' });
+    let buffer: Buffer;
+    try {
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+      uploadLog.steps.push({ step: 'buffer_conversion', status: 'success', bufferSize: buffer.length });
+    } catch (error) {
+      uploadLog.steps.push({ step: 'buffer_conversion', status: 'failed', error: error instanceof Error ? error.message : 'Unknown error' });
+      console.error('❌ Upload failed - Buffer conversion failed', uploadLog);
+      return NextResponse.json(
+        { success: false, error: 'Failed to process file', debug: uploadLog },
+        { status: 500 }
+      );
+    }
 
-    // Try B2 upload first
+    // Step 6: Try B2 upload first
+    uploadLog.steps.push({ step: 'b2_upload', status: 'starting' });
     console.log('🔄 Attempting B2 upload...');
     const b2Result = await uploadImageToB2(file, buffer);
     
     if (b2Result.success && b2Result.url) {
+      uploadLog.steps.push({ step: 'b2_upload', status: 'success', url: b2Result.url });
       console.log(`✅ Image uploaded to B2: ${b2Result.url} (${file.size} bytes)`);
       
       return NextResponse.json({
@@ -134,11 +177,14 @@ export async function POST(request: NextRequest) {
           type: file.type,
           originalName: file.name,
           storage: 'b2'
-        }
+        },
+        debug: uploadLog
       });
     }
 
-    // Fallback to local storage if B2 fails
+    // Step 7: B2 failed, try local fallback
+    uploadLog.steps.push({ step: 'b2_upload', status: 'failed', error: b2Result.error });
+    uploadLog.steps.push({ step: 'local_fallback', status: 'starting' });
     console.log('⚠️ B2 upload failed, falling back to local storage...');
     console.log('B2 Error:', b2Result.error);
 
@@ -151,6 +197,7 @@ export async function POST(request: NextRequest) {
     const publicUrl = `/images/recipes/${uniqueFilename}`;
     
     await writeFile(filePath, buffer);
+    uploadLog.steps.push({ step: 'local_fallback', status: 'success', url: publicUrl });
 
     console.log(`✅ Image uploaded locally: ${publicUrl} (${file.size} bytes)`);
 
@@ -163,17 +210,21 @@ export async function POST(request: NextRequest) {
         type: file.type,
         originalName: file.name,
         storage: 'local'
-      }
+      },
+      debug: uploadLog
     });
 
   } catch (error) {
-    console.error('Error uploading image:', error);
+    uploadLog.steps.push({ step: 'unexpected_error', status: 'failed', error: error instanceof Error ? error.message : 'Unknown error' });
+    console.error('❌ Upload failed - Unexpected error:', error);
+    console.error('Upload log:', uploadLog);
     
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to upload image',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        debug: uploadLog
       },
       { status: 500 }
     );

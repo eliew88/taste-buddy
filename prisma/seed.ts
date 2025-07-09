@@ -263,6 +263,7 @@ async function main() {
   try {
     // Clear existing data (optional - remove if you want to keep existing data)
     console.log('🧹 Clearing existing data...');
+    await prisma.comment.deleteMany();
     await prisma.rating.deleteMany();
     await prisma.favorite.deleteMany();
     await prisma.recipe.deleteMany();

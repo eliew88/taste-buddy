@@ -190,10 +190,30 @@ export default function ImageUpload({
       URL.revokeObjectURL(fileUrl);
       setPreviewUrl(null);
 
+      console.error('Upload error:', error);
+      
+      let errorMessage = 'Upload failed';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Handle specific error types
+        if (error.message.includes('Authentication required')) {
+          errorMessage = 'Please sign in to upload images';
+        } else if (error.message.includes('B2') || error.message.includes('cloud')) {
+          errorMessage = 'Cloud storage unavailable. Please try again later.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.message.includes('size')) {
+          errorMessage = 'File size too large. Maximum size is 5MB.';
+        } else if (error.message.includes('type') || error.message.includes('format')) {
+          errorMessage = 'Invalid file type. Please use JPEG, PNG, or WebP.';
+        }
+      }
+
       setUploadState({
         uploading: false,
         progress: 0,
-        error: error instanceof Error ? error.message : 'Upload failed',
+        error: errorMessage,
         success: false
       });
     }
