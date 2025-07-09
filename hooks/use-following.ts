@@ -150,14 +150,6 @@ export function useFollowing() {
     }
   }, [session?.user?.id]);
 
-  // Temporary debugging
-  console.log('useFollowing hook:', {
-    session: !!session,
-    userId: session?.user?.id,
-    isAuthenticated: !!session?.user?.id,
-    sessionStatus: session ? 'has session' : 'no session'
-  });
-
   return {
     followUser,
     unfollowUser,

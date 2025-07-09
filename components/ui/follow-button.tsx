@@ -45,39 +45,8 @@ export function FollowButton({ userId, className = '', variant = 'default' }: Fo
     }
   };
 
-  // Temporary debugging for production
-  console.log('FollowButton render check:', {
-    userId,
-    isAuthenticated,
-    canFollow,
-    statusLoading,
-    isFollowing,
-    loading,
-    error
-  });
-
-  if (!isAuthenticated) {
-    return (
-      <div className="text-xs text-gray-500 px-2 py-1 border border-gray-200 rounded">
-        Sign in to follow
-      </div>
-    );
-  }
-
-  if (statusLoading) {
-    return (
-      <div className="text-xs text-gray-500 px-2 py-1 border border-gray-200 rounded">
-        Loading...
-      </div>
-    );
-  }
-
-  if (!canFollow) {
-    return (
-      <div className="text-xs text-gray-500 px-2 py-1 border border-gray-200 rounded">
-        Own recipe
-      </div>
-    );
+  if (!isAuthenticated || !canFollow || statusLoading) {
+    return null;
   }
 
   const baseClasses = "font-medium transition-colors disabled:opacity-50";
