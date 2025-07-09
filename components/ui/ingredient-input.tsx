@@ -12,6 +12,7 @@ interface IngredientInputProps {
 
 interface IngredientEntryState extends CreateIngredientEntryData {
   id: string;
+  amountInput?: string; // Store raw input string while editing
 }
 
 const IngredientInput: React.FC<IngredientInputProps> = ({
@@ -21,7 +22,11 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
 }) => {
   // Convert ingredients to internal state with temporary IDs
   const [entries, setEntries] = useState<IngredientEntryState[]>(() => 
-    ingredients.map((ing, idx) => ({ ...ing, id: `temp-${idx}` }))
+    ingredients.map((ing, idx) => ({ 
+      ...ing, 
+      id: `temp-${idx}`,
+      amountInput: ing.amount ? ing.amount.toString() : ''
+    }))
   );
 
   // Refs for auto-focusing
@@ -30,8 +35,8 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
   const ingredientRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    // Update parent when entries change
-    onChange(entries.map(({ id, ...entry }) => entry));
+    // Update parent when entries change, excluding internal fields
+    onChange(entries.map(({ id, amountInput, ...entry }) => entry));
   }, [entries]); // Remove onChange from dependencies to prevent infinite loop
 
   const addIngredient = () => {
@@ -39,7 +44,8 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
       id: `temp-${Date.now()}`,
       amount: 0,
       unit: undefined,
-      ingredient: ''
+      ingredient: '',
+      amountInput: ''
     };
     setEntries([...entries, newEntry]);
     
@@ -54,7 +60,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     setEntries(entries.filter(entry => entry.id !== id));
   };
 
-  const updateEntry = (id: string, field: keyof CreateIngredientEntryData, value: string | number | undefined) => {
+  const updateEntry = (id: string, field: keyof CreateIngredientEntryData | 'amountInput', value: string | number | undefined) => {
     setEntries(entries.map(entry => 
       entry.id === id ? { ...entry, [field]: field === 'unit' ? (value || undefined) : value } : entry
     ));
@@ -90,7 +96,23 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
   const handleAmountChange = (id: string, value: string) => {
     // Allow empty string or valid numbers (including decimals)
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      updateEntry(id, 'amount', value === '' ? 0 : parseFloat(value) || 0);
+      // Update both the raw input string and the numeric amount
+      updateEntry(id, 'amountInput', value);
+      // Only update the numeric amount if the value is a complete number
+      const numericValue = value === '' ? 0 : parseFloat(value);
+      if (!isNaN(numericValue)) {
+        updateEntry(id, 'amount', numericValue);
+      }
+    }
+  };
+
+  const handleAmountBlur = (id: string, value: string) => {
+    // On blur, ensure the final value is properly formatted
+    const numericValue = value === '' ? 0 : parseFloat(value);
+    if (!isNaN(numericValue)) {
+      updateEntry(id, 'amount', numericValue);
+      // Update the input string to the formatted number (removes trailing decimals)
+      updateEntry(id, 'amountInput', numericValue === 0 ? '' : numericValue.toString());
     }
   };
 
@@ -116,8 +138,9 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
                 type="text"
                 inputMode="decimal"
                 placeholder="1.5"
-                value={entry.amount || ''}
+                value={entry.amountInput || ''}
                 onChange={(e) => handleAmountChange(entry.id, e.target.value)}
+                onBlur={(e) => handleAmountBlur(entry.id, e.target.value)}
                 onKeyDown={(e) => handleAmountKeyDown(e, index)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 title="Enter amount (decimals allowed, e.g., 1.5, 0.25)"
