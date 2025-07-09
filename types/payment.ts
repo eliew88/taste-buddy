@@ -2,6 +2,8 @@
  * Payment-related TypeScript types for TasteBuddy
  */
 
+import { Decimal } from '@prisma/client/runtime/library';
+
 export interface PaymentAccount {
   id: string;
   userId: string;
@@ -11,8 +13,8 @@ export interface PaymentAccount {
   detailsSubmitted: boolean;
   payoutsEnabled: boolean;
   acceptsTips: boolean;
-  minimumTipAmount: number;
-  platformFeePercent: number;
+  minimumTipAmount: Decimal;
+  platformFeePercent: Decimal;
   createdAt: Date;
   updatedAt: Date;
 }
