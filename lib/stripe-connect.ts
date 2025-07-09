@@ -57,7 +57,15 @@ export async function createStripeConnectAccount(
     console.log('PaymentAccount created in database');
 
     // Create account link for onboarding
-    const baseUrl = process.env.VERCEL_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    let baseUrl = process.env.VERCEL_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    
+    // Ensure HTTPS for production (Stripe live mode requires HTTPS)
+    if (baseUrl && !baseUrl.startsWith('http')) {
+      baseUrl = `https://${baseUrl}`;
+    } else if (baseUrl && baseUrl.startsWith('http://') && !baseUrl.includes('localhost')) {
+      baseUrl = baseUrl.replace('http://', 'https://');
+    }
+    
     console.log('Creating account link with baseUrl:', baseUrl);
     
     const accountLink = await stripe.accountLinks.create({
@@ -110,11 +118,24 @@ export async function getStripeAccountLink(
   type: 'account_onboarding' | 'account_update' = 'account_onboarding'
 ): Promise<string> {
   try {
+    console.log('getStripeAccountLink called with:', { accountId, type });
+    
     if (!stripe) {
+      console.error('Stripe is not configured');
       throw new Error('Stripe is not configured');
     }
     
-    const baseUrl = process.env.VERCEL_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    let baseUrl = process.env.VERCEL_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    
+    // Ensure HTTPS for production (Stripe live mode requires HTTPS)
+    if (baseUrl && !baseUrl.startsWith('http')) {
+      baseUrl = `https://${baseUrl}`;
+    } else if (baseUrl && baseUrl.startsWith('http://') && !baseUrl.includes('localhost')) {
+      baseUrl = baseUrl.replace('http://', 'https://');
+    }
+    
+    console.log('Creating account link with baseUrl:', baseUrl);
+    
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${baseUrl}/profile/payment-setup?refresh=true`,
@@ -122,10 +143,24 @@ export async function getStripeAccountLink(
       type,
     });
 
+    console.log('Account link created successfully:', accountLink.url);
     return accountLink.url;
   } catch (error) {
     console.error('Error creating account link:', error);
-    throw new Error('Failed to create account link');
+    
+    // Log detailed error information
+    if (error && typeof error === 'object' && 'type' in error) {
+      const stripeError = error as any;
+      console.error('Stripe account link error details:', {
+        type: stripeError.type,
+        code: stripeError.code,
+        message: stripeError.message,
+        param: stripeError.param,
+        statusCode: stripeError.statusCode
+      });
+    }
+    
+    throw new Error(`Failed to create account link: ${error.message || 'Unknown error'}`);
   }
 }
 
