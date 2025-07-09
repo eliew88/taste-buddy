@@ -283,14 +283,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: transformedRecipes,
-      meta: {
-        total: totalCount,
+      pagination: {
         page: params.page,
         limit: params.limit,
-        pages: totalPages,
+        total: totalCount,
+        totalPages: totalPages,
         hasNextPage,
         hasPrevPage,
-        searchTime: Date.now() - startTime,
       },
     });
     
@@ -300,9 +299,6 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: 'Search failed',
-        meta: {
-          searchTime: Date.now() - startTime,
-        },
       },
       { status: 500 }
     );
