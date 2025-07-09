@@ -160,7 +160,8 @@ export async function getStripeAccountLink(
       });
     }
     
-    throw new Error(`Failed to create account link: ${error.message || 'Unknown error'}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to create account link: ${errorMessage}`);
   }
 }
 
