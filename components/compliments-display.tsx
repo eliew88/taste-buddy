@@ -96,11 +96,26 @@ export default function ComplimentsDisplay({ userId, isOwnProfile }: Compliments
   const getComplimentStats = () => {
     const messageCount = compliments.filter(c => c.type === 'message').length;
     const tipCount = compliments.filter(c => c.type === 'tip').length;
-    const totalTips = compliments
-      .filter(c => c.type === 'tip' && c.tipAmount)
-      .reduce((sum, c) => sum + (c.tipAmount || 0), 0);
     
-    return { messageCount, tipCount, totalTips };
+    // Calculate total tips with extra safety
+    let totalTips = 0;
+    try {
+      totalTips = compliments
+        .filter(c => c.type === 'tip' && c.tipAmount !== null && c.tipAmount !== undefined)
+        .reduce((sum, c) => {
+          const amount = typeof c.tipAmount === 'number' ? c.tipAmount : parseFloat(String(c.tipAmount));
+          return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
+    } catch (error) {
+      console.error('Error calculating total tips:', error);
+      totalTips = 0;
+    }
+    
+    return { 
+      messageCount, 
+      tipCount, 
+      totalTips: typeof totalTips === 'number' && !isNaN(totalTips) ? totalTips : 0 
+    };
   };
 
   // Don't show compliments to other users (privacy)
@@ -193,7 +208,13 @@ export default function ComplimentsDisplay({ userId, isOwnProfile }: Compliments
               <DollarSign className="w-4 h-4 text-green-600 mr-2" />
               <div>
                 <p className="text-sm font-medium text-green-800">
-                  {stats.tipCount} ({stats.totalTips > 0 ? `$${stats.totalTips.toFixed(2)}` : '$0'})
+                  {stats.tipCount} ({(() => {
+                    const total = stats.totalTips;
+                    if (typeof total === 'number' && !isNaN(total) && total > 0) {
+                      return `$${total.toFixed(2)}`;
+                    }
+                    return '$0';
+                  })()})
                 </p>
                 <p className="text-xs text-green-600">Tips</p>
               </div>
@@ -244,7 +265,7 @@ export default function ComplimentsDisplay({ userId, isOwnProfile }: Compliments
                       {compliment.type === 'tip' && (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                           <Sparkles className="w-3 h-3 mr-1" />
-                          {compliment.tipAmount ? `$${compliment.tipAmount}` : 'Tip'}
+                          {compliment.tipAmount && typeof compliment.tipAmount === 'number' ? `$${compliment.tipAmount.toFixed(2)}` : 'Tip'}
                         </span>
                       )}
                     </div>

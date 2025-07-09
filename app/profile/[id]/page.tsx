@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useFollowing } from '@/hooks/use-following';
 import { FollowButton } from '@/components/ui/follow-button';
 import ComplimentForm from '@/components/compliment-form';
-import { Instagram, Globe, ExternalLink, Edit2, Coins } from 'lucide-react';
+import { Instagram, Globe, ExternalLink, Edit2, Coins, X } from 'lucide-react';
 
 interface User {
   id: string;
@@ -30,7 +30,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const { getFollowStatus, getFollowing, getFollowers } = useFollowing();
   const [user, setUser] = useState<User | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
-  const [activeTab, setActiveTab] = useState<'following' | 'followers'>('following');
   const [following, setFollowing] = useState<User[]>([]);
   const [followers, setFollowers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +37,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [userId, setUserId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showComplimentModal, setShowComplimentModal] = useState(false);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     instagramUrl: '',
     websiteUrl: ''
@@ -271,12 +272,18 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 </h1>
                 <p className="text-gray-600">{user.email}</p>
                 <div className="flex items-center space-x-4 mt-2">
-                  <span className="text-sm text-gray-500">
-                    {followStatus?.followingCount || 0} following
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    {followStatus?.followersCount || 0} followers
-                  </span>
+                  <button
+                    onClick={() => setShowFollowingModal(true)}
+                    className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+                  >
+                    <span className="font-semibold">{followStatus?.followingCount || 0}</span> following
+                  </button>
+                  <button
+                    onClick={() => setShowFollowersModal(true)}
+                    className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+                  >
+                    <span className="font-semibold">{followStatus?.followersCount || 0}</span> followers
+                  </button>
                 </div>
                 
                 {/* Social Links */}
@@ -336,106 +343,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('following')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'following'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Following ({following.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('followers')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'followers'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Followers ({followers.length})
-              </button>
-            </nav>
-          </div>
-
-          {/* Tab Content */}
-          <div className="p-6">
-            {activeTab === 'following' ? (
-              <div className="space-y-4">
-                {following.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    {isOwnProfile ? "You're not following anyone yet." : "Not following anyone yet."}
-                  </p>
-                ) : (
-                  following.map((followingUser) => (
-                    <div key={followingUser.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {followingUser.image ? (
-                          <img
-                            src={followingUser.image}
-                            alt={followingUser.name || followingUser.email}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-600">
-                              {(followingUser.name || followingUser.email)[0].toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {followingUser.name || followingUser.email}
-                          </p>
-                          <p className="text-sm text-gray-500">{followingUser.email}</p>
-                        </div>
-                      </div>
-                      <FollowButton userId={followingUser.id} variant="compact" />
-                    </div>
-                  ))
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {followers.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    {isOwnProfile ? "You don't have any followers yet." : "No followers yet."}
-                  </p>
-                ) : (
-                  followers.map((follower) => (
-                    <div key={follower.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {follower.image ? (
-                          <img
-                            src={follower.image}
-                            alt={follower.name || follower.email}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-600">
-                              {(follower.name || follower.email)[0].toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {follower.name || follower.email}
-                          </p>
-                          <p className="text-sm text-gray-500">{follower.email}</p>
-                        </div>
-                      </div>
-                      <FollowButton userId={follower.id} variant="compact" />
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
+        {/* Profile content would go here - recipes, activity, etc. */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="text-center text-gray-500">
+            <p>Profile content coming soon - recipes, activity, and more!</p>
           </div>
         </div>
       </div>
@@ -521,6 +432,106 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           console.log('Compliment sent successfully!');
         }}
       />
+
+      {/* Followers Modal */}
+      {showFollowersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-96 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Followers</h2>
+              <button
+                onClick={() => setShowFollowersModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-80">
+              {followers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <p>No followers yet</p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-3">
+                  {followers.map((follower) => (
+                    <div key={follower.id} className="flex items-center space-x-3">
+                      {follower.image ? (
+                        <img
+                          src={follower.image}
+                          alt={follower.name || follower.email}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-sm font-bold text-gray-600">
+                            {(follower.name || follower.email)[0].toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {follower.name || follower.email}
+                        </p>
+                        <p className="text-xs text-gray-500">{follower.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Following Modal */}
+      {showFollowingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-96 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Following</h2>
+              <button
+                onClick={() => setShowFollowingModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-80">
+              {following.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <p>Not following anyone yet</p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-3">
+                  {following.map((followedUser) => (
+                    <div key={followedUser.id} className="flex items-center space-x-3">
+                      {followedUser.image ? (
+                        <img
+                          src={followedUser.image}
+                          alt={followedUser.name || followedUser.email}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-sm font-bold text-gray-600">
+                            {(followedUser.name || followedUser.email)[0].toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {followedUser.name || followedUser.email}
+                        </p>
+                        <p className="text-xs text-gray-500">{followedUser.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
