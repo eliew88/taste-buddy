@@ -47,10 +47,11 @@ export async function createStripeConnectAccount(
     });
 
     // Create account link for onboarding
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${process.env.NEXTAUTH_URL}/profile/payment-setup?refresh=true`,
-      return_url: `${process.env.NEXTAUTH_URL}/profile/payment-setup?success=true`,
+      refresh_url: `${baseUrl}/profile/payment-setup?refresh=true`,
+      return_url: `${baseUrl}/profile/payment-setup?success=true`,
       type: 'account_onboarding',
     });
 
@@ -76,10 +77,11 @@ export async function getStripeAccountLink(
       throw new Error('Stripe is not configured');
     }
     
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000';
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXTAUTH_URL}/profile/payment-setup?refresh=true`,
-      return_url: `${process.env.NEXTAUTH_URL}/profile/payment-setup?success=true`,
+      refresh_url: `${baseUrl}/profile/payment-setup?refresh=true`,
+      return_url: `${baseUrl}/profile/payment-setup?success=true`,
       type,
     });
 
@@ -101,6 +103,12 @@ export async function syncStripeConnectAccount(userId: string): Promise<PaymentA
 
     if (!paymentAccount?.stripeAccountId) {
       return null;
+    }
+
+    // Skip sync for mock accounts (development)
+    if (paymentAccount.stripeAccountId.startsWith('acct_mock_')) {
+      console.log('Skipping sync for mock account:', paymentAccount.stripeAccountId);
+      return paymentAccount;
     }
 
     if (!stripe) {
@@ -188,9 +196,13 @@ export async function getPaymentStatus(userId: string): Promise<{
 
     let onboardingUrl: string | undefined;
 
-    // If user has account but needs to complete onboarding
-    if (paymentAccount?.stripeAccountId && !paymentAccount.onboardingComplete) {
-      onboardingUrl = await getStripeAccountLink(paymentAccount.stripeAccountId);
+    // If user has account but needs to complete onboarding (skip for mock accounts)
+    if (paymentAccount?.stripeAccountId && !paymentAccount.onboardingComplete && !paymentAccount.stripeAccountId.startsWith('acct_mock_')) {
+      try {
+        onboardingUrl = await getStripeAccountLink(paymentAccount.stripeAccountId);
+      } catch (error) {
+        console.warn('Failed to get onboarding URL:', error);
+      }
     }
 
     return {
@@ -233,22 +245,60 @@ export async function processStripeConnectTip({
   error?: string;
 }> {
   try {
+    console.log('processStripeConnectTip called with:', { senderId, recipientId, amount });
+    
     // Get recipient's payment account
     const recipientAccount = await prisma.paymentAccount.findUnique({
       where: { userId: recipientId },
     });
 
+    console.log('Recipient account lookup:', { recipientId, account: recipientAccount });
+
     if (!recipientAccount?.stripeAccountId) {
+      console.error('Recipient account not found or no Stripe account ID');
       return { success: false, error: 'Recipient cannot receive tips' };
+    }
+
+    // Handle mock accounts for development
+    if (recipientAccount.stripeAccountId.startsWith('acct_mock_')) {
+      console.log('Processing mock tip for development...');
+      
+      // Create compliment record without actual payment
+      const compliment = await prisma.compliment.create({
+        data: {
+          fromUserId: senderId,
+          toUserId: recipientId,
+          recipeId: recipeId || null,
+          type: 'tip',
+          message: message || 'Thanks for the amazing recipe!',
+          tipAmount: amount,
+          paymentIntentId: `pi_mock_${Date.now()}`,
+          paymentStatus: 'succeeded',
+          paidAt: new Date(),
+          isAnonymous: isAnonymous || false,
+        },
+      });
+
+      return {
+        success: true,
+        paymentIntentId: `pi_mock_${Date.now()}`,
+        clientSecret: 'mock_client_secret',
+        complimentId: compliment.id,
+      };
     }
 
     // Calculate platform fee
     const platformFeeAmount = Math.round(amount * 100 * (recipientAccount.platformFeePercent.toNumber() / 100));
     const netAmount = Math.round(amount * 100) - platformFeeAmount;
 
+    console.log('Fee calculation:', { amount, platformFeeAmount, netAmount, feePercent: recipientAccount.platformFeePercent.toNumber() });
+
     if (!stripe) {
+      console.error('Stripe is not configured');
       return { success: false, error: 'Payment processing is not configured' };
     }
+    
+    console.log('Creating Stripe payment intent...');
     
     // Create payment intent with application fee
     const paymentIntent = await stripe.paymentIntents.create({
@@ -266,6 +316,8 @@ export async function processStripeConnectTip({
         isAnonymous: isAnonymous ? 'true' : 'false',
       },
     });
+
+    console.log('Payment intent created:', { id: paymentIntent.id, status: paymentIntent.status });
 
     // Create compliment record in database
     const compliment = await prisma.compliment.create({
@@ -289,6 +341,25 @@ export async function processStripeConnectTip({
     };
   } catch (error) {
     console.error('Error processing tip:', error);
+    
+    // Check if it's a Stripe error
+    if (error && typeof error === 'object' && 'type' in error) {
+      console.error('Stripe error details:', {
+        type: error.type,
+        code: error.code,
+        message: error.message,
+        param: error.param
+      });
+      
+      // Return more specific error message
+      if (error.code === 'account_invalid') {
+        return { success: false, error: 'Recipient payment account is not set up properly' };
+      }
+      if (error.code === 'transfer_group_invalid') {
+        return { success: false, error: 'Invalid transfer configuration' };
+      }
+    }
+    
     return { success: false, error: 'Failed to process tip' };
   }
 }

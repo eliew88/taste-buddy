@@ -84,6 +84,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Process the tip through Stripe Connect
+    console.log('Processing tip:', { senderId: session.user.id, recipientId, amount, message, recipeId, isAnonymous });
+    
     const result = await processStripeConnectTip({
       senderId: session.user.id,
       recipientId,
@@ -92,6 +94,8 @@ export async function POST(req: NextRequest) {
       recipeId,
       isAnonymous
     });
+
+    console.log('Tip processing result:', result);
 
     if (result.success) {
       return NextResponse.json({
@@ -103,6 +107,7 @@ export async function POST(req: NextRequest) {
         }
       });
     } else {
+      console.error('Tip processing failed:', result.error);
       return NextResponse.json(
         { success: false, error: result.error },
         { status: 400 }

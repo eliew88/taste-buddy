@@ -20,8 +20,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Sync with Stripe and get latest status
-    await syncStripeConnectAccount(session.user.id);
+    // Sync with Stripe and get latest status (skip for mock accounts)
+    try {
+      await syncStripeConnectAccount(session.user.id);
+    } catch (error) {
+      console.warn('Failed to sync account, continuing with database status:', error);
+    }
     const paymentStatus = await getPaymentStatus(session.user.id);
 
     return NextResponse.json({
