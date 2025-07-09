@@ -29,7 +29,7 @@ export async function GET() {
         recipe: {
           include: {
             author: {
-              select: { id: true, name: true, email: true }
+              select: { id: true, name: true, email: true, image: true }
             },
             _count: {
               select: { favorites: true, ratings: true, comments: true }

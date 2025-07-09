@@ -22,11 +22,11 @@ import {
   Lock, 
   Users, 
   Globe, 
-  User,
   Calendar,
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
+import Avatar from '@/components/ui/avatar';
 
 interface Comment {
   id: string;
@@ -234,9 +234,12 @@ export default function CommentsSection({
             <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-b-0 last:pb-0">
               <div className="flex items-start space-x-3">
                 {/* User Avatar */}
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-green-600" />
-                </div>
+                <Avatar
+                  imageUrl={comment.user.image}
+                  name={comment.user.name}
+                  size="sm"
+                  className="flex-shrink-0"
+                />
 
                 {/* Comment Content */}
                 <div className="flex-1 min-w-0">
