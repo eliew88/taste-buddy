@@ -31,19 +31,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [followers, setFollowers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeParams = async () => {
+    const resolveParams = async () => {
       const resolvedParams = await params;
       setUserId(resolvedParams.id);
     };
-    initializeParams();
+    resolveParams();
   }, [params]);
 
   useEffect(() => {
     if (!userId) return;
-    
+
     const fetchUserData = async () => {
       try {
         // Fetch user info (we'll need to create this API endpoint)
