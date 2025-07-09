@@ -121,7 +121,7 @@ export default function ImageUpload({
   /**
    * Handle file upload process
    */
-  const handleFileUpload = useCallback(async (file: File) => {
+  const handleFileUpload = useCallback(async (file: File): Promise<void> => {
     // Reset state
     setUploadState({
       uploading: false,
@@ -133,11 +133,12 @@ export default function ImageUpload({
     // Validate file
     const validation = validateFile(file);
     if (!validation.valid) {
+      const errorMessage = validation.error || 'Invalid file';
       setUploadState(prev => ({
         ...prev,
-        error: validation.error || 'Invalid file'
+        error: errorMessage
       }));
-      return;
+      throw new Error(errorMessage);
     }
 
     // Show preview immediately
@@ -216,6 +217,9 @@ export default function ImageUpload({
         error: errorMessage,
         success: false
       });
+      
+      // Re-throw the error so the calling function knows the upload failed
+      throw error;
     }
   }, [onImageUploaded]);
 
@@ -262,12 +266,17 @@ export default function ImageUpload({
   /**
    * Handle file input change
    */
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      handleFileUpload(file);
+      try {
+        await handleFileUpload(file);
+      } catch (error) {
+        // Error is already handled in handleFileUpload, but we log it here for debugging
+        console.error('File upload failed:', error);
+      }
     }
-    // Reset input to allow selecting the same file again
+    // Reset input to allow selecting the same file again - do this after upload completes
     e.target.value = '';
   }, [handleFileUpload]);
 
