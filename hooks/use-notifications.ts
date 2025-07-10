@@ -3,13 +3,38 @@ import { useSession } from 'next-auth/react';
 
 export interface Notification {
   id: string;
-  type: 'new_recipe' | 'new_follower' | 'recipe_liked' | 'recipe_commented';
+  type: 'NEW_FOLLOWER' | 'RECIPE_COMMENT' | 'COMPLIMENT_RECEIVED' | 'NEW_RECIPE_FROM_FOLLOWING';
   title: string;
   message: string;
   userId: string;
-  relatedId?: string; // Recipe ID, User ID, etc.
+  fromUserId?: string;
+  relatedRecipeId?: string;
+  relatedCommentId?: string;
+  relatedComplimentId?: string;
+  relatedUserId?: string;
   read: boolean;
   createdAt: Date;
+  fromUser?: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+  };
+  relatedRecipe?: {
+    id: string;
+    title: string;
+    image: string | null;
+  };
+  relatedComment?: {
+    id: string;
+    content: string;
+  };
+  relatedCompliment?: {
+    id: string;
+    message: string;
+    tipAmount: number | null;
+    type: string;
+  };
 }
 
 export function useNotifications() {
@@ -25,17 +50,17 @@ export function useNotifications() {
     setError(null);
 
     try {
-      // TODO: Implement API endpoint for fetching notifications
-      // const response = await fetch('/api/notifications');
-      // const data = await response.json();
-      // if (data.success) {
-      //   setNotifications(data.data);
-      // }
+      const response = await fetch('/api/notifications');
+      const data = await response.json();
       
-      // For now, return empty array as placeholder
-      setNotifications([]);
+      if (data.success) {
+        setNotifications(data.data.notifications || []);
+      } else {
+        throw new Error(data.error || 'Failed to fetch notifications');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch notifications');
+      console.error('Error fetching notifications:', err);
     } finally {
       setLoading(false);
     }
@@ -45,23 +70,19 @@ export function useNotifications() {
     if (!session?.user?.id) return false;
 
     try {
-      // TODO: Implement API endpoint for marking notifications as read
-      // const response = await fetch(`/api/notifications/${notificationId}/read`, {
-      //   method: 'POST',
-      // });
-      // const data = await response.json();
-      // if (data.success) {
-      //   setNotifications(prev =>
-      //     prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      //   );
-      //   return true;
-      // }
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'POST',
+      });
+      const data = await response.json();
       
-      // Placeholder implementation
-      setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      );
-      return true;
+      if (data.success) {
+        setNotifications(prev =>
+          prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+        );
+        return true;
+      } else {
+        throw new Error(data.error || 'Failed to mark notification as read');
+      }
     } catch (err) {
       console.error('Error marking notification as read:', err);
       return false;
@@ -72,19 +93,17 @@ export function useNotifications() {
     if (!session?.user?.id) return false;
 
     try {
-      // TODO: Implement API endpoint for marking all notifications as read
-      // const response = await fetch('/api/notifications/read-all', {
-      //   method: 'POST',
-      // });
-      // const data = await response.json();
-      // if (data.success) {
-      //   setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      //   return true;
-      // }
+      const response = await fetch('/api/notifications/read-all', {
+        method: 'POST',
+      });
+      const data = await response.json();
       
-      // Placeholder implementation
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      return true;
+      if (data.success) {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        return true;
+      } else {
+        throw new Error(data.error || 'Failed to mark all notifications as read');
+      }
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
       return false;
@@ -105,23 +124,23 @@ export function useNotifications() {
   };
 }
 
-// Helper function to create notifications (placeholder for future implementation)
+// Helper function to create notifications (used by server-side code)
 export const createNotification = async (
   type: Notification['type'],
   recipientId: string,
   data: {
     title: string;
     message: string;
-    relatedId?: string;
+    fromUserId?: string;
+    relatedRecipeId?: string;
+    relatedCommentId?: string;
+    relatedComplimentId?: string;
+    relatedUserId?: string;
   }
 ) => {
-  // TODO: Implement API call to create notification
-  // This would be called when:
-  // - A user posts a new recipe (notify followers)
-  // - Someone follows a user (notify the user)
-  // - Someone likes/comments on a recipe (notify recipe author)
-  
-  console.log('Notification would be created:', {
+  // This function is primarily used by the notification-utils.ts file
+  // for server-side notification creation
+  console.log('Notification created:', {
     type,
     recipientId,
     ...data

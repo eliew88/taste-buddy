@@ -12,6 +12,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { createRecipeCommentNotification } from '@/lib/notification-utils';
 
 /**
  * Validation schema for creating comments
@@ -140,15 +141,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createCommentSchema.parse(body);
 
-    // Verify recipe exists
+    // Verify recipe exists and get recipe details
     const recipe = await prisma.recipe.findUnique({
       where: { id: validatedData.recipeId },
-      select: { id: true, authorId: true }
+      select: { 
+        id: true, 
+        authorId: true, 
+        title: true,
+        author: {
+          select: { id: true, name: true, email: true }
+        }
+      }
     });
 
     if (!recipe) {
       return NextResponse.json(
         { success: false, error: 'Recipe not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get commenter details
+    const commenter = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true }
+    });
+
+    if (!commenter) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
@@ -171,6 +192,24 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // Create notification for recipe author (if it's a public or author_only comment)
+    if (validatedData.visibility !== 'private') {
+      try {
+        const commenterName = commenter.name || commenter.email;
+        await createRecipeCommentNotification(
+          session.user.id,
+          recipe.authorId,
+          recipe.id,
+          recipe.title,
+          commenterName,
+          comment.id
+        );
+      } catch (error) {
+        console.error('Failed to create comment notification:', error);
+        // Don't fail the comment creation if notification fails
+      }
+    }
 
     return NextResponse.json({
       success: true,
