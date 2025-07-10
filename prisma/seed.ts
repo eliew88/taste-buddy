@@ -266,22 +266,34 @@ async function main() {
   console.log('🌱 Starting database seeding...');
 
   try {
-    // Clear existing data (optional - remove if you want to keep existing data)
-    console.log('🧹 Clearing existing data...');
-    await prisma.comment.deleteMany();
-    await prisma.rating.deleteMany();
-    await prisma.favorite.deleteMany();
-    await prisma.recipe.deleteMany();
-    await prisma.user.deleteMany();
+    // SAFETY: Only clear data in development environment
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🧹 Clearing existing data (development only)...');
+      await prisma.comment.deleteMany();
+      await prisma.rating.deleteMany();
+      await prisma.favorite.deleteMany();
+      await prisma.recipe.deleteMany();
+      await prisma.user.deleteMany();
+    } else {
+      console.log('⚠️  Production environment detected - preserving existing data');
+    }
 
-    // Create users with hashed passwords
+    // Create users with hashed passwords (only if they don't exist)
     console.log('👥 Creating users...');
     const sampleUsers = await createSampleUsers();
     for (const user of sampleUsers) {
-      await prisma.user.create({
-        data: user,
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email }
       });
-      console.log(`   ✓ Created user: ${user.name} (${user.email})`);
+      
+      if (!existingUser) {
+        await prisma.user.create({
+          data: user,
+        });
+        console.log(`   ✓ Created user: ${user.name} (${user.email})`);
+      } else {
+        console.log(`   ⚠️  User already exists: ${user.name} (${user.email})`);
+      }
     }
 
     // Create recipes
