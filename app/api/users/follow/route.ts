@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { createNewFollowerNotification } from '@/lib/notification-utils';
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,10 +38,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if target user exists
-    const targetUser = await prisma.user.findUnique({
-      where: { id: userId }
-    });
+    // Check if target user exists and get current user info
+    const [targetUser, currentUser] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true }
+      }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, name: true, email: true }
+      })
+    ]);
 
     if (!targetUser) {
       return NextResponse.json(
@@ -49,9 +57,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: 'Current user not found' },
+        { status: 404 }
+      );
+    }
+
     if (action === 'follow') {
       // Create follow relationship
-      await prisma.follow.upsert({
+      const follow = await prisma.follow.upsert({
         where: {
           followerId_followingId: {
             followerId: session.user.id,
@@ -64,6 +79,19 @@ export async function POST(req: NextRequest) {
           followingId: userId
         }
       });
+
+      // Create notification for new follower
+      const followerName = currentUser.name || currentUser.email;
+      try {
+        await createNewFollowerNotification(
+          session.user.id,
+          userId,
+          followerName
+        );
+      } catch (error) {
+        console.error('Failed to create follow notification:', error);
+        // Don't fail the follow action if notification fails
+      }
     } else {
       // Remove follow relationship
       await prisma.follow.deleteMany({
