@@ -36,7 +36,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const { data: session } = useSession();
   const { getFollowStatus, getFollowing, getFollowers } = useFollowing();
   const { isFavorited, toggleFavorite } = useFavorites();
-  const { achievements: userAchievements, loading: achievementsLoading } = useUserAchievements(userId || undefined);
   const [user, setUser] = useState<User | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
   const [following, setFollowing] = useState<User[]>([]);
@@ -46,6 +45,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const { achievements: userAchievements, loading: achievementsLoading } = useUserAchievements(userId || undefined);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showComplimentModal, setShowComplimentModal] = useState(false);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
