@@ -150,6 +150,17 @@ export const ACHIEVEMENT_DEFINITIONS = [
     color: '#8B5CF6', // purple-500
     threshold: 50,
     isActive: true
+  },
+
+  // Special Site Owner Achievement
+  {
+    type: AchievementType.SPECIAL,
+    name: 'Supreme Leader',
+    description: 'The legendary founder and supreme leader of TasteBuddy',
+    icon: '🦄🌈',
+    color: '#EC4899', // pink-500
+    threshold: 1,
+    isActive: true
   }
 ];
 
@@ -235,6 +246,18 @@ export const ACHIEVEMENT_CRITERIA = {
       });
 
       return mutualFollows > 0 ? 1 : 0;
+    },
+
+    // Supreme Leader achievement - site owner only
+    'Supreme Leader': async (userId: string) => {
+      // Check if this user is the site owner
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      });
+
+      // Only award to the site owner
+      return user?.email === 'eliechtw@gmail.com' ? 1 : 0;
     }
   },
 

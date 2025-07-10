@@ -62,6 +62,18 @@ export const ACHIEVEMENT_CRITERIA = {
       });
 
       return mutualFollows > 0 ? 1 : 0;
+    },
+
+    // Supreme Leader achievement - site owner only
+    'Supreme Leader': async (userId: string) => {
+      // Check if this user is the site owner
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      });
+
+      // Only award to the site owner
+      return user?.email === 'eliechtw@gmail.com' ? 1 : 0;
     }
   },
 
