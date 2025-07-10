@@ -25,7 +25,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     ingredients.map((ing, idx) => ({ 
       ...ing, 
       id: `temp-${idx}`,
-      amountInput: ing.amount ? ing.amount.toString() : ''
+      amountInput: (ing.amount !== null && ing.amount !== undefined) ? ing.amount.toString() : ''
     }))
   );
 
