@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useFollowing } from '@/hooks/use-following';
 import { FollowButton } from '@/components/ui/follow-button';
 import ComplimentForm from '@/components/compliment-form';
+import Navigation from '@/components/ui/Navigation';
 import { Instagram, Globe, ExternalLink, Edit2, Coins, X } from 'lucide-react';
 
 interface User {
@@ -219,10 +220,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
+      <div className="min-h-screen">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -230,15 +234,18 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   if (error || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'User not found'}</p>
-          <button
-            onClick={() => window.history.back()}
-            className="text-blue-500 hover:text-blue-700"
-          >
-            Go back
-          </button>
+      <div className="min-h-screen">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error || 'User not found'}</p>
+            <button
+              onClick={() => window.history.back()}
+              className="text-blue-500 hover:text-blue-700"
+            >
+              Go back
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -248,6 +255,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="min-h-screen">
+      <Navigation />
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">

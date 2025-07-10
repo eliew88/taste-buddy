@@ -67,6 +67,8 @@ export default function ProfilePage() {
     instagramUrl: null as string | null,
     websiteUrl: null as string | null
   });
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -98,12 +100,13 @@ export default function ProfilePage() {
     }
   }, [session]);
 
-  // Fetch user's social links
+  // Fetch user's social links and follow counts
   useEffect(() => {
     const fetchUserData = async () => {
       if (!session?.user?.id) return;
       
       try {
+        // Fetch user profile data
         const response = await fetch(`/api/users/${session.user.id}`);
         const data = await response.json();
         
@@ -116,6 +119,20 @@ export default function ProfilePage() {
             instagramUrl: data.data.instagramUrl || '',
             websiteUrl: data.data.websiteUrl || ''
           });
+        }
+
+        // Fetch followers count
+        const followersResponse = await fetch(`/api/users/${session.user.id}/followers`);
+        const followersData = await followersResponse.json();
+        if (followersData.success) {
+          setFollowerCount(followersData.data.length);
+        }
+
+        // Fetch following count
+        const followingResponse = await fetch(`/api/users/${session.user.id}/following`);
+        const followingData = await followingResponse.json();
+        if (followingData.success) {
+          setFollowingCount(followingData.data.length);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -374,22 +391,30 @@ export default function ProfilePage() {
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-5 gap-4 mt-6 pt-6 border-t border-gray-200">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-700">{userRecipes.length}</div>
-              <div className="text-sm text-gray-600">Recipes Shared</div>
+              <div className="text-sm text-gray-600">Recipes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
                 {userRecipes.reduce((sum, recipe) => sum + recipe._count.favorites, 0)}
               </div>
-              <div className="text-sm text-gray-600">Total Favorites</div>
+              <div className="text-sm text-gray-600">Favorites</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
                 {userRecipes.reduce((sum, recipe) => sum + recipe._count.ratings, 0)}
               </div>
-              <div className="text-sm text-gray-600">Total Ratings</div>
+              <div className="text-sm text-gray-600">Ratings</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{followerCount}</div>
+              <div className="text-sm text-gray-600">Followers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{followingCount}</div>
+              <div className="text-sm text-gray-600">Following</div>
             </div>
           </div>
         </div>
