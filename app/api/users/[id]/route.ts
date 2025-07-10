@@ -68,7 +68,7 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { instagramUrl, websiteUrl } = body;
+    const { instagramUrl, websiteUrl, bio } = body;
 
     // Validate URLs if provided
     const urlRegex = /^https?:\/\/.+/;
@@ -86,18 +86,28 @@ export async function PUT(
       );
     }
 
+    // Validate bio length if provided
+    if (bio && bio.length > 500) {
+      return NextResponse.json(
+        { success: false, error: 'Bio must be 500 characters or less' },
+        { status: 400 }
+      );
+    }
+
     // Update user profile
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         instagramUrl: instagramUrl || null,
         websiteUrl: websiteUrl || null,
+        bio: bio || null,
       },
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
+        bio: true,
         createdAt: true,
         instagramUrl: true,
         websiteUrl: true,

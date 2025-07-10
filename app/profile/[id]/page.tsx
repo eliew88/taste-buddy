@@ -6,13 +6,19 @@ import { useFollowing } from '@/hooks/use-following';
 import { FollowButton } from '@/components/ui/follow-button';
 import ComplimentForm from '@/components/compliment-form';
 import Navigation from '@/components/ui/Navigation';
-import { Instagram, Globe, ExternalLink, Edit2, Coins, X } from 'lucide-react';
+import RecipeCard from '@/components/ui/recipe-card';
+import { useFavorites } from '@/hooks/use-favorites';
+import { useUserAchievements } from '@/hooks/use-achievements';
+import { AchievementGrid } from '@/components/achievement-badge';
+import { Recipe } from '@/types/recipe';
+import { Instagram, Globe, ExternalLink, Edit2, Coins, X, ChefHat, Loader2, Trophy } from 'lucide-react';
 
 interface User {
   id: string;
   name: string | null;
   email: string;
   image: string | null;
+  bio?: string | null;
   createdAt: Date;
   followedAt?: Date;
   instagramUrl?: string | null;
@@ -29,10 +35,14 @@ interface FollowStatus {
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession();
   const { getFollowStatus, getFollowing, getFollowers } = useFollowing();
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const { achievements: userAchievements, loading: achievementsLoading } = useUserAchievements(userId);
   const [user, setUser] = useState<User | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
   const [following, setFollowing] = useState<User[]>([]);
   const [followers, setFollowers] = useState<User[]>([]);
+  const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
+  const [recipesLoading, setRecipesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -41,14 +51,21 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
+    bio: '',
     instagramUrl: '',
     websiteUrl: ''
   });
   const [formErrors, setFormErrors] = useState({
+    bio: '',
     instagramUrl: '',
     websiteUrl: ''
   });
   const [updateLoading, setUpdateLoading] = useState(false);
+
+  // Handle favorite toggle for recipe cards
+  const handleFavoriteToggle = async (recipeId: string): Promise<void> => {
+    await toggleFavorite(recipeId);
+  };
 
   useEffect(() => {
     const resolveParams = async () => {
@@ -75,12 +92,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         
         // Pre-fill edit form with current data
         setEditFormData({
+          bio: userData.data.bio || '',
           instagramUrl: userData.data.instagramUrl || '',
           websiteUrl: userData.data.websiteUrl || ''
         });
         
         // Reset form errors
         setFormErrors({
+          bio: '',
           instagramUrl: '',
           websiteUrl: ''
         });
@@ -99,6 +118,21 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
 
         setFollowing(followingData);
         setFollowers(followersData);
+
+        // Fetch user's recipes
+        setRecipesLoading(true);
+        try {
+          const recipesResponse = await fetch(`/api/users/${userId}/recipes`);
+          const recipesData = await recipesResponse.json();
+          
+          if (recipesData.success) {
+            setUserRecipes(recipesData.data);
+          }
+        } catch (recipesErr) {
+          console.error('Error fetching user recipes:', recipesErr);
+        } finally {
+          setRecipesLoading(false);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load user data');
       } finally {
@@ -119,8 +153,19 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     const instagramValidation = validateUrl(editFormData.instagramUrl, 'instagram');
     const websiteValidation = validateUrl(editFormData.websiteUrl, 'website');
     
+    // Validate bio length
+    if (editFormData.bio && editFormData.bio.length > 500) {
+      setFormErrors({
+        bio: 'Bio must be 500 characters or less',
+        instagramUrl: '',
+        websiteUrl: ''
+      });
+      return;
+    }
+    
     if (!instagramValidation.valid || !websiteValidation.valid) {
       setFormErrors({
+        bio: '',
         instagramUrl: instagramValidation.error || '',
         websiteUrl: websiteValidation.error || ''
       });
@@ -131,6 +176,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
     try {
       // Normalize URLs before sending
       const normalizedData = {
+        bio: editFormData.bio || '',
         instagramUrl: editFormData.instagramUrl ? normalizeUrl(editFormData.instagramUrl) : '',
         websiteUrl: editFormData.websiteUrl ? normalizeUrl(editFormData.websiteUrl) : ''
       };
@@ -151,7 +197,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
       // Update local user state
       setUser(prevUser => prevUser ? { ...prevUser, ...normalizedData } : null);
       setShowEditModal(false);
-      setFormErrors({ instagramUrl: '', websiteUrl: '' });
+      setFormErrors({ bio: '', instagramUrl: '', websiteUrl: '' });
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile. Please try again.');
@@ -265,11 +311,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <img
                   src={user.image}
                   alt={user.name || user.email}
-                  className="w-20 h-20 rounded-full object-cover"
+                  className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-600">
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-gray-600">
                     {(user.name || user.email)[0].toUpperCase()}
                   </span>
                 </div>
@@ -279,6 +325,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                   {user.name || user.email}
                 </h1>
                 <p className="text-gray-600">{user.email}</p>
+                {user.bio && (
+                  <p className="text-gray-700 mt-2 text-sm max-w-md">{user.bio}</p>
+                )}
                 <div className="flex items-center space-x-4 mt-2">
                   <button
                     onClick={() => setShowFollowingModal(true)}
@@ -351,11 +400,81 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Profile content would go here - recipes, activity, etc. */}
+        {/* User's Recipes */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-center text-gray-500">
-            <p>Profile content coming soon - recipes, activity, and more!</p>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              {isOwnProfile ? 'My Recipes' : `${user.name || user.email}'s Recipes`}
+            </h2>
+            {userRecipes.length > 0 && (
+              <span className="text-sm text-gray-600">
+                {userRecipes.length} recipe{userRecipes.length !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
+
+          {recipesLoading ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
+              <p className="text-gray-600">Loading recipes...</p>
+            </div>
+          ) : userRecipes.length === 0 ? (
+            <div className="text-center py-12">
+              <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {isOwnProfile ? 'No recipes yet' : 'No recipes shared yet'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {isOwnProfile 
+                  ? 'Start sharing your culinary creations with the TasteBuddy community!'
+                  : `${user.name || user.email} hasn't shared any recipes yet.`
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userRecipes.map((recipe) => (
+                <RecipeCard 
+                  key={recipe.id} 
+                  recipe={recipe}
+                  showFavoriteButton={!isOwnProfile}
+                  isFavorited={isFavorited(recipe.id)}
+                  onFavoriteToggle={handleFavoriteToggle}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Achievement Badges */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <Trophy className="w-6 h-6 text-yellow-500" />
+              <h2 className="text-xl font-bold text-gray-900">
+                {isOwnProfile ? 'My Achievements' : 'Achievements'}
+              </h2>
+            </div>
+            {userAchievements.length > 0 && (
+              <span className="text-sm text-gray-600">
+                {userAchievements.length} earned
+              </span>
+            )}
+          </div>
+
+          {achievementsLoading ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-yellow-500 mx-auto mb-4" />
+              <p className="text-gray-600">Loading achievements...</p>
+            </div>
+          ) : (
+            <AchievementGrid 
+              achievements={userAchievements}
+              size="md"
+              showDates={isOwnProfile}
+              maxDisplay={isOwnProfile ? undefined : 6}
+            />
+          )}
         </div>
       </div>
 
@@ -366,6 +485,33 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
             <h2 className="text-xl font-bold text-gray-900 mb-4">Edit Profile</h2>
             
             <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div>
+                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+                  Bio
+                </label>
+                <textarea
+                  id="bio"
+                  value={editFormData.bio}
+                  onChange={(e) => handleFormChange('bio', e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 resize-none ${
+                    formErrors.bio 
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                      : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
+                  placeholder="Tell people a little about yourself..."
+                />
+                <div className="flex justify-between items-center mt-1">
+                  {formErrors.bio ? (
+                    <p className="text-sm text-red-600">{formErrors.bio}</p>
+                  ) : (
+                    <p className="text-sm text-gray-500">Optional</p>
+                  )}
+                  <p className="text-sm text-gray-400">{editFormData.bio.length}/500</p>
+                </div>
+              </div>
+
               <div>
                 <label htmlFor="instagramUrl" className="block text-sm font-medium text-gray-700 mb-1">
                   Instagram URL

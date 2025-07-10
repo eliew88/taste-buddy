@@ -68,6 +68,7 @@ export async function getUserWithPrivacy(
       name: true,
       email: true,
       image: true,
+      bio: true,
       createdAt: true,
       instagramUrl: true,
       websiteUrl: true,

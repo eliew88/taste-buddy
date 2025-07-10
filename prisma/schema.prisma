@@ -28,6 +28,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  // === PROFILE CONTENT ===
+  bio String? // User biography/description
+  
   // === SOCIAL LINKS ===
   instagramUrl String? // Instagram profile URL
   websiteUrl   String? // Personal website URL
@@ -63,6 +66,9 @@ model User {
   
   // Payment relationship
   paymentAccount PaymentAccount?
+  
+  // Achievement relationships
+  achievements UserAchievement[]
 
   @@map("users")
 }
@@ -349,5 +355,74 @@ model Notification {
   @@index([relatedCommentId])
   @@index([relatedComplimentId])
   @@map("notifications")
+}
+
+/**
+ * Achievement Types Enum
+ */
+enum AchievementType {
+  RECIPE_COUNT     // Based on number of recipes posted
+  FAVORITES_COUNT  // Based on total favorites received
+  FOLLOWERS_COUNT  // Based on number of followers
+  RATINGS_COUNT    // Based on total ratings received
+  STREAK          // Based on consistent posting
+  SPECIAL         // Special one-time achievements
+}
+
+/**
+ * Achievement Model - Defines available achievements
+ */
+model Achievement {
+  id String @id @default(cuid())
+  
+  // === ACHIEVEMENT DETAILS ===
+  type AchievementType
+  name String // "Recipe Master", "Community Favorite", etc.
+  description String // Description of how to earn this achievement
+  icon String // Icon identifier (emoji or icon class)
+  color String @default("#3B82F6") // Badge color
+  
+  // === REQUIREMENTS ===
+  threshold Int? // Numeric threshold (e.g., 10 recipes, 100 favorites)
+  
+  // === METADATA ===
+  isActive Boolean @default(true) // Whether this achievement is currently available
+  createdAt DateTime @default(now())
+  
+  // === RELATIONSHIPS ===
+  userAchievements UserAchievement[]
+  
+  // === INDEXES ===
+  @@index([type])
+  @@index([isActive])
+  @@map("achievements")
+}
+
+/**
+ * UserAchievement Model - Tracks which users have earned which achievements
+ */
+model UserAchievement {
+  id String @id @default(cuid())
+  
+  // === USER AND ACHIEVEMENT ===
+  userId String
+  achievementId String
+  
+  // === ACHIEVEMENT DATA ===
+  earnedAt DateTime @default(now())
+  progress Int? // Current progress toward achievement (if applicable)
+  
+  // === RELATIONSHIPS ===
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  // === CONSTRAINTS ===
+  @@unique([userId, achievementId]) // User can only earn each achievement once
+  
+  // === INDEXES ===
+  @@index([userId])
+  @@index([achievementId])
+  @@index([earnedAt])
+  @@map("user_achievements")
 }
 

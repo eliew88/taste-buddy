@@ -28,6 +28,7 @@ import {
 import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
+import RecipeStatsSection from '@/components/recipe-stats-section';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -419,6 +420,11 @@ export default function HomePage() {
             )}
           </section>
         </main>
+
+        {/* Recipe Statistics Section - only show when no active filters */}
+        {!hasActiveFilters && !loading && (
+          <RecipeStatsSection />
+        )}
       </div>
     </ErrorBoundary>
   );

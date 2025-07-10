@@ -10,10 +10,13 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useUserAchievements, useAchievementEvaluation } from '@/hooks/use-achievements';
+import { AchievementGrid } from '@/components/achievement-badge';
+import { AchievementNotification, useAchievementNotifications } from '@/components/achievement-notification';
 import ComplimentsDisplay from '@/components/compliments-display';
 import { IngredientEntry } from '@/types/recipe';
 import Avatar from '@/components/ui/avatar';
@@ -73,9 +76,26 @@ export default function ProfilePage() {
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
   
+  // Achievement management
+  const { achievements, loading: achievementsLoading, evaluateAchievements } = useUserAchievements();
+  const { evaluateUserAchievements, evaluating } = useAchievementEvaluation();
+  const { notifications, showAchievements, clearNotifications } = useAchievementNotifications();
+  
   // Wrapper function to match the expected signature
   const handleFavoriteToggle = async (recipeId: string): Promise<void> => {
     await toggleFavorite(recipeId);
+  };
+
+  // Handle achievement evaluation
+  const handleEvaluateAchievements = async () => {
+    try {
+      const result = await evaluateUserAchievements();
+      if (result.newAchievements.length > 0) {
+        showAchievements(result.newAchievements);
+      }
+    } catch (error) {
+      console.error('Error evaluating achievements:', error);
+    }
   };
   
   // Handle profile photo upload success
@@ -452,7 +472,7 @@ export default function ProfilePage() {
         </div>
 
         {/* User's Recipes */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">My Recipes</h2>
             {userRecipes.length > 0 && (
@@ -498,10 +518,54 @@ export default function ProfilePage() {
         </div>
         
         {/* Compliments Section */}
-        <ComplimentsDisplay 
-          userId={session.user.id}
-          isOwnProfile={true}
-        />
+        <div className="mb-8">
+          <ComplimentsDisplay 
+            userId={session.user.id}
+            isOwnProfile={true}
+          />
+        </div>
+        
+        {/* Achievement Section */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <Trophy className="w-6 h-6 text-yellow-500" />
+              <h2 className="text-xl font-bold text-gray-900">My Achievements</h2>
+            </div>
+            <div className="flex items-center space-x-3">
+              {achievements.length > 0 && (
+                <span className="text-sm text-gray-600">
+                  {achievements.length} earned
+                </span>
+              )}
+              <button
+                onClick={handleEvaluateAchievements}
+                disabled={evaluating}
+                className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 flex items-center space-x-2"
+              >
+                {evaluating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trophy className="w-4 h-4" />
+                )}
+                <span>{evaluating ? 'Checking...' : 'Check for New Achievements'}</span>
+              </button>
+            </div>
+          </div>
+
+          {achievementsLoading ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-yellow-500 mx-auto mb-4" />
+              <p className="text-gray-600">Loading achievements...</p>
+            </div>
+          ) : (
+            <AchievementGrid 
+              achievements={achievements}
+              size="md"
+              showDates={true}
+            />
+          )}
+        </div>
         
         {/* Profile Photo Upload Modal */}
         {showPhotoUpload && (
@@ -598,6 +662,12 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+      
+      {/* Achievement Notifications */}
+      <AchievementNotification 
+        achievements={notifications}
+        onClose={clearNotifications}
+      />
     </div>
   );
 }

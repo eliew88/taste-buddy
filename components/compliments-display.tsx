@@ -130,7 +130,7 @@ export default function ComplimentsDisplay({ userId, isOwnProfile }: Compliments
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center mb-4">
           <Heart className="w-5 h-5 text-pink-600 mr-2" />
           <h3 className="text-lg font-semibold text-gray-900">Compliments Received</h3>
@@ -180,7 +180,7 @@ export default function ComplimentsDisplay({ userId, isOwnProfile }: Compliments
   const stats = getComplimentStats();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white rounded-lg shadow-sm border p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Heart className="w-5 h-5 text-pink-600 mr-2" />
