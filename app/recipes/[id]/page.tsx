@@ -445,7 +445,7 @@ export default function RecipeDetailPage() {
         <div className="relative">
           {/* Background Image Section */}
           <div 
-            className="relative min-h-[85vh] rounded-xl overflow-hidden mb-8"
+            className="relative rounded-xl overflow-hidden mb-8"
             style={{
               backgroundImage: recipe.image && getOptimizedImageUrl(recipe.image) 
                 ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${getOptimizedImageUrl(recipe.image)})`
@@ -456,9 +456,9 @@ export default function RecipeDetailPage() {
             }}
           >
             {/* Content Overlay */}
-            <div className="absolute inset-0 p-6 flex flex-col justify-between">
+            <div className="relative p-6 flex flex-col min-h-[60vh]">
               {/* Recipe Header Content */}
-              <div className="flex-1 flex flex-col justify-center text-white">
+              <div className="flex-1 flex flex-col justify-center text-white pb-8">
                 <div className="max-w-4xl">
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white drop-shadow-lg">
                     {recipe.title}
@@ -530,7 +530,7 @@ export default function RecipeDetailPage() {
               </div>
 
               {/* Bottom Components Row */}
-              <div className="mt-8">
+              <div>
                 {/* Horizontal Components Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Recipe Quick Info */}
