@@ -103,7 +103,7 @@ const StarRating = ({
  */
 const RecipeDetailSkeleton = () => (
   <div className="min-h-screen">
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-blue-100 shadow-sm border-b">
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center">
           <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
@@ -143,7 +143,7 @@ const ErrorDisplay = ({
 }) => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="max-w-md w-full mx-4">
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+      <div className="bg-blue-50 rounded-lg shadow-md p-6 text-center">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Recipe Not Found</h2>
         <p className="text-gray-600 mb-4">{message}</p>
@@ -385,7 +385,7 @@ export default function RecipeDetailPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b print:hidden">
+      <nav className="bg-blue-100 shadow-sm border-b print:hidden">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link 
@@ -686,7 +686,7 @@ export default function RecipeDetailPage() {
           <div className="lg:col-span-2">
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">Instructions</h2>
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="bg-blue-50 rounded-lg p-6 shadow-sm">
                 <div className="prose max-w-none">
                   {recipe.instructions.split('\n').map((step, index) => (
                     <p key={index} className="mb-4 leading-relaxed">
@@ -701,7 +701,7 @@ export default function RecipeDetailPage() {
           {/* Detailed Sidebar */}
           <div className="space-y-6">
             {/* Full Ingredients List */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="bg-blue-50 rounded-lg p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Complete Ingredients List
                 {recipeScale !== 1 && (
