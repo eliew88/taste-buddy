@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getUserWithPrivacy } from '@/lib/privacy-utils';
 
 export async function GET(
   req: NextRequest,
@@ -19,26 +20,8 @@ export async function GET(
 
     const { id: userId } = await params;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        createdAt: true,
-        instagramUrl: true,
-        websiteUrl: true,
-        paymentAccount: {
-          select: {
-            accountStatus: true,
-            onboardingComplete: true,
-            payoutsEnabled: true,
-            acceptsTips: true
-          }
-        }
-      }
-    });
+    // Get user data with privacy settings applied
+    const user = await getUserWithPrivacy(userId, session.user.id);
 
     if (!user) {
       return NextResponse.json(

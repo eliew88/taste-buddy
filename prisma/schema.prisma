@@ -8,6 +8,15 @@ datasource db {
 }
 
 /**
+ * Email Visibility Settings
+ */
+enum EmailVisibility {
+  HIDDEN          // Email not visible to anyone
+  FOLLOWING_ONLY  // Email visible only to users this person follows
+  PUBLIC          // Email visible to everyone
+}
+
+/**
  * User Model - Production Version
  */
 model User {
@@ -22,6 +31,9 @@ model User {
   // === SOCIAL LINKS ===
   instagramUrl String? // Instagram profile URL
   websiteUrl   String? // Personal website URL
+  
+  // === PRIVACY SETTINGS ===
+  emailVisibility EmailVisibility @default(HIDDEN) // Control who can see email
   
   // === RELATIONSHIPS ===
   recipes             Recipe[]
