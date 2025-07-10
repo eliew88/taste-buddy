@@ -87,6 +87,7 @@ export default function FavoritesPage() {
         const data = await response.json();
         
         if (data.success) {
+          console.log('Favorites data received:', data.data);
           setFavorites(data.data || []);
         } else {
           throw new Error(data.error || 'Failed to fetch favorites');
@@ -109,12 +110,24 @@ export default function FavoritesPage() {
     // Apply search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(recipe =>
-        recipe.title.toLowerCase().includes(searchLower) ||
-        recipe.description?.toLowerCase().includes(searchLower) ||
-        recipe.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
-        recipe.ingredients.some(ingredient => ingredient.ingredient.toLowerCase().includes(searchLower))
-      );
+      filtered = filtered.filter(recipe => {
+        try {
+          return (
+            recipe.title?.toLowerCase().includes(searchLower) ||
+            recipe.description?.toLowerCase().includes(searchLower) ||
+            (recipe.tags && Array.isArray(recipe.tags) && recipe.tags.some(tag => 
+              tag && typeof tag === 'string' && tag.toLowerCase().includes(searchLower)
+            )) ||
+            (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.some(ingredient => 
+              ingredient && ingredient.ingredient && typeof ingredient.ingredient === 'string' && 
+              ingredient.ingredient.toLowerCase().includes(searchLower)
+            ))
+          );
+        } catch (error) {
+          console.error('Error filtering recipe:', recipe.id, error);
+          return false; // Exclude recipes that cause errors
+        }
+      });
     }
 
     // Apply difficulty filter
