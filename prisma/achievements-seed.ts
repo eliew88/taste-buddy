@@ -128,6 +128,28 @@ export const ACHIEVEMENT_DEFINITIONS = [
     color: '#10B981', // green-500
     threshold: 10, // 10 recipes with 4+ rating
     isActive: true
+  },
+
+  // Comment Achievements
+  {
+    type: AchievementType.COMMENTS_COUNT,
+    name: 'Hot Topic',
+    description: 'Have a recipe with more than 10 comments',
+    icon: '🌶️',
+    color: '#EF4444', // red-500
+    threshold: 10,
+    isActive: true
+  },
+
+  // Ingredient Achievements
+  {
+    type: AchievementType.INGREDIENTS_COUNT,
+    name: 'Resourceful',
+    description: 'Use more than 50 unique ingredients across all your recipes',
+    icon: '🧑‍🍳',
+    color: '#8B5CF6', // purple-500
+    threshold: 50,
+    isActive: true
   }
 ];
 
@@ -263,6 +285,60 @@ export const ACHIEVEMENT_CRITERIA = {
         }
       }
       return qualityRecipes;
+    }
+  },
+
+  // Comment achievements
+  COMMENTS_COUNT: {
+    evaluate: async (userId: string) => {
+      // Check if user has a recipe with more than 10 comments
+      const recipe = await prisma.recipe.findFirst({
+        where: { 
+          authorId: userId,
+          comments: {
+            some: {} // Only recipes with comments
+          }
+        },
+        include: {
+          _count: {
+            select: { comments: true }
+          }
+        },
+        orderBy: {
+          comments: {
+            _count: 'desc'
+          }
+        }
+      });
+
+      if (recipe && recipe._count.comments > 10) {
+        return 1; // Has at least one recipe with >10 comments
+      }
+      return 0;
+    }
+  },
+
+  // Ingredient achievements
+  INGREDIENTS_COUNT: {
+    evaluate: async (userId: string) => {
+      // Get all ingredients from user's recipes
+      const ingredients = await prisma.ingredientEntry.findMany({
+        where: {
+          recipe: {
+            authorId: userId
+          }
+        },
+        select: {
+          ingredient: true
+        }
+      });
+
+      // Create a set to get unique ingredients (case-insensitive)
+      const uniqueIngredients = new Set(
+        ingredients.map(ing => ing.ingredient.toLowerCase().trim())
+      );
+
+      return uniqueIngredients.size;
     }
   }
 };

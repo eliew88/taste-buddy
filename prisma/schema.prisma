@@ -365,6 +365,8 @@ enum AchievementType {
   FAVORITES_COUNT  // Based on total favorites received
   FOLLOWERS_COUNT  // Based on number of followers
   RATINGS_COUNT    // Based on total ratings received
+  COMMENTS_COUNT   // Based on total comments received
+  INGREDIENTS_COUNT // Based on unique ingredients used
   STREAK          // Based on consistent posting
   SPECIAL         // Special one-time achievements
 }

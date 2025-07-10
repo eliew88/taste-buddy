@@ -113,5 +113,59 @@ export const ACHIEVEMENT_CRITERIA = {
       }
       return qualityRecipes;
     }
+  },
+
+  // Comment achievements
+  COMMENTS_COUNT: {
+    evaluate: async (userId: string) => {
+      // Check if user has a recipe with more than 10 comments
+      const recipe = await prisma.recipe.findFirst({
+        where: { 
+          authorId: userId,
+          comments: {
+            some: {} // Only recipes with comments
+          }
+        },
+        include: {
+          _count: {
+            select: { comments: true }
+          }
+        },
+        orderBy: {
+          comments: {
+            _count: 'desc'
+          }
+        }
+      });
+
+      if (recipe && recipe._count.comments > 10) {
+        return 1; // Has at least one recipe with >10 comments
+      }
+      return 0;
+    }
+  },
+
+  // Ingredient achievements
+  INGREDIENTS_COUNT: {
+    evaluate: async (userId: string) => {
+      // Get all ingredients from user's recipes
+      const ingredients = await prisma.ingredientEntry.findMany({
+        where: {
+          recipe: {
+            authorId: userId
+          }
+        },
+        select: {
+          ingredient: true
+        }
+      });
+
+      // Create a set to get unique ingredients (case-insensitive)
+      const uniqueIngredients = new Set(
+        ingredients.map(ing => ing.ingredient.toLowerCase().trim())
+      );
+
+      return uniqueIngredients.size;
+    }
   }
 };
