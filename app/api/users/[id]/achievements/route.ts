@@ -87,33 +87,33 @@ export async function POST(
       switch (achievement.type) {
         case 'RECIPE_COUNT':
           progress = await ACHIEVEMENT_CRITERIA.RECIPE_COUNT.evaluate(userId);
-          earned = progress >= achievement.threshold;
+          earned = achievement.threshold ? progress >= achievement.threshold : false;
           break;
 
         case 'FAVORITES_COUNT':
           progress = await ACHIEVEMENT_CRITERIA.FAVORITES_COUNT.evaluate(userId);
-          earned = progress >= achievement.threshold;
+          earned = achievement.threshold ? progress >= achievement.threshold : false;
           break;
 
         case 'FOLLOWERS_COUNT':
           progress = await ACHIEVEMENT_CRITERIA.FOLLOWERS_COUNT.evaluate(userId);
-          earned = progress >= achievement.threshold;
+          earned = achievement.threshold ? progress >= achievement.threshold : false;
           break;
 
         case 'RATINGS_COUNT':
           if (achievement.name === '5-Star Chef') {
             progress = await ACHIEVEMENT_CRITERIA.RATINGS_COUNT['5-Star Chef'](userId);
-            earned = progress >= achievement.threshold;
+            earned = achievement.threshold ? progress >= achievement.threshold : false;
           } else if (achievement.name === 'Consistent Quality') {
             progress = await ACHIEVEMENT_CRITERIA.RATINGS_COUNT['Consistent Quality'](userId);
-            earned = progress >= achievement.threshold;
+            earned = achievement.threshold ? progress >= achievement.threshold : false;
           }
           break;
 
         case 'SPECIAL':
           if (achievement.name === 'BFF') {
             progress = await ACHIEVEMENT_CRITERIA.SPECIAL.BFF(userId);
-            earned = progress >= achievement.threshold;
+            earned = achievement.threshold ? progress >= achievement.threshold : false;
           }
           break;
       }
