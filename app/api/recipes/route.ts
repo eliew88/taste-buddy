@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
       tagsCount: Array.isArray(tags) ? tags.length : 'not array',
       hasImage: !!image
     });
+    console.log('Full request body for debugging:', JSON.stringify(body, null, 2));
 
     // Validation
     console.log('Starting validation...');
@@ -150,10 +151,10 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < ingredients.length; i++) {
       const ingredient = ingredients[i];
       console.log(`Ingredient ${i}:`, ingredient);
-      if (!ingredient.amount || !ingredient.ingredient?.trim()) {
+      if (!ingredient.ingredient?.trim()) {
         console.log(`Validation failed: Invalid ingredient ${i}`, ingredient);
         return NextResponse.json(
-          { success: false, error: 'Each ingredient must have amount and ingredient name' },
+          { success: false, error: 'Each ingredient must have an ingredient name' },
           { status: 400 }
         );
       }
@@ -181,6 +182,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify the user exists in the database
+    console.log('Verifying user exists...');
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+    console.log('User exists check:', !!userExists);
+    
+    if (!userExists) {
+      console.log('User verification failed: User does not exist in database');
+      return NextResponse.json(
+        { success: false, error: 'Invalid user session. Please sign in again.' },
+        { status: 401 }
+      );
+    }
+
     // Prepare data for PostgreSQL database storage with structured ingredients
     console.log('Preparing recipe data...');
     const recipeData = {
@@ -196,7 +212,9 @@ export async function POST(request: NextRequest) {
       ingredients: {
         create: ingredients.map((ingredient: any, index: number) => {
           const parsed = {
-            amount: parseFloat(ingredient.amount),
+            amount: ingredient.amount !== undefined && ingredient.amount !== null && ingredient.amount !== '' 
+              ? parseFloat(ingredient.amount) 
+              : null,
             unit: ingredient.unit?.trim() || null,
             ingredient: ingredient.ingredient.trim(),
           };

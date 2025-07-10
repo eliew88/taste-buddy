@@ -31,7 +31,7 @@ export function prepareRecipeForDB(data: {
  * @returns Recipe data ready for the app
  */
 export function transformRecipeFromDB(recipe: {
-  ingredients: { id: string; amount: number; unit: string | null; ingredient: string; }[];
+  ingredients: { id: string; amount: number | null; unit: string | null; ingredient: string; }[];
   tags: string[];
   [key: string]: unknown;
 }) {

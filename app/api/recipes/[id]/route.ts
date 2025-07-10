@@ -195,10 +195,10 @@ export async function PUT(
       if (Array.isArray(ingredients)) {
         for (let i = 0; i < ingredients.length; i++) {
           const ingredient = ingredients[i];
-          if (!ingredient.amount || !ingredient.ingredient?.trim()) {
+          if (!ingredient.ingredient?.trim()) {
             console.log(`Ingredients validation failed: Invalid ingredient ${i}`, ingredient);
             return NextResponse.json(
-              { success: false, error: 'Each ingredient must have amount and ingredient name' },
+              { success: false, error: 'Each ingredient must have an ingredient name' },
               { status: 400 }
             );
           }
@@ -299,7 +299,9 @@ export async function PUT(
         await prisma.ingredientEntry.createMany({
           data: ingredients.map((ingredient: any) => ({
             recipeId: id,
-            amount: parseFloat(ingredient.amount),
+            amount: ingredient.amount !== undefined && ingredient.amount !== null && ingredient.amount !== '' 
+              ? parseFloat(ingredient.amount) 
+              : null,
             unit: ingredient.unit?.trim() || null,
             ingredient: ingredient.ingredient.trim(),
           }))

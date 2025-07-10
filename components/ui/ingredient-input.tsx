@@ -25,7 +25,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     ingredients.map((ing, idx) => ({ 
       ...ing, 
       id: `temp-${idx}`,
-      amountInput: ing.amount ? ing.amount.toString() : ''
+      amountInput: ing.amount !== undefined && ing.amount !== null ? ing.amount.toString() : ''
     }))
   );
 
@@ -39,21 +39,35 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     onChange(entries.map(({ id, amountInput, ...entry }) => entry));
   }, [entries]); // Remove onChange from dependencies to prevent infinite loop
 
-  const addIngredient = () => {
+  const addIngredient = (insertAtIndex?: number) => {
     const newEntry: IngredientEntryState = {
       id: `temp-${Date.now()}`,
-      amount: 0,
+      amount: undefined,
       unit: undefined,
       ingredient: '',
       amountInput: ''
     };
-    setEntries([...entries, newEntry]);
     
-    // Focus the amount input of the new entry
-    setTimeout(() => {
-      const lastIndex = entries.length;
-      amountRefs.current[lastIndex]?.focus();
-    }, 0);
+    if (insertAtIndex !== undefined) {
+      // Insert at specific position
+      const newEntries = [...entries];
+      newEntries.splice(insertAtIndex + 1, 0, newEntry);
+      setEntries(newEntries);
+      
+      // Focus the amount input of the new entry
+      setTimeout(() => {
+        amountRefs.current[insertAtIndex + 1]?.focus();
+      }, 0);
+    } else {
+      // Add at the end (default behavior)
+      setEntries([...entries, newEntry]);
+      
+      // Focus the amount input of the new entry
+      setTimeout(() => {
+        const lastIndex = entries.length;
+        amountRefs.current[lastIndex]?.focus();
+      }, 0);
+    }
   };
 
   const removeIngredient = (id: string) => {
@@ -87,14 +101,21 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
   };
 
   const handleIngredientKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'Tab' || e.key === 'Enter') {
+    if (e.key === 'Tab') {
       e.preventDefault();
-      // If this is the last ingredient and it's not empty, add a new one
+      // Tab moves to next ingredient or adds new one at the end
       if (index === entries.length - 1 && entries[index].ingredient.trim()) {
         addIngredient();
       } else if (index < entries.length - 1) {
         // Otherwise focus the next ingredient's amount
         amountRefs.current[index + 1]?.focus();
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      // Enter always inserts a new ingredient at the current position
+      if (entries[index].ingredient.trim()) {
+        // Only insert if current ingredient has content
+        addIngredient(index);
       }
     }
   };
@@ -103,7 +124,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
     // Allow empty string or valid numbers (including decimals)
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       // Update both the raw input string and numeric amount in one state update
-      const numericValue = value === '' ? 0 : parseFloat(value) || 0;
+      const numericValue = value === '' ? undefined : (isNaN(parseFloat(value)) ? undefined : parseFloat(value));
       updateEntryMultiple(id, {
         amountInput: value,
         amount: numericValue
@@ -113,13 +134,20 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
 
   const handleAmountBlur = (id: string, value: string) => {
     // On blur, ensure the final value is properly formatted
-    const numericValue = value === '' ? 0 : parseFloat(value);
-    if (!isNaN(numericValue)) {
-      const formattedInput = numericValue === 0 ? '' : numericValue.toString();
+    if (value === '') {
+      // Keep amount as undefined for empty values
       updateEntryMultiple(id, {
-        amountInput: formattedInput,
-        amount: numericValue
+        amountInput: '',
+        amount: undefined
       });
+    } else {
+      const numericValue = parseFloat(value);
+      if (!isNaN(numericValue)) {
+        updateEntryMultiple(id, {
+          amountInput: numericValue.toString(),
+          amount: numericValue
+        });
+      }
     }
   };
 
@@ -144,13 +172,13 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
                 ref={el => { amountRefs.current[index] = el; }}
                 type="text"
                 inputMode="decimal"
-                placeholder="1.5"
+                placeholder="1.5 (optional)"
                 value={entry.amountInput || ''}
                 onChange={(e) => handleAmountChange(entry.id, e.target.value)}
                 onBlur={(e) => handleAmountBlur(entry.id, e.target.value)}
                 onKeyDown={(e) => handleAmountKeyDown(e, index)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                title="Enter amount (decimals allowed, e.g., 1.5, 0.25)"
+                title="Enter amount (optional - leave empty for ingredients like 'pinch of salt' or 'to taste')"
               />
             </div>
 
@@ -210,7 +238,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
       </button>
 
       <div className="text-xs text-gray-500 mt-2">
-        Tip: Use decimals for amounts (e.g., 1.5, 0.25). Press Tab or Enter to move between fields. Space moves between amount/unit fields only. Filling out the last ingredient will automatically add a new one.
+        Tip: Amounts are optional - leave empty for ingredients like "pinch of salt" or "to taste". Use decimals for amounts (e.g., 1.5, 0.25). Press Tab to move to next ingredient or Space to move between amount/unit fields. Press Enter to insert a new ingredient at the current position.
       </div>
     </div>
   );

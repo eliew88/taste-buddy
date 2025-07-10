@@ -240,7 +240,8 @@ export function scaleIngredient(parsed: ParsedIngredient, multiplier: number): s
  * Scale a single IngredientEntry by a multiplier
  */
 export function scaleIngredientEntry(ingredient: IngredientEntry, multiplier: number): IngredientEntry {
-  const scaledAmount = ingredient.amount * multiplier;
+  // Only scale if amount exists
+  const scaledAmount = ingredient.amount !== undefined ? ingredient.amount * multiplier : undefined;
   
   return {
     ...ingredient,
