@@ -21,13 +21,14 @@ export interface UserAchievement {
   achievement: Achievement;
 }
 
-export function useUserAchievements(userId?: string) {
+export function useUserAchievements(userId?: string | null) {
   const { data: session } = useSession();
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const targetUserId = userId || session?.user?.id;
+  // Only default to current user if userId is explicitly undefined (not null)
+  const targetUserId = userId === undefined ? session?.user?.id : userId;
 
   const fetchAchievements = useCallback(async () => {
     if (!targetUserId) return;

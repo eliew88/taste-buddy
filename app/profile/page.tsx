@@ -10,10 +10,11 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useFollowing } from '@/hooks/use-following';
 import { useUserAchievements, useAchievementEvaluation } from '@/hooks/use-achievements';
 import { AchievementGrid } from '@/components/achievement-badge';
 import { AchievementNotification, useAchievementNotifications } from '@/components/achievement-notification';
@@ -49,9 +50,17 @@ interface UserRecipe {
   avgRating?: number;
 }
 
+interface User {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { getFollowing, getFollowers } = useFollowing();
   const [userRecipes, setUserRecipes] = useState<UserRecipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
@@ -72,6 +81,10 @@ export default function ProfilePage() {
   });
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followers, setFollowers] = useState<User[]>([]);
+  const [following, setFollowing] = useState<User[]>([]);
   
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -161,6 +174,20 @@ export default function ProfilePage() {
 
     fetchUserData();
   }, [session]);
+
+  // Fetch followers when modal opens
+  useEffect(() => {
+    if (showFollowersModal && session?.user?.id) {
+      getFollowers(session.user.id).then(setFollowers);
+    }
+  }, [showFollowersModal, session?.user?.id, getFollowers]);
+
+  // Fetch following when modal opens
+  useEffect(() => {
+    if (showFollowingModal && session?.user?.id) {
+      getFollowing(session.user.id).then(setFollowing);
+    }
+  }, [showFollowingModal, session?.user?.id, getFollowing]);
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -428,14 +455,20 @@ export default function ProfilePage() {
               </div>
               <div className="text-sm text-gray-600">Ratings</div>
             </div>
-            <div className="text-center">
+            <button
+              onClick={() => setShowFollowersModal(true)}
+              className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            >
               <div className="text-2xl font-bold text-blue-600">{followerCount}</div>
               <div className="text-sm text-gray-600">Followers</div>
-            </div>
-            <div className="text-center">
+            </button>
+            <button
+              onClick={() => setShowFollowingModal(true)}
+              className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            >
               <div className="text-2xl font-bold text-purple-600">{followingCount}</div>
               <div className="text-sm text-gray-600">Following</div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -668,6 +701,114 @@ export default function ProfilePage() {
         achievements={notifications}
         onClose={clearNotifications}
       />
+
+      {/* Followers Modal */}
+      {showFollowersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-96 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Followers</h2>
+              <button
+                onClick={() => setShowFollowersModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-80">
+              {followers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <p>No followers yet</p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-3">
+                  {followers.map((follower) => (
+                    <Link
+                      key={follower.id}
+                      href={`/profile/${follower.id}`}
+                      className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    >
+                      {follower.image ? (
+                        <img
+                          src={follower.image}
+                          alt={follower.name || follower.email}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-sm font-bold text-gray-600">
+                            {(follower.name || follower.email)[0].toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {follower.name || follower.email}
+                        </p>
+                        <p className="text-xs text-gray-500">{follower.email}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Following Modal */}
+      {showFollowingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-96 overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Following</h2>
+              <button
+                onClick={() => setShowFollowingModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-80">
+              {following.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <p>Not following anyone yet</p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-3">
+                  {following.map((followedUser) => (
+                    <Link
+                      key={followedUser.id}
+                      href={`/profile/${followedUser.id}`}
+                      className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    >
+                      {followedUser.image ? (
+                        <img
+                          src={followedUser.image}
+                          alt={followedUser.name || followedUser.email}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-sm font-bold text-gray-600">
+                            {(followedUser.name || followedUser.email)[0].toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {followedUser.name || followedUser.email}
+                        </p>
+                        <p className="text-xs text-gray-500">{followedUser.email}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
