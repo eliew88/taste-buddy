@@ -253,6 +253,9 @@ export async function GET(request: NextRequest) {
       });
     }
     
+    // Rating filter is applied after database query since we need to calculate
+    // average ratings first. The actual filtering happens below after transformation.
+    
     // Build orderBy clause
     const orderBy: Prisma.RecipeOrderByWithRelationInput = {};
     
@@ -282,7 +285,9 @@ export async function GET(request: NextRequest) {
         orderBy.createdAt = 'desc';
     }
     
-    // Calculate pagination
+    // When using rating filter, we need to fetch all recipes to properly filter
+    // by calculated average rating, then apply pagination to filtered results
+    const isUsingRatingFilter = params.minRating && params.minRating > 0;
     const skip = (params.page - 1) * params.limit;
     
     // Execute search query
@@ -302,8 +307,10 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy,
-        skip,
-        take: params.limit,
+        // When rating filter is used, fetch all matching recipes (up to reasonable limit)
+        // Otherwise use normal pagination
+        skip: isUsingRatingFilter ? 0 : skip,
+        take: isUsingRatingFilter ? 1000 : params.limit, // Limit to 1000 for performance
       }),
       prisma.recipe.count({ where }),
     ]);
@@ -324,18 +331,37 @@ export async function GET(request: NextRequest) {
       };
     });
     
-    // Calculate metadata
-    const totalPages = Math.ceil(totalCount / params.limit);
+    // Apply rating filter after calculating averages
+    const filteredRecipes = isUsingRatingFilter
+      ? transformedRecipes.filter(recipe => {
+          // Exclude recipes with no ratings when minimum rating is required
+          if (recipe.avgRating === 0) {
+            return false;
+          }
+          // For recipes with ratings, check if average meets minimum
+          return recipe.avgRating >= params.minRating!;
+        })
+      : transformedRecipes;
+    
+    // Calculate metadata based on filtered results
+    // When rating filter is applied, total count is based on filtered results
+    const actualTotal = isUsingRatingFilter ? filteredRecipes.length : totalCount;
+    const totalPages = Math.ceil(actualTotal / params.limit);
     const hasNextPage = params.page < totalPages;
     const hasPrevPage = params.page > 1;
     
+    // Apply pagination to filtered results if rating filter was used
+    const finalRecipes = isUsingRatingFilter
+      ? filteredRecipes.slice((params.page - 1) * params.limit, params.page * params.limit)
+      : filteredRecipes;
+    
     return NextResponse.json({
       success: true,
-      data: transformedRecipes,
+      data: finalRecipes,
       pagination: {
         page: params.page,
         limit: params.limit,
-        total: totalCount,
+        total: actualTotal,
         totalPages: totalPages,
         hasNextPage,
         hasPrevPage,
