@@ -58,7 +58,7 @@ model User {
  */
 model IngredientEntry {
   id         String @id @default(cuid())
-  amount     Float
+  amount     Float? // Optional for ingredients like "pinch of salt" or "to taste"
   unit       String?
   ingredient String
   

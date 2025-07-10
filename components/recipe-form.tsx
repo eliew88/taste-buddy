@@ -89,7 +89,7 @@ export default function RecipeForm({
   const [formData, setFormData] = useState<RecipeFormData>({
     title: '',
     description: '',
-    ingredients: [{ amount: 0, unit: undefined, ingredient: '' }],
+    ingredients: [{ amount: undefined, unit: undefined, ingredient: '' }],
     instructions: '',
     cookTime: '',
     servings: undefined,
@@ -184,10 +184,10 @@ export default function RecipeForm({
 
     // Ingredients validation
     const validIngredients = formData.ingredients.filter(ing => 
-      ing.amount > 0 && ing.ingredient.trim()
+      ing.ingredient.trim() // Only require ingredient name, amount is optional
     );
     if (validIngredients.length === 0) {
-      newErrors.ingredients = 'At least one complete ingredient is required (amount and ingredient name)';
+      newErrors.ingredients = 'At least one ingredient is required';
     }
 
     // Instructions validation
@@ -254,7 +254,7 @@ export default function RecipeForm({
         title: formData.title.trim(),
         description: formData.description?.trim() || undefined,
         ingredients: formData.ingredients.filter(ing => 
-          ing.amount > 0 && ing.ingredient.trim()
+          ing.ingredient.trim() // Only require ingredient name, amount is optional
         ),
         instructions: formData.instructions.trim(),
         cookTime: formData.cookTime?.trim() || undefined,

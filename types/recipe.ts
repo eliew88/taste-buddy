@@ -12,8 +12,8 @@ export interface IngredientEntry {
   /** Unique identifier for the ingredient entry */
   id: string;
   
-  /** Numerical amount (e.g., 2, 1.5, 0.25) */
-  amount: number;
+  /** Numerical amount (e.g., 2, 1.5, 0.25) - optional for things like "pinch of salt" or "to taste" */
+  amount?: number;
   
   /** Unit of measurement (e.g., "cups", "tsp", "pounds", "pieces") - optional */
   unit?: string;
@@ -32,7 +32,7 @@ export interface IngredientEntry {
  * Data structure for creating a new ingredient entry
  */
 export interface CreateIngredientEntryData {
-  amount: number;
+  amount?: number;
   unit?: string;
   ingredient: string;
 }

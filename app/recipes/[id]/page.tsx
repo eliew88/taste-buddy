@@ -585,7 +585,7 @@ export default function RecipeDetailPage() {
                             {index + 1}
                           </span>
                           <span className="text-gray-700 leading-tight">
-                            {formatAsFraction(ingredient.amount)} {ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
+                            {ingredient.amount !== undefined && ingredient.amount > 0 ? `${formatAsFraction(ingredient.amount)} ` : ''}{ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
                           </span>
                         </li>
                       )) || (
@@ -717,7 +717,7 @@ export default function RecipeDetailPage() {
                       {index + 1}
                     </span>
                     <span className="text-gray-700">
-                      {formatAsFraction(ingredient.amount)} {ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
+                      {ingredient.amount !== undefined && ingredient.amount > 0 ? `${formatAsFraction(ingredient.amount)} ` : ''}{ingredient.unit ? `${ingredient.unit} ` : ''}{ingredient.ingredient}
                     </span>
                   </li>
                 )) || (
