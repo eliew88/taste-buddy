@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Search, Plus, AlertCircle, LogIn } from 'lucide-react';
@@ -257,10 +257,10 @@ export default function HomePage() {
     await toggleFavorite(recipeId);
   };
 
-  // Fetch featured recipes for hero background
-  const fetchFeaturedRecipes = async () => {
+  // Fetch recipes with images for hero background
+  const fetchHeroImages = async () => {
     try {
-      console.log('🔍 Fetching featured recipes...');
+      console.log('🔍 Fetching recipes for hero background...');
       const response = await fetch('/api/recipes?limit=4&featured=true');
       if (response.ok) {
         const data = await response.json();
@@ -281,15 +281,15 @@ export default function HomePage() {
         }
       }
     } catch (error) {
-      console.error('Error fetching featured recipes:', error);
+      console.error('Error fetching hero images:', error);
       // Keep fallback images on error
       setHeroImages(FALLBACK_HERO_IMAGES);
     }
   };
 
-  // Fetch featured recipes on component mount
+  // Fetch hero images on component mount
   useEffect(() => {
-    fetchFeaturedRecipes();
+    fetchHeroImages();
   }, []);
   const {
     recipes,
@@ -305,8 +305,44 @@ export default function HomePage() {
     refetch,
   } = useRecipeSearch();
 
+  // For featured recipes (no filters), we want top 9 without pagination
+  const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([]);
+  const [featuredLoading, setFeaturedLoading] = useState(false);
+  const [featuredError, setFeaturedError] = useState<string | null>(null);
+
+  // Fetch top 9 featured recipes when no filters are active
+  const fetchFeaturedRecipes = useCallback(async () => {
+    try {
+      setFeaturedLoading(true);
+      setFeaturedError(null);
+      
+      const response = await fetch('/api/recipes?limit=9&sortBy=popular');
+      const data = await response.json();
+      
+      if (data.success) {
+        setFeaturedRecipes(data.data || []);
+      } else {
+        throw new Error(data.error || 'Failed to fetch featured recipes');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch featured recipes';
+      setFeaturedError(errorMessage);
+      setFeaturedRecipes([]);
+      console.error('Failed to fetch featured recipes:', err);
+    } finally {
+      setFeaturedLoading(false);
+    }
+  }, []);
+
   // Check if any filters are active
   const hasActiveFilters = !!(searchTerm || difficulty);
+
+  // Fetch featured recipes when component mounts and when filters are cleared
+  useEffect(() => {
+    if (!hasActiveFilters) {
+      fetchFeaturedRecipes();
+    }
+  }, [hasActiveFilters, fetchFeaturedRecipes]);
 
   /**
    * Enhanced search handler with loading state
@@ -347,10 +383,18 @@ export default function HomePage() {
                 <h2 className="text-3xl font-bold text-gray-900">
                   {hasActiveFilters ? 'Search Results' : 'Featured Recipes'}
                 </h2>
-                {!loading && (
-                  <p className="text-gray-600 mt-1">
-                    {pagination.total} recipe{pagination.total !== 1 ? 's' : ''} found
-                  </p>
+                {hasActiveFilters ? (
+                  !loading && (
+                    <p className="text-gray-600 mt-1">
+                      {pagination.total} recipe{pagination.total !== 1 ? 's' : ''} found
+                    </p>
+                  )
+                ) : (
+                  !featuredLoading && (
+                    <p className="text-gray-600 mt-1">
+                      Top {featuredRecipes.length} most popular recipes
+                    </p>
+                  )
                 )}
               </div>
               
@@ -366,63 +410,94 @@ export default function HomePage() {
             </header>
             
             {/* Content */}
-            {loading ? (
-              <RecipeGridSkeleton count={6} />
-            ) : error ? (
-              <ErrorMessage message={error} onRetry={refetch} />
-            ) : recipes.length > 0 ? (
+            {hasActiveFilters ? (
+              // Search Results with Pagination
               <>
-                {/* Recipe Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                  {recipes.map(recipe => (
-                    <RecipeCard 
-                      key={recipe.id} 
-                      recipe={recipe}
-                      isFavorited={isFavorited(recipe.id)}
-                      onFavoriteToggle={handleFavoriteToggle}
-                    />
-                  ))}
-                </div>
-                
-                {/* Pagination */}
-                {pagination.totalPages > 1 && (
-                  <nav className="flex justify-center items-center space-x-2" aria-label="Pagination">
-                    <LoadingButton
-                      loading={false}
-                      onClick={() => handlePageChange(pagination.page - 1)}
-                      disabled={!pagination.hasPrevPage}
-                      variant="outline"
-                    >
-                      Previous
-                    </LoadingButton>
+                {loading ? (
+                  <RecipeGridSkeleton count={6} />
+                ) : error ? (
+                  <ErrorMessage message={error} onRetry={refetch} />
+                ) : recipes.length > 0 ? (
+                  <>
+                    {/* Recipe Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                      {recipes.map(recipe => (
+                        <RecipeCard 
+                          key={recipe.id} 
+                          recipe={recipe}
+                          isFavorited={isFavorited(recipe.id)}
+                          onFavoriteToggle={handleFavoriteToggle}
+                        />
+                      ))}
+                    </div>
                     
-                    <span className="px-4 py-2 text-gray-600 font-medium">
-                      Page {pagination.page} of {pagination.totalPages}
-                    </span>
-                    
-                    <LoadingButton
-                      loading={false}
-                      onClick={() => handlePageChange(pagination.page + 1)}
-                      disabled={!pagination.hasNextPage}
-                      variant="outline"
-                    >
-                      Next
-                    </LoadingButton>
-                  </nav>
+                    {/* Pagination for Search Results */}
+                    {pagination.totalPages > 1 && (
+                      <nav className="flex justify-center items-center space-x-2" aria-label="Pagination">
+                        <LoadingButton
+                          loading={false}
+                          onClick={() => handlePageChange(pagination.page - 1)}
+                          disabled={!pagination.hasPrevPage}
+                          variant="outline"
+                        >
+                          Previous
+                        </LoadingButton>
+                        
+                        <span className="px-4 py-2 text-gray-600 font-medium">
+                          Page {pagination.page} of {pagination.totalPages}
+                        </span>
+                        
+                        <LoadingButton
+                          loading={false}
+                          onClick={() => handlePageChange(pagination.page + 1)}
+                          disabled={!pagination.hasNextPage}
+                          variant="outline"
+                        >
+                          Next
+                        </LoadingButton>
+                      </nav>
+                    )}
+                  </>
+                ) : (
+                  <EmptyState 
+                    hasFilters={hasActiveFilters} 
+                    onClearFilters={clearFilters}
+                    isAuthenticated={!!session}
+                  />
                 )}
               </>
             ) : (
-              <EmptyState 
-                hasFilters={hasActiveFilters} 
-                onClearFilters={clearFilters}
-                isAuthenticated={!!session}
-              />
+              // Featured Recipes without Pagination
+              <>
+                {featuredLoading ? (
+                  <RecipeGridSkeleton count={9} />
+                ) : featuredError ? (
+                  <ErrorMessage message={featuredError} onRetry={() => fetchFeaturedRecipes()} />
+                ) : featuredRecipes.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                    {featuredRecipes.map(recipe => (
+                      <RecipeCard 
+                        key={recipe.id} 
+                        recipe={recipe}
+                        isFavorited={isFavorited(recipe.id)}
+                        onFavoriteToggle={handleFavoriteToggle}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState 
+                    hasFilters={false} 
+                    onClearFilters={clearFilters}
+                    isAuthenticated={!!session}
+                  />
+                )}
+              </>
             )}
           </section>
         </main>
 
         {/* Recipe Statistics Section - only show when no active filters */}
-        {!hasActiveFilters && !loading && (
+        {!hasActiveFilters && !featuredLoading && (
           <RecipeStatsSection />
         )}
       </div>
