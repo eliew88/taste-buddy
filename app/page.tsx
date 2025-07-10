@@ -316,7 +316,7 @@ export default function HomePage() {
       setFeaturedLoading(true);
       setFeaturedError(null);
       
-      const response = await fetch('/api/recipes?limit=9&sortBy=popular');
+      const response = await fetch('/api/recipes/search?limit=9&sortBy=popular');
       const data = await response.json();
       
       if (data.success) {
