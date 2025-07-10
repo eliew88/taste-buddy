@@ -81,10 +81,22 @@ export default function ComplimentForm({
           const recipientResponse = await fetch(`/api/users/${toUserId}`);
           const recipientData = await recipientResponse.json();
           
+          const senderCanTip = senderData.success && senderData.data?.canSendTips;
+          const recipientCanReceive = recipientData.success && 
+                                    recipientData.data?.paymentAccount &&
+                                    recipientData.data.paymentAccount.acceptsTips && 
+                                    recipientData.data.paymentAccount.accountStatus === 'active';
+          
+          console.log('Payment status check:', {
+            senderCanTip,
+            recipientCanReceive,
+            senderData: senderData.data,
+            recipientPaymentAccount: recipientData.data?.paymentAccount
+          });
+          
           setPaymentStatus({
-            canSendTips: senderData.success && senderData.data?.canSendTips,
-            canReceiveTips: recipientData.success && recipientData.data?.paymentAccount?.acceptsTips && 
-                           recipientData.data?.paymentAccount?.accountStatus === 'active',
+            canSendTips: senderCanTip,
+            canReceiveTips: recipientCanReceive,
             loading: false
           });
         } catch (err) {
@@ -257,7 +269,9 @@ export default function ComplimentForm({
                 <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <p className="text-xs text-gray-600">
                     <AlertCircle className="w-3 h-3 inline mr-1" />
-                    {!paymentStatus.canReceiveTips 
+                    {!paymentStatus.canSendTips && !paymentStatus.canReceiveTips 
+                      ? 'You must both have payment accounts set up to send tips.'
+                      : !paymentStatus.canReceiveTips 
                       ? `${toUserName} hasn't set up their payment account yet, so tips are not available.`
                       : !paymentStatus.canSendTips
                       ? 'You need to set up your payment account to send tips.'
