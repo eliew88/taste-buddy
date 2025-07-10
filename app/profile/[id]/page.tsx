@@ -36,7 +36,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const { data: session } = useSession();
   const { getFollowStatus, getFollowing, getFollowers } = useFollowing();
   const { isFavorited, toggleFavorite } = useFavorites();
-  const { achievements: userAchievements, loading: achievementsLoading } = useUserAchievements(userId);
+  const { achievements: userAchievements, loading: achievementsLoading } = useUserAchievements(userId || undefined);
   const [user, setUser] = useState<User | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
   const [following, setFollowing] = useState<User[]>([]);
