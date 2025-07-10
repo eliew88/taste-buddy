@@ -1,19 +1,55 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, X } from 'lucide-react';
 import { useNotifications } from '@/hooks/use-notifications';
 
 export function NotificationBell() {
   const { notifications, unreadCount, loading, fetchNotifications, markAsRead, markAllAsRead } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  const handleNotificationClick = async (notificationId: string) => {
-    await markAsRead(notificationId);
+  const getNotificationUrl = (notification: any) => {
+    switch (notification.type) {
+      case 'NEW_FOLLOWER':
+        // Navigate to the follower's profile
+        return notification.fromUserId ? `/profile/${notification.fromUserId}` : null;
+      
+      case 'NEW_RECIPE_FROM_FOLLOWING':
+        // Navigate to the new recipe
+        return notification.relatedRecipeId ? `/recipes/${notification.relatedRecipeId}` : null;
+      
+      case 'RECIPE_COMMENT':
+        // Navigate to the recipe that was commented on
+        return notification.relatedRecipeId ? `/recipes/${notification.relatedRecipeId}` : null;
+      
+      case 'COMPLIMENT_RECEIVED':
+        // Navigate to the compliment sender's profile
+        return notification.fromUserId ? `/profile/${notification.fromUserId}` : null;
+      
+      default:
+        return null;
+    }
+  };
+
+  const handleNotificationClick = async (notification: any) => {
+    // Mark as read first
+    await markAsRead(notification.id);
+    
+    // Get the URL to navigate to
+    const url = getNotificationUrl(notification);
+    
+    if (url) {
+      // Close the dropdown
+      setIsOpen(false);
+      // Navigate to the relevant page
+      router.push(url);
+    }
   };
 
   const handleMarkAllRead = async () => {
@@ -79,7 +115,7 @@ export function NotificationBell() {
                     className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
                       !notification.read ? 'bg-blue-50' : ''
                     }`}
-                    onClick={() => handleNotificationClick(notification.id)}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="flex-1">
