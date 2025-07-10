@@ -1,0 +1,117 @@
+import { prisma } from '@/lib/db';
+
+/**
+ * Achievement criteria evaluation functions
+ * These functions evaluate user progress towards achievements
+ */
+export const ACHIEVEMENT_CRITERIA = {
+  // Recipe count achievements
+  RECIPE_COUNT: {
+    evaluate: async (userId: string) => {
+      const count = await prisma.recipe.count({
+        where: { authorId: userId }
+      });
+      return count;
+    }
+  },
+
+  // Favorites count achievements
+  FAVORITES_COUNT: {
+    evaluate: async (userId: string) => {
+      // Get actual favorites count for this user's recipes
+      const favorites = await prisma.favorite.count({
+        where: {
+          recipe: {
+            authorId: userId
+          }
+        }
+      });
+      
+      return favorites;
+    }
+  },
+
+  // Followers count achievements
+  FOLLOWERS_COUNT: {
+    evaluate: async (userId: string) => {
+      const count = await prisma.follow.count({
+        where: { followingId: userId }
+      });
+      return count;
+    }
+  },
+
+  // Special achievements
+  SPECIAL: {
+    // BFF achievement - mutual following
+    BFF: async (userId: string) => {
+      // Find users this person follows
+      const following = await prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true }
+      });
+
+      if (following.length === 0) return 0;
+
+      // Check if any of those users follow back
+      const mutualFollows = await prisma.follow.count({
+        where: {
+          followerId: { in: following.map(f => f.followingId) },
+          followingId: userId
+        }
+      });
+
+      return mutualFollows > 0 ? 1 : 0;
+    }
+  },
+
+  // Quality achievements (ratings)
+  RATINGS_COUNT: {
+    // 5-Star Chef - at least one recipe with 4.5+ avg rating
+    '5-Star Chef': async (userId: string) => {
+      const recipes = await prisma.recipe.findMany({
+        where: { 
+          authorId: userId,
+          ratings: { some: {} } // Only recipes with ratings
+        },
+        include: {
+          ratings: { select: { rating: true } }
+        }
+      });
+
+      for (const recipe of recipes) {
+        if (recipe.ratings.length >= 3) { // Minimum 3 ratings
+          const avgRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length;
+          if (avgRating >= 4.5) {
+            return 1; // Has at least one 4.5+ rated recipe
+          }
+        }
+      }
+      return 0;
+    },
+
+    // Consistent Quality - 10 recipes with 4+ avg rating
+    'Consistent Quality': async (userId: string) => {
+      const recipes = await prisma.recipe.findMany({
+        where: { 
+          authorId: userId,
+          ratings: { some: {} } // Only recipes with ratings
+        },
+        include: {
+          ratings: { select: { rating: true } }
+        }
+      });
+
+      let qualityRecipes = 0;
+      for (const recipe of recipes) {
+        if (recipe.ratings.length >= 2) { // Minimum 2 ratings
+          const avgRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length;
+          if (avgRating >= 4.0) {
+            qualityRecipes++;
+          }
+        }
+      }
+      return qualityRecipes;
+    }
+  }
+};

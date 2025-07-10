@@ -267,7 +267,8 @@ export const ACHIEVEMENT_CRITERIA = {
   }
 };
 
-if (require.main === module) {
+// Only run if this file is executed directly (not when imported)
+if (typeof require !== 'undefined' && require.main === module) {
   seedAchievements()
     .then(() => {
       console.log('🎉 Achievement seeding completed!');

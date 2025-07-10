@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-// Removed - no longer needed
+import { seedAchievements } from './achievements-seed';
 
 const prisma = new PrismaClient();
 
@@ -327,6 +327,13 @@ async function main() {
         }
       });
       console.log(`   ✓ Created recipe: ${recipe.title}`);
+    }
+
+    // Seed achievements
+    console.log('🏆 Seeding achievements...');
+    const achievementSuccess = await seedAchievements();
+    if (!achievementSuccess) {
+      throw new Error('Failed to seed achievements');
     }
 
     console.log('✅ Database seeding completed successfully!');
