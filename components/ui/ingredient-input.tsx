@@ -230,7 +230,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
       {/* Add Ingredient Button */}
       <button
         type="button"
-        onClick={addIngredient}
+        onClick={() => addIngredient()}
         className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
       >
         <Plus size={16} />
