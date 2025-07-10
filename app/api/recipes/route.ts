@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
+import { createNewRecipeNotification } from '@/lib/notification-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -236,6 +237,35 @@ export async function POST(request: NextRequest) {
       ingredientsCount: recipe.ingredients.length,
       authorId: recipe.authorId
     });
+
+    // Notify followers about the new recipe
+    try {
+      console.log('Creating notifications for new recipe...');
+      
+      // Get the author's followers
+      const followers = await prisma.follow.findMany({
+        where: { followingId: recipe.authorId },
+        select: { followerId: true }
+      });
+      
+      if (followers.length > 0) {
+        const followerIds = followers.map(f => f.followerId);
+        const authorName = recipe.author.name || recipe.author.email;
+        
+        await createNewRecipeNotification(
+          recipe.authorId,
+          recipe.id,
+          recipe.title,
+          authorName,
+          followerIds
+        );
+        
+        console.log(`Created notifications for ${followerIds.length} followers`);
+      }
+    } catch (error) {
+      console.error('Failed to create recipe notifications:', error);
+      // Don't fail the recipe creation if notifications fail
+    }
 
     // Recipe data is ready for response (no transformation needed with PostgreSQL)
     const transformedRecipe = {

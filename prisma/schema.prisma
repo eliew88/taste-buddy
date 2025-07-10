@@ -35,6 +35,16 @@ model User {
   // === PRIVACY SETTINGS ===
   emailVisibility EmailVisibility @default(HIDDEN) // Control who can see email
   
+  // === NOTIFICATION PREFERENCES ===
+  notifyOnNewFollower Boolean @default(true) // Notify when someone follows you
+  notifyOnRecipeComment Boolean @default(true) // Notify when someone comments on your recipe
+  notifyOnCompliment Boolean @default(true) // Notify when someone sends you a compliment/tip
+  notifyOnNewRecipeFromFollowing Boolean @default(true) // Notify when someone you follow posts a new recipe
+  
+  // === EMAIL NOTIFICATION PREFERENCES ===
+  emailNotifications Boolean @default(false) // Whether to send email notifications
+  emailDigest Boolean @default(false) // Whether to send daily/weekly email digest
+  
   // === RELATIONSHIPS ===
   recipes             Recipe[]
   favorites           Favorite[]
@@ -47,6 +57,10 @@ model User {
   following Follow[] @relation("UserFollowing")
   followers Follow[] @relation("UserFollowers")
   
+  // Notification relationships
+  notificationsReceived Notification[] @relation("NotificationsReceived")
+  notificationsSent Notification[] @relation("NotificationsSent")
+  
   // Payment relationship
   paymentAccount PaymentAccount?
 
@@ -58,7 +72,7 @@ model User {
  */
 model IngredientEntry {
   id         String @id @default(cuid())
-  amount     Float
+  amount     Float?
   unit       String?
   ingredient String
   
@@ -101,6 +115,7 @@ model Recipe {
   favorites   Favorite[]
   ratings     Rating[]
   compliments Compliment[]
+  notifications Notification[] @relation("NotificationRecipes")
 
   @@index([authorId])
   @@index([difficulty])
@@ -157,6 +172,7 @@ model Comment {
   recipeId   String
   recipe     Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[] @relation("NotificationComments")
 
   @@index([recipeId])
   @@index([userId])
@@ -207,6 +223,7 @@ model Compliment {
   fromUser User    @relation("ComplimentsGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
   toUser   User    @relation("ComplimentsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
   recipe   Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  notifications Notification[] @relation("NotificationCompliments")
   
   // === INDEXES ===
   @@index([toUserId])
@@ -273,5 +290,64 @@ model PaymentAccount {
   @@index([onboardingComplete])
   @@index([acceptsTips])
   @@map("payment_accounts")
+}
+
+/**
+ * Notification Types Enum
+ */
+enum NotificationType {
+  NEW_FOLLOWER        // Someone started following you
+  RECIPE_COMMENT      // Someone commented on your recipe
+  COMPLIMENT_RECEIVED // Someone sent you a compliment/tip
+  NEW_RECIPE_FROM_FOLLOWING // Someone you follow posted a new recipe
+}
+
+/**
+ * Notification Model - For in-app notifications
+ */
+model Notification {
+  id String @id @default(cuid())
+  
+  // === NOTIFICATION DETAILS ===
+  type NotificationType
+  title String
+  message String
+  
+  // === RECIPIENT ===
+  userId String // User receiving the notification
+  
+  // === SENDER ===
+  fromUserId String? // User who triggered the notification (optional for system notifications)
+  
+  // === RELATED ENTITIES ===
+  relatedRecipeId String? // For recipe-related notifications
+  relatedCommentId String? // For comment notifications
+  relatedComplimentId String? // For compliment notifications
+  relatedUserId String? // For user-related notifications (like new followers)
+  
+  // === STATUS ===
+  read Boolean @default(false)
+  
+  // === TIMESTAMPS ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === RELATIONSHIPS ===
+  user User @relation("NotificationsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  fromUser User? @relation("NotificationsSent", fields: [fromUserId], references: [id], onDelete: SetNull)
+  relatedRecipe Recipe? @relation("NotificationRecipes", fields: [relatedRecipeId], references: [id], onDelete: SetNull)
+  relatedComment Comment? @relation("NotificationComments", fields: [relatedCommentId], references: [id], onDelete: SetNull)
+  relatedCompliment Compliment? @relation("NotificationCompliments", fields: [relatedComplimentId], references: [id], onDelete: SetNull)
+  
+  // === INDEXES ===
+  @@index([userId])
+  @@index([fromUserId])
+  @@index([type])
+  @@index([read])
+  @@index([createdAt])
+  @@index([relatedRecipeId])
+  @@index([relatedCommentId])
+  @@index([relatedComplimentId])
+  @@map("notifications")
 }
 

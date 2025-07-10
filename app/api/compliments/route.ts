@@ -12,6 +12,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { createComplimentNotification } from '@/lib/notification-utils';
 
 /**
  * Validation schema for creating compliments
@@ -143,11 +144,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify recipient user exists
-    const recipientUser = await prisma.user.findUnique({
-      where: { id: validatedData.toUserId },
-      select: { id: true, name: true }
-    });
+    // Verify recipient user exists and get sender info
+    const [recipientUser, senderUser] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: validatedData.toUserId },
+        select: { id: true, name: true, email: true }
+      }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, name: true, email: true }
+      })
+    ]);
 
     if (!recipientUser) {
       return NextResponse.json(
@@ -156,9 +163,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!senderUser) {
+      return NextResponse.json(
+        { success: false, error: 'Sender user not found' },
+        { status: 404 }
+      );
+    }
+
     // If recipe is specified, verify it exists and belongs to the recipient
+    let recipe = null;
     if (validatedData.recipeId) {
-      const recipe = await prisma.recipe.findUnique({
+      recipe = await prisma.recipe.findUnique({
         where: { id: validatedData.recipeId },
         select: { id: true, authorId: true, title: true }
       });
@@ -227,6 +242,25 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // Create notification for compliment recipient
+    try {
+      const senderName = senderUser.name || senderUser.email;
+      const tipAmount = validatedData.type === 'tip' ? validatedData.tipAmount : undefined;
+      const recipeTitle = recipe?.title;
+      
+      await createComplimentNotification(
+        session.user.id,
+        validatedData.toUserId,
+        compliment.id,
+        senderName,
+        tipAmount,
+        recipeTitle
+      );
+    } catch (error) {
+      console.error('Failed to create compliment notification:', error);
+      // Don't fail the compliment creation if notification fails
+    }
 
     return NextResponse.json({
       success: true,
