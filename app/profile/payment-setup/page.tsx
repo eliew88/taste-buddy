@@ -3,15 +3,17 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
 import PaymentSetup from '@/components/payment/payment-setup';
+import { useFeatureFlag } from '@/lib/feature-flags';
 
 function PaymentSetupContent() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
+  const paymentsEnabled = useFeatureFlag('enablePayments');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -51,20 +53,38 @@ function PaymentSetupContent() {
           </p>
         </div>
 
-        {/* Success Message */}
-        {success === 'true' && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        {/* Feature Flag Check */}
+        {!paymentsEnabled ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-              <p className="text-green-800">
-                Payment setup completed successfully! You can now receive tips.
-              </p>
+              <Lock className="w-6 h-6 text-yellow-600 mr-3" />
+              <div>
+                <h3 className="text-yellow-800 font-semibold">Payment Processing Disabled</h3>
+                <p className="text-yellow-700 mt-1">
+                  Payment processing and tipping functionality is currently disabled. 
+                  You can still receive compliment messages from other users.
+                </p>
+              </div>
             </div>
           </div>
-        )}
+        ) : (
+          <>
+            {/* Success Message */}
+            {success === 'true' && (
+              <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                  <p className="text-green-800">
+                    Payment setup completed successfully! You can now receive tips.
+                  </p>
+                </div>
+              </div>
+            )}
 
-        {/* Payment Setup Component */}
-        <PaymentSetup />
+            {/* Payment Setup Component */}
+            <PaymentSetup />
+          </>
+        )}
 
         {/* Info Section */}
         <div className="mt-8 bg-blue-50 rounded-lg p-6">

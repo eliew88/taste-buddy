@@ -17,6 +17,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useFeatureFlag } from '@/lib/feature-flags';
 import { 
   X, 
   Heart, 
@@ -56,6 +57,7 @@ export default function ComplimentForm({
   onComplimentSent 
 }: ComplimentFormProps) {
   const { data: session } = useSession();
+  const paymentsEnabled = useFeatureFlag('enablePayments');
   const [type, setType] = useState<'message' | 'tip'>('message');
   const [message, setMessage] = useState('');
   const [tipAmount, setTipAmount] = useState('');
@@ -68,10 +70,10 @@ export default function ComplimentForm({
     loading: boolean;
   }>({ canSendTips: false, canReceiveTips: false, loading: true });
 
-  // Check payment status when modal opens
+  // Check payment status when modal opens (only if payments are enabled)
   useEffect(() => {
     const checkPaymentStatus = async () => {
-      if (isOpen && session?.user?.id) {
+      if (isOpen && session?.user?.id && paymentsEnabled) {
         try {
           // Check sender's payment status
           const senderResponse = await fetch('/api/payment/status');
@@ -103,11 +105,14 @@ export default function ComplimentForm({
           console.error('Failed to check payment status:', err);
           setPaymentStatus({ canSendTips: false, canReceiveTips: false, loading: false });
         }
+      } else {
+        // If payments are disabled, set payment status to false
+        setPaymentStatus({ canSendTips: false, canReceiveTips: false, loading: false });
       }
     };
     
     checkPaymentStatus();
-  }, [isOpen, session?.user?.id, toUserId]);
+  }, [isOpen, session?.user?.id, toUserId, paymentsEnabled]);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -269,7 +274,9 @@ export default function ComplimentForm({
                 <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <p className="text-xs text-gray-600">
                     <AlertCircle className="w-3 h-3 inline mr-1" />
-                    {!paymentStatus.canSendTips && !paymentStatus.canReceiveTips 
+                    {!paymentsEnabled 
+                      ? 'Tipping is currently disabled.'
+                      : !paymentStatus.canSendTips && !paymentStatus.canReceiveTips 
                       ? 'You must both have payment accounts set up to send tips.'
                       : !paymentStatus.canReceiveTips 
                       ? `${toUserName} hasn't set up their payment account yet, so tips are not available.`

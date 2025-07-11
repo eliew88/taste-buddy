@@ -8,10 +8,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { createStripeConnectAccount, getPaymentStatus, getStripeAccountLink } from '@/lib/stripe-connect';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 
 export async function POST(req: NextRequest) {
   try {
     console.log('Payment setup API called');
+    
+    // Check if payments are enabled
+    if (!isFeatureEnabled('enablePayments')) {
+      console.log('Payments are disabled');
+      return NextResponse.json(
+        { success: false, error: 'Payment processing is currently disabled' },
+        { status: 403 }
+      );
+    }
+    
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {

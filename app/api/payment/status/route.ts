@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { syncStripeConnectAccount, getPaymentStatus } from '@/lib/stripe-connect';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,6 +19,19 @@ export async function GET(req: NextRequest) {
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
+    }
+
+    // If payments are disabled, return that tips are not available
+    if (!isFeatureEnabled('enablePayments')) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          paymentAccount: null,
+          canSendTips: false,
+          canReceiveTips: false,
+          paymentsEnabled: false
+        }
+      });
     }
 
     // Sync with Stripe and get latest status (skip for mock accounts)

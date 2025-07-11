@@ -14,6 +14,41 @@ TasteBuddy is a Next.js 15 recipe sharing platform built with TypeScript, Tailwi
 - `npm run lint` - Run ESLint to check code quality
 - `npm run db:seed` - Seed the database with sample data using prisma/seed.ts
 
+## Feature Flags
+
+The application includes a feature flag system for enabling/disabling functionality in production:
+
+### Payment Processing Feature Flag
+- **Environment Variable**: `NEXT_PUBLIC_FEATURE_ENABLEPAYMENTS`
+- **Default**: `false` (disabled by default for safety)
+- **Purpose**: Controls whether users can give or receive tips through the payment system
+
+**When disabled (false)**:
+- Users cannot send tips with compliments
+- Payment setup page shows "disabled" message
+- All payment-related API endpoints return "disabled" errors
+- Users can still send compliment messages without tips
+
+**When enabled (true)**:
+- Full payment functionality is available
+- Users can set up Stripe Connect accounts
+- Tipping works normally through the compliment system
+
+**Setting in Production**:
+```bash
+# Via Vercel Dashboard Environment Variables
+NEXT_PUBLIC_FEATURE_ENABLEPAYMENTS=true
+
+# Or via Vercel CLI
+vercel env add NEXT_PUBLIC_FEATURE_ENABLEPAYMENTS
+```
+
+### Adding New Feature Flags
+1. Add the flag to `FeatureFlags` interface in `/lib/feature-flags.ts`
+2. Set default value in `DEFAULT_FLAGS`
+3. Use `useFeatureFlag()` in React components
+4. Use `isFeatureEnabled()` in API routes and server-side code
+
 ## Database Architecture
 
 The application uses PostgreSQL with Prisma ORM. The schema includes:

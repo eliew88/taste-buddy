@@ -13,6 +13,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 import { createComplimentNotification } from '@/lib/notification-utils';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 
 /**
  * Validation schema for creating compliments
@@ -135,6 +136,23 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validatedData = createComplimentSchema.parse(body);
+
+    // Check if tipping is allowed when type is 'tip'
+    if (validatedData.type === 'tip') {
+      if (!isFeatureEnabled('enablePayments')) {
+        return NextResponse.json(
+          { success: false, error: 'Tipping is currently disabled' },
+          { status: 403 }
+        );
+      }
+      
+      if (!validatedData.tipAmount || validatedData.tipAmount < 0.50) {
+        return NextResponse.json(
+          { success: false, error: 'Tip amount must be at least $0.50' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Validate that user isn't complimenting themselves
     if (validatedData.toUserId === session.user.id) {
