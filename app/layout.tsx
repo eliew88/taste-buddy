@@ -96,7 +96,7 @@ export default function RootLayout({
         </ErrorBoundary>
         
         {/* Vercel Analytics & Speed Insights */}
-        <Analytics />
+        <Analytics mode={process.env.NODE_ENV === 'production' ? 'production' : 'development'} />
         <SpeedInsights />
 
         {/* Global Scripts */}
