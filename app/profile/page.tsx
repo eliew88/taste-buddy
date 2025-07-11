@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X, Eye, EyeOff, Users } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -22,6 +22,7 @@ import ComplimentsDisplay from '@/components/compliments-display';
 import { IngredientEntry } from '@/types/recipe';
 import Avatar from '@/components/ui/avatar';
 import ProfilePhotoUpload from '@/components/ui/profile-photo-upload';
+import { EmailVisibility } from '@/types/privacy';
 
 interface UserRecipe {
   id: string;
@@ -85,6 +86,7 @@ export default function ProfilePage() {
   const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
+  const [emailVisibility, setEmailVisibility] = useState<EmailVisibility>('HIDDEN');
   
   // Use the favorites hook for persistent state management
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -166,6 +168,13 @@ export default function ProfilePage() {
         const followingData = await followingResponse.json();
         if (followingData.success) {
           setFollowingCount(followingData.data.length);
+        }
+
+        // Fetch privacy settings
+        const privacyResponse = await fetch('/api/users/privacy');
+        const privacyData = await privacyResponse.json();
+        if (privacyData.success) {
+          setEmailVisibility(privacyData.data.emailVisibility);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -335,6 +344,20 @@ export default function ProfilePage() {
     }
   };
 
+  // Get email visibility display info
+  const getEmailVisibilityInfo = (visibility: EmailVisibility) => {
+    switch (visibility) {
+      case 'HIDDEN':
+        return { icon: EyeOff, label: 'Hidden from others', color: 'text-gray-500' };
+      case 'FOLLOWING_ONLY':
+        return { icon: Users, label: 'Visible to people you follow', color: 'text-blue-500' };
+      case 'PUBLIC':
+        return { icon: Eye, label: 'Visible to everyone', color: 'text-green-500' };
+      default:
+        return { icon: EyeOff, label: 'Hidden', color: 'text-gray-500' };
+    }
+  };
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen">
@@ -379,6 +402,18 @@ export default function ProfilePage() {
                   <div className="flex items-center space-x-1">
                     <Mail className="w-4 h-4" />
                     <span>{session.user?.email}</span>
+                    <div className="flex items-center space-x-1 ml-2 px-2 py-1 bg-gray-100 rounded-full text-xs">
+                      {(() => {
+                        const visibilityInfo = getEmailVisibilityInfo(emailVisibility);
+                        const IconComponent = visibilityInfo.icon;
+                        return (
+                          <>
+                            <IconComponent className={`w-3 h-3 ${visibilityInfo.color}`} />
+                            <span className={visibilityInfo.color}>{visibilityInfo.label}</span>
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Calendar className="w-4 h-4" />
