@@ -286,7 +286,6 @@ export default function ImageUpload({
   const handleRemoveImage = useCallback((event?: React.MouseEvent) => {
     // Prevent event propagation to avoid conflicts
     if (event) {
-      event.preventDefault();
       event.stopPropagation();
     }
     
@@ -304,17 +303,13 @@ export default function ImageUpload({
    * Open file picker
    */
   const openFilePicker = useCallback((event?: React.MouseEvent) => {
-    // Prevent event propagation to avoid conflicts
+    // Only prevent propagation, not default behavior for file input
     if (event) {
-      event.preventDefault();
       event.stopPropagation();
     }
     
     if (!disabled && !uploadState.uploading) {
-      // Small delay to ensure any ongoing state changes complete
-      setTimeout(() => {
-        fileInputRef.current?.click();
-      }, 50);
+      fileInputRef.current?.click();
     }
   }, [disabled, uploadState.uploading]);
 
@@ -338,7 +333,7 @@ export default function ImageUpload({
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={hasImage ? undefined : (e) => {
-          e.preventDefault();
+          e.stopPropagation();
           openFilePicker(e);
         }}
       >
@@ -434,7 +429,6 @@ export default function ImageUpload({
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     openFilePicker(e);
                   }}

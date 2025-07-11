@@ -143,7 +143,6 @@ export default function ProfilePhotoUpload({
   const handleUpload = useCallback(async (event?: React.MouseEvent) => {
     // Prevent event propagation to avoid conflicts
     if (event) {
-      event.preventDefault();
       event.stopPropagation();
     }
     
@@ -202,7 +201,6 @@ export default function ProfilePhotoUpload({
   const handleCancel = useCallback((event?: React.MouseEvent) => {
     // Prevent event propagation to avoid conflicts
     if (event) {
-      event.preventDefault();
       event.stopPropagation();
     }
     
@@ -226,16 +224,12 @@ export default function ProfilePhotoUpload({
    * Open file picker
    */
   const handleChooseFile = useCallback((event?: React.MouseEvent) => {
-    // Prevent event propagation to avoid conflicts with modal or other handlers
+    // Only prevent propagation, not default behavior for file input
     if (event) {
-      event.preventDefault();
       event.stopPropagation();
     }
     
-    // Small delay to ensure any ongoing state changes complete
-    setTimeout(() => {
-      fileInputRef.current?.click();
-    }, 50);
+    fileInputRef.current?.click();
   }, []);
   
   // Clean up preview URL on unmount
@@ -262,7 +256,6 @@ export default function ProfilePhotoUpload({
           {/* Camera icon overlay */}
           <button
             onClick={(e) => {
-              e.preventDefault();
               e.stopPropagation();
               handleChooseFile(e);
             }}
@@ -289,7 +282,7 @@ export default function ProfilePhotoUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={(e) => {
-          e.preventDefault();
+          e.stopPropagation();
           handleChooseFile(e);
         }}
       >

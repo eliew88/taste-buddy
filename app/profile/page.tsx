@@ -390,7 +390,6 @@ export default function ProfilePage() {
                 />
                 <button
                   onClick={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     setShowPhotoUpload(true);
                   }}
@@ -659,7 +658,6 @@ export default function ProfilePage() {
                 <h2 className="text-xl font-semibold text-gray-900">Update Profile Photo</h2>
                 <button
                   onClick={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     setShowPhotoUpload(false);
                   }}
