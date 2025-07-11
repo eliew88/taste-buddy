@@ -283,7 +283,13 @@ export default function ImageUpload({
   /**
    * Handle remove image
    */
-  const handleRemoveImage = useCallback(() => {
+  const handleRemoveImage = useCallback((event?: React.MouseEvent) => {
+    // Prevent event propagation to avoid conflicts
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     setPreviewUrl(null);
     setUploadState({
       uploading: false,
@@ -297,9 +303,18 @@ export default function ImageUpload({
   /**
    * Open file picker
    */
-  const openFilePicker = useCallback(() => {
+  const openFilePicker = useCallback((event?: React.MouseEvent) => {
+    // Prevent event propagation to avoid conflicts
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     if (!disabled && !uploadState.uploading) {
-      fileInputRef.current?.click();
+      // Small delay to ensure any ongoing state changes complete
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 50);
     }
   }, [disabled, uploadState.uploading]);
 
@@ -322,7 +337,10 @@ export default function ImageUpload({
         onDragLeave={handleDragOut}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        onClick={hasImage ? undefined : openFilePicker}
+        onClick={hasImage ? undefined : (e) => {
+          e.preventDefault();
+          openFilePicker(e);
+        }}
       >
         {/* Hidden file input */}
         <input
@@ -370,6 +388,7 @@ export default function ImageUpload({
                 onClick={handleRemoveImage}
                 className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                 title="Remove image"
+                type="button"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -380,6 +399,7 @@ export default function ImageUpload({
               <button
                 onClick={openFilePicker}
                 className="absolute bottom-2 right-2 px-3 py-1 bg-white bg-opacity-90 text-gray-700 rounded-lg hover:bg-opacity-100 transition-all text-sm"
+                type="button"
               >
                 Replace
               </button>
@@ -413,7 +433,11 @@ export default function ImageUpload({
                 </div>
                 <button
                   type="button"
-                  onClick={openFilePicker}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openFilePicker(e);
+                  }}
                   disabled={disabled}
                   className="inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors disabled:opacity-50"
                 >

@@ -140,7 +140,13 @@ export default function ProfilePhotoUpload({
   /**
    * Upload the selected file
    */
-  const handleUpload = useCallback(async () => {
+  const handleUpload = useCallback(async (event?: React.MouseEvent) => {
+    // Prevent event propagation to avoid conflicts
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     if (!selectedFile) return;
     
     setUploadState(prev => ({ ...prev, uploading: true, error: null }));
@@ -193,7 +199,13 @@ export default function ProfilePhotoUpload({
   /**
    * Cancel upload and clear preview
    */
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback((event?: React.MouseEvent) => {
+    // Prevent event propagation to avoid conflicts
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     if (uploadState.preview) {
       URL.revokeObjectURL(uploadState.preview);
     }
@@ -213,8 +225,17 @@ export default function ProfilePhotoUpload({
   /**
    * Open file picker
    */
-  const handleChooseFile = useCallback(() => {
-    fileInputRef.current?.click();
+  const handleChooseFile = useCallback((event?: React.MouseEvent) => {
+    // Prevent event propagation to avoid conflicts with modal or other handlers
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // Small delay to ensure any ongoing state changes complete
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 50);
   }, []);
   
   // Clean up preview URL on unmount
@@ -240,9 +261,14 @@ export default function ProfilePhotoUpload({
           
           {/* Camera icon overlay */}
           <button
-            onClick={handleChooseFile}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleChooseFile(e);
+            }}
             className="absolute bottom-0 right-0 p-2 bg-green-700 text-white rounded-full hover:bg-green-800 transition-colors shadow-lg"
             disabled={uploadState.uploading || isUploading}
+            type="button"
           >
             <Camera className="w-4 h-4" />
           </button>
@@ -262,7 +288,10 @@ export default function ProfilePhotoUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={handleChooseFile}
+        onClick={(e) => {
+          e.preventDefault();
+          handleChooseFile(e);
+        }}
       >
         <input
           ref={fileInputRef}
@@ -297,6 +326,7 @@ export default function ProfilePhotoUpload({
           <button
             onClick={handleCancel}
             className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            type="button"
           >
             <X className="w-4 h-4" />
             <span>Cancel</span>
@@ -305,6 +335,7 @@ export default function ProfilePhotoUpload({
           <button
             onClick={handleUpload}
             className="flex items-center space-x-2 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
+            type="button"
           >
             <Upload className="w-4 h-4" />
             <span>Upload Photo</span>

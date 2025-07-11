@@ -389,9 +389,14 @@ export default function ProfilePage() {
                   size="xl"
                 />
                 <button
-                  onClick={() => setShowPhotoUpload(true)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowPhotoUpload(true);
+                  }}
                   className="absolute bottom-0 right-0 p-1.5 bg-green-700 text-white rounded-full hover:bg-green-800 transition-colors shadow-lg"
                   title="Change profile photo"
+                  type="button"
                 >
                   <Camera className="w-3 h-3" />
                 </button>
@@ -637,13 +642,29 @@ export default function ProfilePage() {
         
         {/* Profile Photo Upload Modal */}
         {showPhotoUpload && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={(e) => {
+              // Close modal only if clicking the backdrop
+              if (e.target === e.currentTarget) {
+                setShowPhotoUpload(false);
+              }
+            }}
+          >
+            <div 
+              className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">Update Profile Photo</h2>
                 <button
-                  onClick={() => setShowPhotoUpload(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowPhotoUpload(false);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded"
+                  type="button"
                 >
                   ×
                 </button>
