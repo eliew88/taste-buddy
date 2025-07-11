@@ -10,10 +10,6 @@ const nextConfig = {
     // Don't fail builds on lint errors
     ignoreDuringBuilds: true
   },
-  // Enable Vercel Analytics
-  experimental: {
-    instrumentationHook: true,
-  },
   // Ensure Prisma works with Vercel - already included in serverExternalPackages above
 }
 

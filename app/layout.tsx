@@ -95,13 +95,9 @@ export default function RootLayout({
           </AuthSessionProvider>
         </ErrorBoundary>
         
-        {/* Vercel Analytics & Speed Insights - Only in production */}
-        {process.env.NODE_ENV === 'production' && (
-          <>
-            <Analytics />
-            <SpeedInsights />
-          </>
-        )}
+        {/* Vercel Analytics & Speed Insights */}
+        <Analytics />
+        <SpeedInsights />
 
         {/* Global Scripts */}
         {process.env.NODE_ENV === 'production' && (
