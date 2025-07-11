@@ -96,7 +96,7 @@ export default function RootLayout({
         </ErrorBoundary>
         
         {/* Vercel Analytics & Speed Insights */}
-        <Analytics />
+        <Analytics mode={'production'} debug={true} />
         <SpeedInsights />
 
         {/* Global Scripts */}
