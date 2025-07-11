@@ -18,10 +18,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { inject } from '@vercel/analytics';
 import ErrorBoundary from '@/components/error-boundary';
 import AuthSessionProvider from '@/components/providers/session-provider';
-import { AnalyticsProvider } from '@/components/analytics-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -97,10 +95,13 @@ export default function RootLayout({
           </AuthSessionProvider>
         </ErrorBoundary>
         
-        {/* Vercel Analytics & Speed Insights */}
-        <AnalyticsProvider />
-        <Analytics mode={'production'} debug={true} />
-        <SpeedInsights />
+        {/* Vercel Analytics & Speed Insights - Only in production */}
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
 
         {/* Global Scripts */}
         {process.env.NODE_ENV === 'production' && (
