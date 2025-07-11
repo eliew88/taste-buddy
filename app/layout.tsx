@@ -17,6 +17,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import ErrorBoundary from '@/components/error-boundary';
 import AuthSessionProvider from '@/components/providers/session-provider';
 
@@ -94,8 +95,9 @@ export default function RootLayout({
           </AuthSessionProvider>
         </ErrorBoundary>
         
-        {/* Vercel Analytics */}
+        {/* Vercel Analytics & Speed Insights */}
         <Analytics />
+        <SpeedInsights />
 
         {/* Global Scripts */}
         {process.env.NODE_ENV === 'production' && (
