@@ -62,12 +62,17 @@ export default function PaymentForm({
         setLoading(true);
         
         // Confirm payment with Stripe
+        if (!elements) {
+          onError('Payment elements not initialized');
+          return;
+        }
+        
         const { error } = await stripe.confirmPayment({
           elements,
           confirmParams: {
             return_url: window.location.origin, // Not used for programmatic confirmation
           },
-          redirect: 'if_required'
+          redirect: 'if_required' as const
         });
 
         if (error) {
@@ -103,7 +108,7 @@ export default function PaymentForm({
         confirmParams: {
           return_url: window.location.origin, // Not used for programmatic confirmation
         },
-        redirect: 'if_required'
+        redirect: 'if_required' as const
       });
 
       if (error) {
