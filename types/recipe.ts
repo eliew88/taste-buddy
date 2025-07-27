@@ -38,6 +38,76 @@ export interface CreateIngredientEntryData {
 }
 
 /**
+ * RecipeImage interface - represents an image associated with a recipe
+ */
+export interface RecipeImage {
+  /** Unique identifier for the image */
+  id: string;
+  
+  /** Image URL (from B2 or local storage) */
+  url: string;
+  
+  /** Original filename */
+  filename?: string;
+  
+  /** Optional caption for the image */
+  caption?: string;
+  
+  /** Alt text for accessibility */
+  alt?: string;
+  
+  /** Image width in pixels */
+  width?: number;
+  
+  /** Image height in pixels */
+  height?: number;
+  
+  /** File size in bytes */
+  fileSize?: number;
+  
+  /** Display order (0 = first) */
+  displayOrder: number;
+  
+  /** Whether this is the primary image for recipe cards */
+  isPrimary: boolean;
+  
+  /** ID of the recipe this image belongs to */
+  recipeId: string;
+  
+  /** When the image was uploaded */
+  createdAt: Date;
+  
+  /** When the image was last updated */
+  updatedAt: Date;
+}
+
+/**
+ * Data structure for creating a new recipe image
+ */
+export interface CreateRecipeImageData {
+  url: string;
+  filename?: string;
+  caption?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  fileSize?: number;
+  displayOrder: number;
+  isPrimary?: boolean;
+  file?: File; // For new uploads that haven't been sent to B2 yet
+}
+
+/**
+ * Data structure for updating an existing recipe image
+ */
+export interface UpdateRecipeImageData {
+  caption?: string;
+  alt?: string;
+  displayOrder?: number;
+  isPrimary?: boolean;
+}
+
+/**
  * Main Recipe interface - represents a complete recipe with all metadata
  */
  export interface Recipe {
@@ -68,8 +138,11 @@ export interface CreateIngredientEntryData {
     /** Array of tags for categorization (e.g., ["dessert", "chocolate"]) */
     tags: string[];
     
-    /** URL to recipe image (optional) */
+    /** URL to recipe image (optional - legacy field) */
     image?: string;
+    
+    /** Array of recipe images (new multiple images system) */
+    images?: RecipeImage[];
     
     /** ID of the user who created this recipe */
     authorId: string;
@@ -112,7 +185,8 @@ export interface CreateIngredientEntryData {
     servings?: number;
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
-    image?: string;
+    image?: string; // Legacy field for backward compatibility
+    images?: CreateRecipeImageData[]; // New multiple images field
   }
 
   /**
@@ -128,7 +202,8 @@ export interface CreateIngredientEntryData {
     servings?: number;
     difficulty?: 'easy' | 'medium' | 'hard';
     tags?: string[];
-    image?: string;
+    image?: string; // Legacy field for backward compatibility
+    images?: CreateRecipeImageData[]; // New multiple images field
   }
   
   /**

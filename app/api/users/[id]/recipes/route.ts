@@ -33,6 +33,9 @@ export async function GET(
             image: true
           }
         },
+        images: {
+          orderBy: { displayOrder: 'asc' }
+        },
         _count: {
           select: {
             favorites: true,

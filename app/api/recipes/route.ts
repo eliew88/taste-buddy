@@ -46,6 +46,9 @@ export async function GET(request: NextRequest) {
           select: { id: true, name: true, email: true, image: true },
         },
         ingredients: true,
+        images: {
+          orderBy: { displayOrder: 'asc' }
+        },
         _count: {
           select: { favorites: true, ratings: true, comments: true },
         },
@@ -113,7 +116,8 @@ export async function POST(request: NextRequest) {
       servings, 
       difficulty, 
       tags,
-      image 
+      image,
+      images
     } = body;
     
     console.log('Extracted fields:', {
@@ -125,7 +129,8 @@ export async function POST(request: NextRequest) {
       servings,
       difficulty,
       tagsCount: Array.isArray(tags) ? tags.length : 'not array',
-      hasImage: !!image
+      hasImage: !!image,
+      imagesCount: Array.isArray(images) ? images.length : 'not array'
     });
     console.log('Full request body for debugging:', JSON.stringify(body, null, 2));
 
@@ -198,8 +203,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare data for PostgreSQL database storage with structured ingredients
+    // Prepare data for PostgreSQL database storage with structured ingredients and images
     console.log('Preparing recipe data...');
+    
+    // Prepare images data if provided
+    let imagesData = undefined;
+    if (Array.isArray(images) && images.length > 0) {
+      console.log('Processing images data...');
+      imagesData = {
+        create: images.map((img: any, index: number) => {
+          const imageData = {
+            url: img.url,
+            filename: img.filename || null,
+            caption: img.caption || null,
+            alt: img.alt || null,
+            width: img.width || null,
+            height: img.height || null,
+            fileSize: img.fileSize || null,
+            displayOrder: img.displayOrder !== undefined ? img.displayOrder : index,
+            isPrimary: img.isPrimary === true || (index === 0 && !images.some((i: any) => i.isPrimary === true))
+          };
+          console.log(`Mapped image ${index}:`, imageData);
+          return imageData;
+        })
+      };
+    }
+    
     const recipeData = {
       title: title.trim(),
       description: description?.trim() || null,
@@ -222,7 +251,8 @@ export async function POST(request: NextRequest) {
           console.log(`Mapped ingredient ${index}:`, parsed);
           return parsed;
         })
-      }
+      },
+      ...(imagesData && { images: imagesData })
     };
     
     console.log('Recipe data prepared:', {
@@ -231,7 +261,8 @@ export async function POST(request: NextRequest) {
       ingredientsCount: recipeData.ingredients.create.length,
       hasInstructions: !!recipeData.instructions,
       authorId: recipeData.authorId,
-      hasImage: !!recipeData.image
+      hasImage: !!recipeData.image,
+      imagesCount: imagesData ? imagesData.create.length : 0
     });
 
     // Create recipe in database
@@ -243,6 +274,9 @@ export async function POST(request: NextRequest) {
           select: { id: true, name: true, email: true, image: true },
         },
         ingredients: true,
+        images: {
+          orderBy: { displayOrder: 'asc' }
+        },
         _count: {
           select: { favorites: true, ratings: true, comments: true },
         },
@@ -253,6 +287,7 @@ export async function POST(request: NextRequest) {
       id: recipe.id,
       title: recipe.title,
       ingredientsCount: recipe.ingredients.length,
+      imagesCount: recipe.images?.length || 0,
       authorId: recipe.authorId
     });
 

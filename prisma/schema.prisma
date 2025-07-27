@@ -117,6 +117,7 @@ model Recipe {
   
   // === RELATIONSHIPS ===
   author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  images      RecipeImage[] // New multiple images relationship
   comments    Comment[]
   favorites   Favorite[]
   ratings     Rating[]
@@ -128,6 +129,42 @@ model Recipe {
   @@index([createdAt])
   @@index([tags], type: Gin)
   @@map("recipes")
+}
+
+/**
+ * RecipeImage Model - For supporting multiple images per recipe
+ */
+model RecipeImage {
+  id String @id @default(cuid())
+  
+  // === IMAGE DETAILS ===
+  url String // Image URL (from B2 or local storage)
+  filename String? // Original filename
+  caption String? // Optional caption for the image
+  alt String? // Alt text for accessibility
+  
+  // === IMAGE METADATA ===
+  width Int? // Image width in pixels
+  height Int? // Image height in pixels
+  fileSize Int? // File size in bytes
+  
+  // === ORDERING AND PRIMARY ===
+  displayOrder Int @default(0) // Order for display (0 = first)
+  isPrimary Boolean @default(false) // Whether this is the primary image for recipe cards
+  
+  // === RECIPE RELATIONSHIP ===
+  recipeId String
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  // === TIMESTAMPS ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === INDEXES ===
+  @@index([recipeId])
+  @@index([isPrimary])
+  @@index([displayOrder])
+  @@map("recipe_images")
 }
 
 /**

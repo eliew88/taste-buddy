@@ -198,7 +198,7 @@ export default function EditRecipePage() {
     servings: recipe.servings,
     difficulty: recipe.difficulty,
     tags: recipe.tags,
-    image: recipe.image || '',
+    images: recipe.images || [],
   };
 
   return (

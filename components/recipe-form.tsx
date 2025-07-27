@@ -37,14 +37,14 @@ import {
 } from 'lucide-react';
 import { LoadingButton } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
-import ImageUpload from '@/components/ui/image-upload';
+import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 import IngredientInput from '@/components/ui/ingredient-input';
-import { useImageUpload } from '@/hooks/use-image-upload';
+import { useMultipleImageUpload } from '@/hooks/use-multiple-image-upload';
 import apiClient from '@/lib/api-client';
-import { CreateRecipeData, CreateIngredientEntryData } from '@/types/recipe';
+import { CreateRecipeData, CreateIngredientEntryData, CreateRecipeImageData } from '@/types/recipe';
 
 interface RecipeFormData extends CreateRecipeData {
-  image?: string;
+  images?: CreateRecipeImageData[]; // Multiple images field
 }
 
 interface RecipeFormProps {
@@ -75,15 +75,18 @@ export default function RecipeForm({
   isEditing = false
 }: RecipeFormProps) {
   const router = useRouter();
-  
-  // Image upload state
+
+  // Multiple image upload state
   const {
-    imageUrl,
-    setImageUrl,
-    handleImageUploaded,
-    handleImageRemoved,
-    hasImage
-  } = useImageUpload(initialData.image);
+    images,
+    setImages,
+    uploadImage,
+    canAddMore,
+    primaryImage
+  } = useMultipleImageUpload({
+    initialImages: initialData.images || [],
+    maxImages: 5
+  });
   
   // Form state
   const [formData, setFormData] = useState<RecipeFormData>({
@@ -95,7 +98,7 @@ export default function RecipeForm({
     servings: undefined,
     difficulty: 'easy',
     tags: [],
-    image: '',
+    images: [],
     ...initialData
   });
 
@@ -109,13 +112,13 @@ export default function RecipeForm({
   // Auto-save key for localStorage
   const autoSaveKey = 'tastebuddy-recipe-draft';
 
-  // Sync image state with form data
+  // Sync multiple images state with form data
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
-      image: imageUrl || ''
+      images: images
     }));
-  }, [imageUrl]);
+  }, [images]);
 
   /**
    * Load draft from localStorage on mount
@@ -214,6 +217,13 @@ export default function RecipeForm({
   }, []);
 
   /**
+   * Handles images list changes
+   */
+  const handleImagesChange = useCallback((newImages: CreateRecipeImageData[]) => {
+    setImages(newImages);
+  }, [setImages]);
+
+  /**
    * Handles tag management
    */
   const addTag = () => {
@@ -248,6 +258,27 @@ export default function RecipeForm({
     setIsSubmitting(true);
 
     try {
+      // Upload any File objects to B2 first
+      let uploadedImages = [...images];
+      
+      for (let i = 0; i < uploadedImages.length; i++) {
+        const image = uploadedImages[i];
+        if (image.file) {
+          // This image needs to be uploaded
+          try {
+            const url = await uploadImage(image.file);
+            uploadedImages[i] = {
+              ...image,
+              url,
+              file: undefined // Remove the File object after upload
+            };
+          } catch (error) {
+            console.error('Failed to upload image:', image.filename, error);
+            throw new Error(`Failed to upload image ${image.filename}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }
+      }
+      
       // Clean up form data
       const cleanedData: RecipeFormData = {
         ...formData,
@@ -258,6 +289,7 @@ export default function RecipeForm({
         ),
         instructions: formData.instructions.trim(),
         cookTime: formData.cookTime?.trim() || undefined,
+        images: uploadedImages, // Use the uploaded images
       };
 
       if (onSubmit) {
@@ -444,18 +476,12 @@ export default function RecipeForm({
             </div>
           </section>
 
-          {/* Image Upload */}
+          {/* Multiple Image Upload */}
           <section className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <ImageIcon className="w-5 h-5 mr-2 text-green-700" />
-              Recipe Image
-            </h2>
-            
-            <ImageUpload
-              currentImage={imageUrl || undefined}
-              onImageUploaded={handleImageUploaded}
-              onImageRemoved={handleImageRemoved}
-              uploadText="Add a photo of your recipe"
+            <MultipleImageUpload
+              images={images}
+              onImagesChange={handleImagesChange}
+              maxImages={5}
               className="w-full"
             />
           </section>

@@ -109,15 +109,26 @@ export function getOptimizedImageUrl(imageUrl: string | null | undefined): strin
     return imageUrl;
   }
 
-  // If it's a local URL, try to transform to B2
+  // If it's a local recipe URL, try to transform to B2
   if (isLocalRecipeImage(imageUrl)) {
     const b2Url = transformLocalToB2Url(imageUrl);
     if (b2Url) {
       return b2Url;
     }
     
-    // If B2 transformation fails, return null to show placeholder
-    return null;
+    // If B2 transformation fails, return the original local URL as fallback
+    return imageUrl;
+  }
+
+  // If it's a local profile URL, try to transform to B2
+  if (isLocalProfileImage(imageUrl)) {
+    const b2Url = transformLocalToB2Url(imageUrl);
+    if (b2Url) {
+      return b2Url;
+    }
+    
+    // If B2 transformation fails, return the original local URL as fallback
+    return imageUrl;
   }
 
   // If it's an external URL (like Unsplash), return as-is
@@ -125,8 +136,8 @@ export function getOptimizedImageUrl(imageUrl: string | null | undefined): strin
     return imageUrl;
   }
 
-  // For any other case, return null to show placeholder
-  return null;
+  // For any other case, return the original URL as fallback
+  return imageUrl;
 }
 
 /**

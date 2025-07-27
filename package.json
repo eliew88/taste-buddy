@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts",
+    "db:migrate-images": "tsx prisma/migrate-legacy-images.ts",
+    "db:verify-images": "tsx prisma/verify-image-migration.ts",
+    "db:remove-legacy-images": "tsx prisma/remove-legacy-images.ts",
     "setup:production": "node scripts/setup-production.js",
     "postinstall": "npx prisma generate"
   },

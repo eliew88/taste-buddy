@@ -44,6 +44,7 @@ import CommentForm from '@/components/comment-form';
 import CommentsSection from '@/components/comments-section';
 import ComplimentForm from '@/components/compliment-form';
 import RecipeScaleSlider from '@/components/ui/recipe-scale-slider';
+import RecipeImageGallery from '@/components/ui/recipe-image-gallery';
 import { scaleIngredients, formatAsFraction } from '@/lib/recipe-scaling';
 
 /**
@@ -447,9 +448,15 @@ export default function RecipeDetailPage() {
           <div 
             className="relative rounded-xl overflow-hidden mb-8"
             style={{
-              backgroundImage: recipe.image && getOptimizedImageUrl(recipe.image) 
-                ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${getOptimizedImageUrl(recipe.image)})`
-                : 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+              backgroundImage: (() => {
+                // Get primary image from images array, or first image if no primary
+                const primaryImage = recipe.images?.find(img => img.isPrimary) || recipe.images?.[0];
+                const imageUrl = primaryImage?.url || recipe.image;
+                
+                return imageUrl && getOptimizedImageUrl(imageUrl)
+                  ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${getOptimizedImageUrl(imageUrl)})`
+                  : 'linear-gradient(135deg, #065f46 0%, #047857 100%)';
+              })(),
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
@@ -727,6 +734,17 @@ export default function RecipeDetailPage() {
             </div>
 
           </div>
+        </div>
+
+        {/* Recipe Image Gallery */}
+        <div className="mt-12 mb-12">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Recipe Photos</h2>
+          <RecipeImageGallery
+            images={recipe.images || []}
+            recipeTitle={recipe.title}
+            legacyImage={recipe.image}
+            className="w-full"
+          />
         </div>
 
         {/* Comments Section */}

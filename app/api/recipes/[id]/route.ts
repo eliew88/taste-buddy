@@ -49,6 +49,9 @@ export async function GET(
           },
         },
         ingredients: true,
+        images: {
+          orderBy: { displayOrder: 'asc' }
+        },
         _count: {
           select: { 
             favorites: true, 
@@ -161,7 +164,8 @@ export async function PUT(
       servings, 
       difficulty, 
       tags,
-      image 
+      image,
+      images
     } = body;
 
     // Prepare update data (only include provided fields)
@@ -252,6 +256,36 @@ export async function PUT(
       updateData.image = image || null;
     }
 
+    // Handle multiple images updates (handled separately like ingredients)
+    let shouldUpdateImages = false;
+    if (images !== undefined) {
+      console.log('Images update requested:', images);
+      shouldUpdateImages = true;
+      
+      // Validate images array
+      if (images && Array.isArray(images)) {
+        // Filter out images without valid URLs for validation
+        const validImages = images.filter((img: any) => img.url && img.url.trim() !== '');
+        
+        // Ensure only one primary image among valid images
+        const primaryImages = validImages.filter((img: any) => img.isPrimary === true);
+        if (primaryImages.length > 1) {
+          return NextResponse.json(
+            { success: false, error: 'Only one image can be marked as primary' },
+            { status: 400 }
+          );
+        }
+        
+        // If no primary image is specified among valid images, make the first valid one primary
+        if (primaryImages.length === 0 && validImages.length > 0) {
+          const firstValidImage = images.find((img: any) => img.url && img.url.trim() !== '');
+          if (firstValidImage) {
+            firstValidImage.isPrimary = true;
+          }
+        }
+      }
+    }
+
     // Update recipe (without ingredients first)
     console.log('Updating recipe with data:', updateData);
     let updatedRecipe = await prisma.recipe.update({
@@ -267,6 +301,9 @@ export async function PUT(
           },
         },
         ingredients: true,
+        images: {
+          orderBy: { displayOrder: 'asc' }
+        },
         _count: {
           select: { 
             favorites: true, 
@@ -321,6 +358,9 @@ export async function PUT(
             },
           },
           ingredients: true,
+          images: {
+            orderBy: { displayOrder: 'asc' }
+          },
           _count: {
             select: { 
               favorites: true, 
@@ -340,6 +380,75 @@ export async function PUT(
       updatedRecipe = refreshedRecipe;
       
       console.log('Ingredients updated successfully. New count:', updatedRecipe?.ingredients.length || 0);
+    }
+
+    // Handle images update separately if provided
+    if (shouldUpdateImages) {
+      console.log('Updating images separately...');
+      
+      // Delete all existing images for this recipe
+      await prisma.recipeImage.deleteMany({
+        where: { recipeId: id }
+      });
+      
+      // Create new images if provided
+      if (Array.isArray(images) && images.length > 0) {
+        // Filter out images without valid URLs
+        const validImages = images.filter((img: any) => img.url && img.url.trim() !== '');
+        
+        if (validImages.length > 0) {
+          await prisma.recipeImage.createMany({
+            data: validImages.map((img: any, index: number) => ({
+              recipeId: id,
+              url: img.url,
+              filename: img.filename || null,
+              caption: img.caption || null,
+              alt: img.alt || null,
+              width: img.width || null,
+              height: img.height || null,
+              fileSize: img.fileSize || null,
+              displayOrder: img.displayOrder !== undefined ? img.displayOrder : index,
+              isPrimary: img.isPrimary === true
+            }))
+          });
+        }
+      }
+      
+      // Fetch updated recipe with new images
+      const refreshedRecipe = await prisma.recipe.findUnique({
+        where: { id },
+        include: {
+          author: {
+            select: { 
+              id: true, 
+              name: true, 
+              email: true,
+              image: true
+            },
+          },
+          ingredients: true,
+          images: {
+            orderBy: { displayOrder: 'asc' }
+          },
+          _count: {
+            select: { 
+              favorites: true, 
+              ratings: true 
+            },
+          },
+          ratings: {
+            select: { rating: true }
+          }
+        },
+      });
+      
+      if (!refreshedRecipe) {
+        throw new Error('Failed to fetch updated recipe');
+      }
+      
+      updatedRecipe = refreshedRecipe;
+      
+      console.log('Images updated successfully. New count:', updatedRecipe?.images?.length || 0);
     }
 
     // PostgreSQL native arrays need no transformation

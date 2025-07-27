@@ -31,6 +31,9 @@ export async function GET() {
             author: {
               select: { id: true, name: true, email: true, image: true }
             },
+            images: {
+              orderBy: { displayOrder: 'asc' }
+            },
             _count: {
               select: { favorites: true, ratings: true, comments: true }
             },

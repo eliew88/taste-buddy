@@ -299,6 +299,9 @@ export async function GET(request: NextRequest) {
             select: { id: true, name: true, email: true, image: true },
           },
           ingredients: true,
+          images: {
+            orderBy: { displayOrder: 'asc' }
+          },
           _count: {
             select: { favorites: true, ratings: true, comments: true },
           },
