@@ -29,7 +29,7 @@ import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
-import { getRandomQuoteForDisplay } from '@/lib/quotes';
+import { getDailyQuoteForDisplay } from '@/lib/quotes';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -57,20 +57,9 @@ const HeroSection = ({
   searchLoading: boolean;
   heroImages?: string[];
 }) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [heroQuote, setHeroQuote] = useState<{ text: string; author: string }>({ text: '', author: '' });
-  
-  // Select random image and quote on client side only
-  useEffect(() => {
-    if (heroImages && heroImages.length > 0) {
-      const randomImage = heroImages[Math.floor(Math.random() * heroImages.length)];
-      setSelectedImage(randomImage);
-    }
-    
-    // Set random quote with author
-    const quote = getRandomQuoteForDisplay();
-    setHeroQuote(quote);
-  }, [heroImages]);
+  // Use deterministic daily quote and first image to prevent hydration mismatch
+  const heroQuote = getDailyQuoteForDisplay();
+  const selectedImage = heroImages && heroImages.length > 0 ? heroImages[0] : null;
   
   console.log('🎨 HeroSection rendering with images:', heroImages);
   
@@ -99,9 +88,9 @@ const HeroSection = ({
             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
             WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
           }}>
-            {heroQuote.text || '"Discover, cook, and share amazing recipes!"'}
+            {heroQuote.text}
           </h1>
-          {heroQuote.author && (
+          {heroQuote.author && heroQuote.author !== 'Unknown' && (
             <p className="text-xl md:text-2xl text-purple-200 font-medium" style={{
               textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
             }}>

@@ -48,6 +48,33 @@ export function getRandomFormattedQuote(includeAuthor: boolean = false): string 
 }
 
 /**
+ * Gets a deterministic "random" quote based on the current date
+ * This ensures server and client render the same quote (no hydration mismatch)
+ * @returns Object with formatted quote text and author
+ */
+export function getDailyQuoteForDisplay(): { text: string; author: string } {
+  // Get current date as a string (YYYY-MM-DD)
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Create a simple hash from the date string
+  let hash = 0;
+  for (let i = 0; i < today.length; i++) {
+    const char = today.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Use the hash to select a quote deterministically
+  const index = Math.abs(hash) % foodQuotes.length;
+  const quote = foodQuotes[index];
+  
+  return {
+    text: `"${quote.text}"`,
+    author: quote.author
+  };
+}
+
+/**
  * Gets a random quote with formatted text (always in quotes) and separate author
  * @returns Object with formatted quote text and author
  */
