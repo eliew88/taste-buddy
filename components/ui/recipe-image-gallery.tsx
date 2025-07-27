@@ -201,13 +201,14 @@ export default function RecipeImageGallery({
     return (
       <div className={`space-y-4 ${className}`}>
         <div 
-          className="h-48 bg-gray-200 overflow-hidden relative group cursor-pointer rounded-lg" 
+          className="bg-gray-200 relative group cursor-pointer rounded-lg flex items-center justify-center" 
           onClick={() => openModal(0)}
+          style={{ minHeight: '300px' }}
         >
           <img 
             src={imageSrc} 
             alt={image.alt || `${recipeTitle} recipe image`}
-            className="w-full h-full object-cover"
+            className="max-w-full max-h-full object-contain rounded-lg"
           />
         </div>
         
@@ -237,13 +238,14 @@ export default function RecipeImageGallery({
     <div className={`space-y-4 ${className}`}>
       {/* Primary Image */}
       <div 
-        className="h-96 bg-gray-200 overflow-hidden relative group rounded-lg cursor-pointer"
+        className="bg-gray-200 relative group rounded-lg cursor-pointer flex items-center justify-center"
         onClick={() => openModal(0)}
+        style={{ minHeight: '400px' }}
       >
         <img 
           src={primaryImageSrc} 
           alt={primaryImage.alt || `${recipeTitle} - Primary image`}
-          className="w-full h-full object-cover"
+          className="max-w-full max-h-full object-contain rounded-lg"
         />
       </div>
       
@@ -253,23 +255,29 @@ export default function RecipeImageGallery({
       
       {/* Secondary Images Grid */}
       {secondaryImages.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {secondaryImages.slice(0, 6).map((image, index) => {
             const actualIndex = index + 1; // +1 because primary is index 0
             const isLast = index === 5 && secondaryImages.length > 6;
             const remainingCount = secondaryImages.length - 6;
             
             return (
-              <div
-                key={actualIndex}
-                className="relative cursor-pointer group aspect-square overflow-hidden rounded-md"
-                onClick={() => openModal(actualIndex)}
-              >
-                <img
-                  src={getOptimizedImageUrl(image.url) || image.url}
-                  alt={image.alt || `${recipeTitle} - Image ${actualIndex + 1}`}
-                  className="w-full h-full object-cover"
-                />
+              <div key={actualIndex} className="space-y-2">
+                <div
+                  className="relative cursor-pointer group aspect-square overflow-hidden rounded-md"
+                  onClick={() => openModal(actualIndex)}
+                >
+                  <img
+                    src={getOptimizedImageUrl(image.url) || image.url}
+                    alt={image.alt || `${recipeTitle} - Image ${actualIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {image.caption && (
+                  <p className="text-gray-600 text-xs italic text-center leading-relaxed">
+                    {image.caption}
+                  </p>
+                )}
               </div>
             );
           })}

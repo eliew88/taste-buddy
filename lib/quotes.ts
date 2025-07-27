@@ -48,18 +48,20 @@ export function getRandomFormattedQuote(includeAuthor: boolean = false): string 
 }
 
 /**
- * Gets a deterministic "random" quote based on the current date
+ * Gets a deterministic "random" quote based on the current hour
  * This ensures server and client render the same quote (no hydration mismatch)
+ * Quote changes every hour instead of every day
  * @returns Object with formatted quote text and author
  */
 export function getDailyQuoteForDisplay(): { text: string; author: string } {
-  // Get current date as a string (YYYY-MM-DD)
-  const today = new Date().toISOString().split('T')[0];
+  // Get current date and hour as a string (YYYY-MM-DD-HH)
+  const now = new Date();
+  const hourKey = `${now.toISOString().split('T')[0]}-${now.getHours().toString().padStart(2, '0')}`;
   
-  // Create a simple hash from the date string
+  // Create a simple hash from the hour key string
   let hash = 0;
-  for (let i = 0; i < today.length; i++) {
-    const char = today.charCodeAt(i);
+  for (let i = 0; i < hourKey.length; i++) {
+    const char = hourKey.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // Convert to 32-bit integer
   }

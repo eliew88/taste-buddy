@@ -21,16 +21,18 @@ function createSimpleHash(str: string): number {
 }
 
 /**
- * Gets the current date as a string for consistent hashing
- * @returns Date string in YYYY-MM-DD format
+ * Gets the current hour as a string for consistent hashing
+ * @returns Hour string in YYYY-MM-DD-HH format
  */
-function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+function getCurrentHourString(): string {
+  const now = new Date();
+  return `${now.toISOString().split('T')[0]}-${now.getHours().toString().padStart(2, '0')}`;
 }
 
 /**
- * Selects a daily image from the provided images array
- * Uses date-based hashing to ensure server/client consistency
+ * Selects an hourly image from the provided images array
+ * Uses hour-based hashing to ensure server/client consistency
+ * Image changes every hour instead of every day
  * @param images - Array of image URLs to choose from
  * @returns Selected image URL or null if no images provided
  */
@@ -39,9 +41,9 @@ export function getDailyImage(images: string[]): string | null {
     return null;
   }
   
-  // Use date + "image" to create a different hash than quotes
-  const today = getTodayDateString();
-  const hashInput = `${today}-image`;
+  // Use hour + "image" to create a different hash than quotes
+  const currentHour = getCurrentHourString();
+  const hashInput = `${currentHour}-image`;
   const hash = createSimpleHash(hashInput);
   
   // Use hash to select image deterministically
@@ -50,8 +52,9 @@ export function getDailyImage(images: string[]): string | null {
 }
 
 /**
- * Gets both daily quote and daily image for the hero section
+ * Gets both hourly quote and hourly image for the hero section
  * This ensures consistent content across server and client renders
+ * Content changes every hour instead of every day
  * @param images - Array of hero images to choose from
  * @returns Object with both quote and image data
  */
