@@ -29,6 +29,7 @@ import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
+import { getDailyHeroContent } from '@/lib/daily-content';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -56,15 +57,10 @@ const HeroSection = ({
   searchLoading: boolean;
   heroImages?: string[];
 }) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
-  // Select random image on client side only
-  useEffect(() => {
-    if (heroImages && heroImages.length > 0) {
-      const randomImage = heroImages[Math.floor(Math.random() * heroImages.length)];
-      setSelectedImage(randomImage);
-    }
-  }, [heroImages]);
+  // Use deterministic daily content to prevent hydration mismatch
+  const dailyContent = getDailyHeroContent(heroImages);
+  const heroQuote = dailyContent.quote;
+  const selectedImage = dailyContent.image;
   
   console.log('🎨 HeroSection rendering with images:', heroImages);
   
@@ -88,12 +84,21 @@ const HeroSection = ({
       {/* Content */}
       <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
         {/* Hero Text */}
-        <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-8 font-serif italic" style={{
-          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
-          WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
-        }}>
-          Discover, cook, and share amazing recipes!
-        </h1>
+        <div className="mb-8">
+          <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-4 font-serif italic" style={{
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
+            WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
+          }}>
+            {heroQuote.text}
+          </h1>
+          {heroQuote.author && heroQuote.author !== 'Unknown' && (
+            <p className="text-xl md:text-2xl text-purple-200 font-medium" style={{
+              textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
+            }}>
+              — {heroQuote.author}
+            </p>
+          )}
+        </div>
         
         {/* Search Section */}
         <div className="max-w-2xl mx-auto space-y-6">

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { TrendingUp, Users, Heart, Star, Tag, Clock, Crown, Flame, BarChart3 } from 'lucide-react';
+import { Users, Heart, Star, Clock, Crown, Flame, BarChart3 } from 'lucide-react';
 import { useRecipeStats } from '@/hooks/use-recipe-stats';
 import { LoadingSpinner } from '@/components/ui/loading';
 import RecipeCard from '@/components/ui/recipe-card';
@@ -40,16 +40,6 @@ const StatCard = ({
   );
 };
 
-const TrendingTag = ({ tag, count }: { tag: string; count: number }) => (
-  <Link 
-    href={`/food-feed?search=${encodeURIComponent(tag)}`}
-    className="inline-flex items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-colors"
-  >
-    <Tag className="w-3 h-3 mr-1" />
-    <span className="font-medium">{tag}</span>
-    <span className="ml-2 text-gray-500">({count})</span>
-  </Link>
-);
 
 export default function RecipeStatsSection({ className = '' }: RecipeStatsProps) {
   const { stats, loading, error } = useRecipeStats();
@@ -93,7 +83,7 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
             TasteBuddy Recipe Stats
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Discover what's trending, see the most loved recipes, and explore the latest additions to our community.
+            See the most loved recipes and explore the latest additions to our community.
           </p>
         </div>
 
@@ -231,20 +221,6 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
           </div>
         </div>
 
-        {/* Trending Tags */}
-        {stats.trendingTags.length > 0 && (
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-6">
-              <TrendingUp className="w-6 h-6 text-purple-500 mr-3" />
-              <h3 className="text-xl font-bold text-gray-900">Trending This Month</h3>
-            </div>
-            <div className="flex flex-wrap justify-center gap-3">
-              {stats.trendingTags.map(({ tag, count }) => (
-                <TrendingTag key={tag} tag={tag} count={count} />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );

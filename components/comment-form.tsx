@@ -139,7 +139,7 @@ export default function CommentForm({ recipeId, onCommentCreated }: CommentFormP
             id="comment"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
             rows={4}
             placeholder="Share your thoughts about this recipe..."
             disabled={isSubmitting}

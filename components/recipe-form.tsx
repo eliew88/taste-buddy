@@ -353,7 +353,7 @@ export default function RecipeForm({
                   type="text"
                   value={formData.title}
                   onChange={(e) => updateFormData({ title: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                  className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                     errors.title ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="e.g., Grandma's Chocolate Chip Cookies"
@@ -375,7 +375,7 @@ export default function RecipeForm({
                   value={formData.description}
                   onChange={(e) => updateFormData({ description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-green-600 focus:border-green-600"
                   placeholder="Tell us about this recipe - what makes it special?"
                 />
               </div>
@@ -390,7 +390,7 @@ export default function RecipeForm({
                   type="text"
                   value={formData.cookTime}
                   onChange={(e) => updateFormData({ cookTime: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-green-600 focus:border-green-600"
                   placeholder="e.g., 30 mins, 1h 15m"
                 />
               </div>
@@ -485,7 +485,7 @@ export default function RecipeForm({
               value={formData.instructions}
               onChange={(e) => updateFormData({ instructions: e.target.value })}
               rows={8}
-              className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+              className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                 errors.instructions ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Provide step-by-step instructions for preparing this recipe..."
