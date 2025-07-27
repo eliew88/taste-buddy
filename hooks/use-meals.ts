@@ -121,12 +121,14 @@ export function useMeals(initialParams: UseMealsParams = {}): UseMealsReturn {
         dateTo: fetchParams.dateTo,
       });
 
-      if (response.success) {
-        setMeals(response.data);
-        setPagination(response.pagination);
-      } else {
-        throw new Error(response.error || 'Failed to fetch meals');
-      }
+      setMeals(response.meals);
+      setPagination({
+        page: response.page,
+        totalPages: Math.ceil(response.total / response.limit),
+        total: response.total,
+        hasNextPage: response.hasMore,
+        hasPrevPage: response.page > 1
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch meals';
       setError(errorMessage);

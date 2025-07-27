@@ -342,7 +342,7 @@ async function main() {
     // Create recipes
     console.log('🍳 Creating recipes...');
     for (const recipe of sampleRecipes) {
-      const { ingredients, image, ...recipeData } = recipe;
+      const { ingredients, ...recipeData } = recipe;
       
       // Convert string ingredients to structured format
       const structuredIngredients = ingredients.map((ingredient, index) => {
@@ -379,19 +379,7 @@ async function main() {
           ...recipeData,
           ingredients: {
             create: structuredIngredients
-          },
-          // Create primary image if image URL exists
-          ...(image && {
-            images: {
-              create: {
-                url: image,
-                isPrimary: true,
-                displayOrder: 0,
-                alt: `${recipe.title} recipe image`,
-                caption: `Main photo for ${recipe.title}`
-              }
-            }
-          })
+          }
         }
       });
       console.log(`   ✓ Created recipe: ${recipe.title}`);

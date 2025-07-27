@@ -41,8 +41,14 @@ interface SearchFilters {
   ingredients: string[];
   excludedIngredients: string[];
   tags: string[];
+  cookTimeRange: [number, number];
+  servingsRange: [number, number];
   minRating: number;
   tastebuddiesOnly: boolean;
+  dateRange: {
+    start: string | null;
+    end: string | null;
+  };
 }
 
 /**
@@ -53,8 +59,14 @@ const defaultFilters: SearchFilters = {
   ingredients: [],
   excludedIngredients: [],
   tags: [],
+  cookTimeRange: [0, 300],
+  servingsRange: [1, 12],
   minRating: 0,
   tastebuddiesOnly: false,
+  dateRange: {
+    start: null,
+    end: null,
+  },
 };
 
 /**
