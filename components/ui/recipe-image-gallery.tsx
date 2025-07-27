@@ -244,7 +244,7 @@ export default function RecipeImageGallery({
       
       {/* Secondary Images Grid */}
       {secondaryImages.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {secondaryImages.slice(0, 6).map((image, index) => {
             const actualIndex = index + 1; // +1 because primary is index 0
             const isLast = index === 5 && secondaryImages.length > 6;
@@ -263,7 +263,7 @@ export default function RecipeImageGallery({
                   />
                 </div>
                 {image.caption && (
-                  <p className="text-gray-600 text-xs italic text-center leading-relaxed">
+                  <p className="text-gray-600 text-sm italic text-center leading-relaxed">
                     {image.caption}
                   </p>
                 )}

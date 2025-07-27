@@ -1,0 +1,18 @@
+
+> tastebuddy@0.1.0 dev
+> next dev -p 3002
+
+   ▲ Next.js 15.3.5
+   - Local:        http://localhost:3002
+   - Network:      http://192.168.4.200:3002
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Compiled /instrumentation in 142ms (20 modules)
+Instrumentation hook registered for analytics
+ ✓ Ready in 1107ms
+ ✓ Compiled in 48ms (20 modules)
+ ✓ Compiled in 59ms (20 modules)
+ ✓ Compiled in 72ms (20 modules)
+ ✓ Compiled in 46ms (20 modules)
+[?25h

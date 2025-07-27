@@ -77,14 +77,14 @@ export default function MealJournalPage() {
     }
   });
 
-  const hasActiveFilters = searchTerm || dateFrom || dateTo;
+  const hasActiveFilters = searchTerm;
 
   if (status === 'loading') {
     return (
       <div className="min-h-screen">
         <Navigation />
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-orange-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       </div>
     );
@@ -103,7 +103,7 @@ export default function MealJournalPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <Utensils className="w-8 h-8 text-orange-600" />
+              <Utensils className="w-8 h-8 text-blue-600" />
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Meal Journal</h1>
                 <p className="text-gray-600">
@@ -111,15 +111,6 @@ export default function MealJournalPage() {
                 </p>
               </div>
             </div>
-            
-            {/* Add Meal Button */}
-            <Link
-              href="/meals/new"
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors inline-flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Add Meal
-            </Link>
           </div>
         </div>
 
@@ -135,39 +126,18 @@ export default function MealJournalPage() {
                   placeholder="Search your meals..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-600 focus:border-orange-600"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 />
               </div>
             </div>
 
-            {/* Date Filters */}
-            <div className="flex gap-2">
-              <div>
-                <input
-                  type="date"
-                  placeholder="From date"
-                  value={dateFrom?.toISOString().split('T')[0] || ''}
-                  onChange={(e) => handleDateChange('from', e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-600 focus:border-orange-600 bg-white"
-                />
-              </div>
-              <div>
-                <input
-                  type="date"
-                  placeholder="To date"
-                  value={dateTo?.toISOString().split('T')[0] || ''}
-                  onChange={(e) => handleDateChange('to', e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-600 focus:border-orange-600 bg-white"
-                />
-              </div>
-            </div>
 
             {/* Sort */}
             <div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-600 focus:border-orange-600 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-white"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -179,13 +149,13 @@ export default function MealJournalPage() {
             <div className="flex border border-gray-300 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-orange-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-orange-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -199,24 +169,14 @@ export default function MealJournalPage() {
                 <Filter className="w-4 h-4" />
                 <span>Filters active:</span>
                 {searchTerm && (
-                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
                     Search: &quot;{searchTerm}&quot;
-                  </span>
-                )}
-                {dateFrom && (
-                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                    From: {dateFrom.toLocaleDateString()}
-                  </span>
-                )}
-                {dateTo && (
-                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                    To: {dateTo.toLocaleDateString()}
                   </span>
                 )}
               </div>
               <button
                 onClick={clearFilters}
-                className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 Clear filters
               </button>
@@ -227,7 +187,7 @@ export default function MealJournalPage() {
         {/* Content */}
         {loading ? (
           <div className="text-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-600 mx-auto mb-4" />
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
             <p className="text-gray-600">Loading your meals...</p>
           </div>
         ) : error ? (
@@ -237,7 +197,7 @@ export default function MealJournalPage() {
             <p className="text-gray-600 mb-4">{error}</p>
             <button
               onClick={resetError}
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
             >
               Try Again
             </button>
@@ -257,14 +217,14 @@ export default function MealJournalPage() {
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="border border-orange-600 text-orange-600 px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
+                  className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
                 >
                   Clear Filters
                 </button>
               )}
               <Link
                 href="/meals/new"
-                className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors inline-flex items-center gap-2"
+                className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors inline-flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Add Your First Meal
@@ -291,6 +251,7 @@ export default function MealJournalPage() {
                   <MealCard 
                     meal={meal}
                     className={viewMode === 'list' ? 'flex' : ''}
+                    isListView={viewMode === 'list'}
                   />
                 </div>
               ))}

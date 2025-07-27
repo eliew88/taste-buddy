@@ -518,21 +518,21 @@ export default function ProfilePage() {
             className="bg-green-700 text-white p-4 rounded-lg hover:bg-green-800 transition-colors flex items-center space-x-3"
           >
             <Plus className="w-5 h-5" />
-            <span className="font-medium">Add New Recipe</span>
-          </Link>
-          <Link
-            href="/meals/new"
-            className="bg-orange-600 text-white p-4 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-3"
-          >
-            <Plus className="w-5 h-5" />
-            <span className="font-medium">Add New Meal</span>
+            <span className="font-medium">Add Recipe</span>
           </Link>
           <Link
             href="/profile/favorites"
             className="bg-white border border-gray-200 text-gray-700 p-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-3"
           >
             <Heart className="w-5 h-5" />
-            <span className="font-medium">My Favorites</span>
+            <span className="font-medium">Favorite Recipes</span>
+          </Link>
+          <Link
+            href="/meals/new"
+            className="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-3"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Add Meal</span>
           </Link>
           <Link
             href="/profile/meals"
@@ -540,13 +540,6 @@ export default function ProfilePage() {
           >
             <BookOpen className="w-5 h-5" />
             <span className="font-medium">Meal Journal</span>
-          </Link>
-          <Link
-            href="/food-feed"
-            className="bg-white border border-gray-200 text-gray-700 p-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-3"
-          >
-            <ChefHat className="w-5 h-5" />
-            <span className="font-medium">Discover Recipes</span>
           </Link>
           <Link
             href="/profile/payment-setup"

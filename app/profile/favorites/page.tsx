@@ -216,7 +216,7 @@ export default function FavoritesPage() {
                   placeholder="Search your favorites..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 />
               </div>
             </div>
@@ -226,7 +226,7 @@ export default function FavoritesPage() {
               <select
                 value={selectedDifficulty}
                 onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-white"
               >
                 <option value="">All Difficulties</option>
                 <option value="easy">Easy</option>
@@ -240,7 +240,7 @@ export default function FavoritesPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-white"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -253,13 +253,13 @@ export default function FavoritesPage() {
             <div className="flex border border-gray-300 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-purple-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-purple-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -306,7 +306,7 @@ export default function FavoritesPage() {
             <p className="text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
+              className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
             >
               Try Again
             </button>
@@ -333,7 +333,7 @@ export default function FavoritesPage() {
               )}
               <Link
                 href="/food-feed"
-                className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-800 transition-colors inline-flex items-center"
+                className="bg-purple-700 text-white px-6 py-3 rounded-lg hover:bg-green-800 transition-colors inline-flex items-center"
               >
                 <Search className="w-5 h-5 mr-2" />
                 Discover Recipes

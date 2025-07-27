@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Calendar, Eye, Utensils, Clock } from 'lucide-react';
+import { Calendar, Eye, Utensils } from 'lucide-react';
 import { Meal } from '@/types/meal';
 import { truncateText } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/image-client-utils';
@@ -24,6 +24,9 @@ interface MealCardProps {
   
   /** Whether to show the full description */
   showFullDescription?: boolean;
+  
+  /** Whether this is displayed in list view (shows all photos) */
+  isListView?: boolean;
 }
 
 /**
@@ -41,7 +44,8 @@ interface MealCardProps {
 export default function MealCard({ 
   meal, 
   className = '',
-  showFullDescription = false
+  showFullDescription = false,
+  isListView = false
 }: MealCardProps) {
   // Local state for image handling
   const [imageError, setImageError] = useState(false);
@@ -74,11 +78,11 @@ export default function MealCard({
   };
 
   /**
-   * Get relative time for meal
+   * Get meal date for display (only if meal.date exists)
    */
-  const getRelativeTime = (): string => {
+  const getMealDate = (): string | null => {
     if (!meal.date) {
-      return `Added ${formatDate(meal.createdAt)}`;
+      return null;
     }
     return formatDate(meal.date);
   };
@@ -88,42 +92,44 @@ export default function MealCard({
       className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-200 ${className}`}
       aria-label={`Meal: ${meal.name}`}
     >
-      {/* Meal Image */}
-      <div className="h-48 bg-gray-200 overflow-hidden relative group">
-        {(() => {
-          // Get primary image from images array, or first image if no primary
-          const primaryImage = meal.images?.find(img => img.isPrimary) || meal.images?.[0];
-          const imageUrl = primaryImage?.url;
-          
-          return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
-            <img 
-              src={getOptimizedImageUrl(imageUrl)!} 
-              alt={primaryImage?.alt || `${meal.name} meal`}
-              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              loading="lazy"
-              onError={() => {
-                // If B2 image fails, show placeholder immediately
-                setImageError(true);
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-              <div className="text-center text-gray-400">
-                <Utensils className="w-16 h-16 mx-auto mb-2 opacity-50" />
-                <p className="text-sm font-medium">No photo</p>
+      {/* Grid view - show primary photo at top */}
+      {!isListView && (
+        <div className="h-48 bg-gray-200 overflow-hidden relative group">
+          {(() => {
+            // Get primary image from images array, or first image if no primary
+            const primaryImage = meal.images?.find(img => img.isPrimary) || meal.images?.[0];
+            const imageUrl = primaryImage?.url;
+            
+            return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
+              <img 
+                src={getOptimizedImageUrl(imageUrl)!} 
+                alt={primaryImage?.alt || `${meal.name} meal`}
+                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                loading="lazy"
+                onError={() => {
+                  // If B2 image fails, show placeholder immediately
+                  setImageError(true);
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                <div className="text-center text-gray-400">
+                  <Utensils className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium">No photo</p>
+                </div>
               </div>
+            );
+          })()}
+          
+          {/* Photo count indicator */}
+          {meal.images && meal.images.length > 1 && (
+            <div className="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs font-medium">
+              {meal.images.length} photos
             </div>
-          );
-        })()}
-        
-        {/* Photo count indicator */}
-        {meal.images && meal.images.length > 1 && (
-          <div className="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {meal.images.length} photos
-          </div>
-        )}
-      </div>
-      
+          )}
+        </div>
+      )}
+
       <div className="p-6">
         {/* Header with meal name */}
         <header className="mb-4">
@@ -133,35 +139,14 @@ export default function MealCard({
             </h3>
           </Link>
           
-          {/* Date and time info */}
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
+          {/* Date info (only show if meal.date exists) */}
+          {getMealDate() && (
+            <div className="flex items-center gap-1 text-sm text-gray-600">
               <Calendar className="w-4 h-4" />
-              <span>{getRelativeTime()}</span>
+              <span>{getMealDate()}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span>Added {formatDate(meal.createdAt)}</span>
-            </div>
-          </div>
+          )}
         </header>
-
-        {/* Author Information */}
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-          <Avatar 
-            src={meal.author.image} 
-            name={meal.author.name || meal.author.email}
-            size="sm"
-          />
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {meal.author.name || meal.author.email}
-            </div>
-            <div className="text-xs text-gray-500">
-              Chef
-            </div>
-          </div>
-        </div>
 
         {/* Description */}
         {meal.description && (
@@ -175,20 +160,57 @@ export default function MealCard({
           </div>
         )}
 
+        {/* List view photos */}
+        {isListView && meal.images && meal.images.length > 0 && (
+          <div className="-mx-6 mb-4">
+            <div 
+              className="flex gap-3 overflow-x-auto px-6 pb-2"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#e5e7eb #f3f4f6'
+              }}
+            >
+              {meal.images.map((image, index) => (
+                <div key={image.id || index} className="w-60 h-60 flex-shrink-0 overflow-hidden rounded-md">
+                  <img 
+                    src={getOptimizedImageUrl(image.url) || image.url} 
+                    alt={image.alt || `${meal.name} meal photo ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Author Information */}
+        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+          <Avatar 
+            imageUrl={meal.author.image} 
+            name={meal.author.name || meal.author.email}
+            size="sm"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-gray-900 truncate">
+              {meal.author.name || meal.author.email}
+            </div>
+            <div className="text-xs text-gray-500">
+              Chef
+            </div>
+          </div>
+        </div>
+
         {/* Footer with view link */}
-        <footer className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <footer className="pt-4 border-t border-gray-100">
           <Link 
             href={`/meals/${meal.id}`}
-            className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
           >
             <Eye className="w-4 h-4" />
             View Meal
           </Link>
-          
-          {/* Metadata */}
-          <div className="text-xs text-gray-400">
-            {meal.images?.length ? `${meal.images.length} photo${meal.images.length !== 1 ? 's' : ''}` : 'No photos'}
-          </div>
         </footer>
       </div>
     </article>

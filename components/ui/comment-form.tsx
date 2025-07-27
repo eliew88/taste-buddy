@@ -157,7 +157,7 @@ export default function CommentForm({
           placeholder={placeholder}
           rows={compact ? 3 : 4}
           maxLength={1000}
-          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 resize-none ${
+          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 resize-none ${
             compact ? 'text-sm' : ''
           }`}
           disabled={isSubmitting}

@@ -41,14 +41,8 @@ interface SearchFilters {
   ingredients: string[];
   excludedIngredients: string[];
   tags: string[];
-  cookTimeRange: [number, number];
-  servingsRange: [number, number];
   minRating: number;
   tastebuddiesOnly: boolean;
-  dateRange: {
-    start: string | null;
-    end: string | null;
-  };
 }
 
 /**
@@ -59,14 +53,8 @@ const defaultFilters: SearchFilters = {
   ingredients: [],
   excludedIngredients: [],
   tags: [],
-  cookTimeRange: [0, 300],
-  servingsRange: [1, 12],
   minRating: 0,
   tastebuddiesOnly: false,
-  dateRange: {
-    start: null,
-    end: null,
-  },
 };
 
 /**
@@ -186,11 +174,8 @@ export default function FoodFeedPage() {
     if (filters.ingredients.length > 0) count++;
     if (filters.excludedIngredients.length > 0) count++;
     if (filters.tags.length > 0) count++;
-    if (filters.cookTimeRange[0] > 0 || filters.cookTimeRange[1] < 300) count++;
-    if (filters.servingsRange[0] > 1 || filters.servingsRange[1] < 12) count++;
     if (filters.minRating > 0) count++;
     if (filters.tastebuddiesOnly) count++;
-    if (filters.dateRange.start || filters.dateRange.end) count++;
     return count;
   }, [filters]);
 
@@ -258,21 +243,7 @@ export default function FoodFeedPage() {
       filters.tags.forEach(tag => params.append('tags', tag));
     }
     
-    if (filters.cookTimeRange[0] > 0) {
-      params.append('cookTimeMin', filters.cookTimeRange[0].toString());
-    }
     
-    if (filters.cookTimeRange[1] < 300) {
-      params.append('cookTimeMax', filters.cookTimeRange[1].toString());
-    }
-    
-    if (filters.servingsRange[0] > 1) {
-      params.append('servingsMin', filters.servingsRange[0].toString());
-    }
-    
-    if (filters.servingsRange[1] < 12) {
-      params.append('servingsMax', filters.servingsRange[1].toString());
-    }
     
     if (filters.minRating > 0) {
       params.append('minRating', filters.minRating.toString());
@@ -282,13 +253,6 @@ export default function FoodFeedPage() {
       params.append('tastebuddiesOnly', 'true');
     }
     
-    if (filters.dateRange.start) {
-      params.append('createdAfter', filters.dateRange.start);
-    }
-    
-    if (filters.dateRange.end) {
-      params.append('createdBefore', filters.dateRange.end);
-    }
     
     // Add sorting and pagination
     params.append('sortBy', sortBy);
@@ -360,21 +324,7 @@ export default function FoodFeedPage() {
       filters.tags.forEach(tag => params.append('tags', tag));
     }
     
-    if (filters.cookTimeRange[0] > 0) {
-      params.append('cookTimeMin', filters.cookTimeRange[0].toString());
-    }
     
-    if (filters.cookTimeRange[1] < 300) {
-      params.append('cookTimeMax', filters.cookTimeRange[1].toString());
-    }
-    
-    if (filters.servingsRange[0] > 1) {
-      params.append('servingsMin', filters.servingsRange[0].toString());
-    }
-    
-    if (filters.servingsRange[1] < 12) {
-      params.append('servingsMax', filters.servingsRange[1].toString());
-    }
     
     if (filters.minRating > 0) {
       params.append('minRating', filters.minRating.toString());
@@ -384,13 +334,6 @@ export default function FoodFeedPage() {
       params.append('tastebuddiesOnly', 'true');
     }
     
-    if (filters.dateRange.start) {
-      params.append('createdAfter', filters.dateRange.start);
-    }
-    
-    if (filters.dateRange.end) {
-      params.append('createdBefore', filters.dateRange.end);
-    }
     
     // Add sorting and pagination
     params.append('sortBy', sortBy);
@@ -476,13 +419,13 @@ export default function FoodFeedPage() {
                   value={localQuery}
                   onChange={(e) => setLocalQuery(e.target.value)}
                   placeholder="Search recipes, ingredients, or tags..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-green-700 text-white rounded-lg hover:bg-green-800 focus:ring-2 focus:ring-green-600 disabled:opacity-50 transition-colors"
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-600 disabled:opacity-50 transition-colors"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -492,19 +435,6 @@ export default function FoodFeedPage() {
               </button>
             </form>
 
-            {/* Quick Search Suggestions */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm text-gray-600">Popular searches:</span>
-              {['chicken recipes', 'vegetarian', 'quick meals', 'desserts', 'healthy'].map(term => (
-                <button
-                  key={term}
-                  onClick={() => handleQuickSearch(term)}
-                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full transition-colors"
-                >
-                  {term}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -570,7 +500,7 @@ export default function FoodFeedPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 >
                   {sortOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -583,13 +513,13 @@ export default function FoodFeedPage() {
                 <div className="flex border border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleViewModeChange('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                    className={`p-2 ${viewMode === 'grid' ? 'bg-purple-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleViewModeChange('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                    className={`p-2 ${viewMode === 'list' ? 'bg-purple-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
                   >
                     <List className="w-4 h-4" />
                   </button>

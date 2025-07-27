@@ -79,12 +79,12 @@ export default function Navigation() {
           {/* Brand Logo */}
           <Link 
             href="/" 
-            className="text-2xl font-bold text-green-700 hover:text-green-800 transition-colors"
+            className="font-bold text-gray-800 hover:text-gray-900 transition-colors"
             aria-label="TasteBuddy Home"
           >
             <div className="flex items-center space-x-2">
               <span className="text-3xl">🍲</span>
-              <span>TasteBuddy</span>
+              <span style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 700, fontSize: '1.875rem' }}>TasteBuddy</span>
             </div>
           </Link>
           
@@ -119,13 +119,13 @@ export default function Navigation() {
                   Favorites
                 </Link>
                 
+                {/* Add Meal Button */}
                 <Link 
-                  href="/profile/meals" 
-                  className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/meals')}`}
-                  aria-current={isActiveLink('/profile/meals') ? 'page' : undefined}
+                  href="/meals/new" 
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
                 >
-                  <BookOpen className="w-4 h-4 mr-1" />
-                  Meal Journal
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Meal
                 </Link>
                 
                 {/* Primary CTA Button */}
@@ -235,16 +235,6 @@ export default function Navigation() {
                   </Link>
                   
                   <Link
-                    href="/profile/meals"
-                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/meals')}`}
-                    onClick={closeMobileMenu}
-                    role="menuitem"
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Meal Journal
-                  </Link>
-                  
-                  <Link
                     href="/profile"
                     className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile')}`}
                     onClick={closeMobileMenu}
@@ -257,6 +247,17 @@ export default function Navigation() {
                       className="mr-2"
                     />
                     Profile ({session.user?.name})
+                  </Link>
+                  
+                  {/* Mobile Add Meal Button */}
+                  <Link
+                    href="/meals/new"
+                    className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Meal
                   </Link>
                   
                   {/* Mobile CTA Button */}

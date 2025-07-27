@@ -190,7 +190,7 @@ export default function SearchBar({
           placeholder={placeholder}
           value={filters.search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500"
+          className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 text-gray-900 placeholder-gray-500"
         />
         
         {/* Filter Toggle Button */}
@@ -203,7 +203,7 @@ export default function SearchBar({
             <div className="relative">
               <Filter className="w-5 h-5" />
               {activeFilterCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-green-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-purple-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -234,7 +234,7 @@ export default function SearchBar({
               <select
                 value={filters.difficulty}
                 onChange={(e) => handleDifficultyChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
               >
                 <option value="">Any difficulty</option>
                 <option value="easy">Easy</option>
@@ -254,11 +254,11 @@ export default function SearchBar({
                   placeholder="e.g. 30"
                   value={tempCookTime}
                   onChange={(e) => setTempCookTime(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 />
                 <button
                   onClick={handleCookTimeApply}
-                  className="px-3 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 transition-colors"
+                  className="px-3 py-2 bg-purple-700 text-white rounded-md hover:bg-green-800 transition-colors"
                 >
                   Apply
                 </button>
@@ -276,11 +276,11 @@ export default function SearchBar({
                   placeholder="e.g. 4"
                   value={tempServings}
                   onChange={(e) => setTempServings(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 />
                 <button
                   onClick={handleServingsApply}
-                  className="px-3 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 transition-colors"
+                  className="px-3 py-2 bg-purple-700 text-white rounded-md hover:bg-green-800 transition-colors"
                 >
                   Apply
                 </button>
@@ -300,7 +300,7 @@ export default function SearchBar({
                   onClick={() => handleTagToggle(tag)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                     filters.tags.includes(tag)
-                      ? 'bg-green-700 text-white'
+                      ? 'bg-purple-700 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >

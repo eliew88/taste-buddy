@@ -56,7 +56,7 @@ export function FollowButton({ userId, className = '', variant = 'default' }: Fo
   
   const variantClasses = isFollowing
     ? "bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300"
-    : "bg-blue-500 text-white hover:bg-blue-600";
+    : "bg-purple-600 text-white hover:bg-purple-700";
 
   return (
     <button

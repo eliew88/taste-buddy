@@ -185,7 +185,7 @@ export default function SignUpPage() {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-green-600 focus:border-green-600"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-purple-600 focus:border-purple-600"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -207,7 +207,7 @@ export default function SignUpPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-green-600 focus:border-green-600"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-purple-600 focus:border-purple-600"
                   placeholder="Enter your email"
                 />
               </div>
@@ -229,7 +229,7 @@ export default function SignUpPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-green-600 focus:border-green-600"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-purple-600 focus:border-purple-600"
                   placeholder="Create a password"
                 />
               </div>
@@ -254,7 +254,7 @@ export default function SignUpPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-green-600 focus:border-green-600"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-purple-600 focus:border-purple-600"
                   placeholder="Confirm your password"
                 />
               </div>

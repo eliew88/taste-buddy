@@ -109,7 +109,7 @@ const HeroSection = ({
               placeholder="Search recipes, ingredients, or tags..."
               value={searchTerm}
               onChange={(e) => onSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 text-gray-900 placeholder-gray-500 shadow-lg backdrop-blur-sm bg-purple-200/90 text-lg"
+              className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-purple-600 text-gray-900 placeholder-gray-500 shadow-lg backdrop-blur-sm bg-purple-200/90 text-lg"
             />
             {searchLoading && (
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -122,7 +122,7 @@ const HeroSection = ({
             <select
               value={difficulty}
               onChange={(e) => onDifficultyChange(e.target.value)}
-              className="px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-purple-200/90 shadow-lg backdrop-blur-sm text-lg"
+              className="px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-purple-200/90 shadow-lg backdrop-blur-sm text-lg"
             >
               <option value="">All Difficulties</option>
               <option value="easy">Easy</option>
@@ -327,7 +327,7 @@ export default function HomePage() {
       setFeaturedLoading(true);
       setFeaturedError(null);
       
-      const response = await fetch('/api/recipes/search?limit=9&sortBy=popular');
+      const response = await fetch('/api/recipes?limit=9&featured=true');
       const data = await response.json();
       
       if (data.success) {

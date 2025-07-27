@@ -161,7 +161,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 type="checkbox"
                 checked={selectedValues.includes(option.value)}
                 onChange={() => handleToggle(option.value)}
-                className="rounded border-gray-300 text-purple-700 focus:ring-green-600"
+                className="rounded border-gray-300 text-purple-700 focus:ring-purple-600"
               />
               <span className="text-sm text-gray-700 capitalize">{option.label}</span>
             </div>
@@ -220,7 +220,7 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
         
         {/* Active range */}
         <div 
-          className="absolute top-3 h-1 bg-green-600 rounded"
+          className="absolute top-3 h-1 bg-purple-600 rounded"
           style={{
             left: `${((value[0] - min) / (max - min)) * 100}%`,
             width: `${((value[1] - value[0]) / (max - min)) * 100}%`
@@ -251,13 +251,13 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
         
         {/* Min handle */}
         <div
-          className="absolute top-2 w-3 h-3 bg-green-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
+          className="absolute top-2 w-3 h-3 bg-purple-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
           style={{ left: `${((value[0] - min) / (max - min)) * 100}%` }}
         ></div>
         
         {/* Max handle */}
         <div
-          className="absolute top-2 w-3 h-3 bg-green-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
+          className="absolute top-2 w-3 h-3 bg-purple-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
           style={{ left: `${((value[1] - min) / (max - min)) * 100}%` }}
         ></div>
       </div>
@@ -321,15 +321,12 @@ export default function AdvancedSearchFilters({
 }: AdvancedSearchFiltersProps) {
   // Collapsible section states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    tastebuddies: true,
     difficulty: true,
-    tastebuddies: false,
-    cookTime: false,
-    servings: false,
     rating: false,
     ingredients: false,
     excludedIngredients: false,
     tags: false,
-    date: false,
   });
 
   const toggleSection = useCallback((section: string) => {
@@ -396,27 +393,7 @@ export default function AdvancedSearchFilters({
 
       {/* Filter Sections */}
       <div className="divide-y divide-gray-200">
-        {/* Difficulty Filter */}
-        <FilterSection
-          title="Difficulty"
-          icon={<ChefHat className="w-4 h-4" />}
-          isOpen={openSections.difficulty}
-          onToggle={() => toggleSection('difficulty')}
-          badgeCount={filters.difficulty.length}
-        >
-          <MultiSelect
-            options={filterOptions?.difficulties || [
-              { value: 'easy', label: 'Easy', count: 0 },
-              { value: 'medium', label: 'Medium', count: 0 },
-              { value: 'hard', label: 'Hard', count: 0 },
-            ]}
-            selectedValues={filters.difficulty}
-            onChange={(values) => updateFilters({ difficulty: values })}
-            placeholder="No difficulty options available"
-          />
-        </FilterSection>
-
-        {/* TasteBuddies Filter */}
+        {/* TasteBuddies Filter - Moved to top */}
         <FilterSection
           title="TasteBuddies"
           icon={<Heart className="w-4 h-4" />}
@@ -444,43 +421,27 @@ export default function AdvancedSearchFilters({
           </div>
         </FilterSection>
 
-        {/* Cook Time Filter */}
+        {/* Difficulty Filter */}
         <FilterSection
-          title="Cook Time"
-          icon={<Clock className="w-4 h-4" />}
-          isOpen={openSections.cookTime}
-          onToggle={() => toggleSection('cookTime')}
-          badgeCount={filters.cookTimeRange[0] > (filterOptions?.cookTimeStats.min || 0) || 
-                     filters.cookTimeRange[1] < (filterOptions?.cookTimeStats.max || 300) ? 1 : 0}
+          title="Difficulty"
+          icon={<ChefHat className="w-4 h-4" />}
+          isOpen={openSections.difficulty}
+          onToggle={() => toggleSection('difficulty')}
+          badgeCount={filters.difficulty.length}
         >
-          <RangeSlider
-            min={filterOptions?.cookTimeStats.min || 5}
-            max={filterOptions?.cookTimeStats.max || 300}
-            value={filters.cookTimeRange}
-            onChange={(value) => updateFilters({ cookTimeRange: value })}
-            step={5}
-            formatValue={formatCookTime}
+          <MultiSelect
+            options={filterOptions?.difficulties || [
+              { value: 'easy', label: 'Easy', count: 0 },
+              { value: 'medium', label: 'Medium', count: 0 },
+              { value: 'hard', label: 'Hard', count: 0 },
+            ]}
+            selectedValues={filters.difficulty}
+            onChange={(values) => updateFilters({ difficulty: values })}
+            placeholder="No difficulty options available"
           />
         </FilterSection>
 
-        {/* Servings Filter */}
-        <FilterSection
-          title="Servings"
-          icon={<Users className="w-4 h-4" />}
-          isOpen={openSections.servings}
-          onToggle={() => toggleSection('servings')}
-          badgeCount={filters.servingsRange[0] > (filterOptions?.servingsStats.min || 1) || 
-                     filters.servingsRange[1] < (filterOptions?.servingsStats.max || 12) ? 1 : 0}
-        >
-          <RangeSlider
-            min={filterOptions?.servingsStats.min || 1}
-            max={filterOptions?.servingsStats.max || 12}
-            value={filters.servingsRange}
-            onChange={(value) => updateFilters({ servingsRange: value })}
-            step={1}
-            formatValue={(v) => `${v} serving${v !== 1 ? 's' : ''}`}
-          />
-        </FilterSection>
+
 
         {/* Rating Filter */}
         <FilterSection
@@ -561,56 +522,6 @@ export default function AdvancedSearchFilters({
           />
         </FilterSection>
 
-        {/* Date Range Filter */}
-        <FilterSection
-          title="Date Range"
-          icon={<Calendar className="w-4 h-4" />}
-          isOpen={openSections.date}
-          onToggle={() => toggleSection('date')}
-          badgeCount={filters.dateRange.start || filters.dateRange.end ? 1 : 0}
-        >
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Created after
-              </label>
-              <input
-                type="date"
-                value={filters.dateRange.start || ''}
-                onChange={(e) => updateFilters({
-                  dateRange: { ...filters.dateRange, start: e.target.value || null }
-                })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-green-600 focus:border-green-600"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Created before
-              </label>
-              <input
-                type="date"
-                value={filters.dateRange.end || ''}
-                onChange={(e) => updateFilters({
-                  dateRange: { ...filters.dateRange, end: e.target.value || null }
-                })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-green-600 focus:border-green-600"
-              />
-            </div>
-            
-            {(filters.dateRange.start || filters.dateRange.end) && (
-              <button
-                onClick={() => updateFilters({
-                  dateRange: { start: null, end: null }
-                })}
-                className="text-sm text-purple-700 hover:text-purple-900 flex items-center space-x-1"
-              >
-                <X className="w-3 h-3" />
-                <span>Clear date range</span>
-              </button>
-            )}
-          </div>
-        </FilterSection>
       </div>
 
       {/* Active Filters Summary */}
@@ -704,42 +615,6 @@ export default function AdvancedSearchFilters({
               </span>
             )}
             
-            {(filters.cookTimeRange[0] > (filterOptions?.cookTimeStats.min || 0) || 
-              filters.cookTimeRange[1] < (filterOptions?.cookTimeStats.max || 300)) && (
-              <span className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
-                <span>
-                  {formatCookTime(filters.cookTimeRange[0])}-{formatCookTime(filters.cookTimeRange[1])}
-                </span>
-                <button
-                  onClick={() => updateFilters({ 
-                    cookTimeRange: [filterOptions?.cookTimeStats.min || 0, filterOptions?.cookTimeStats.max || 300] 
-                  })}
-                  className="hover:text-green-900 transition-colors"
-                  aria-label="Remove cook time filter"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            
-            {(filters.servingsRange[0] > (filterOptions?.servingsStats.min || 1) || 
-              filters.servingsRange[1] < (filterOptions?.servingsStats.max || 12)) && (
-              <span className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
-                <span>
-                  {filters.servingsRange[0]}-{filters.servingsRange[1]} servings
-                </span>
-                <button
-                  onClick={() => updateFilters({ 
-                    servingsRange: [filterOptions?.servingsStats.min || 1, filterOptions?.servingsStats.max || 12] 
-                  })}
-                  className="hover:text-green-900 transition-colors"
-                  aria-label="Remove servings filter"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            
             {filters.tastebuddiesOnly && (
               <span className="inline-flex items-center space-x-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
                 <Heart className="w-3 h-3" />
@@ -748,27 +623,6 @@ export default function AdvancedSearchFilters({
                   onClick={() => updateFilters({ tastebuddiesOnly: false })}
                   className="hover:text-blue-900 transition-colors"
                   aria-label="Remove TasteBuddies filter"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            
-            {(filters.dateRange.start || filters.dateRange.end) && (
-              <span className="inline-flex items-center space-x-1 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
-                <span>
-                  {filters.dateRange.start && filters.dateRange.end
-                    ? `${filters.dateRange.start} to ${filters.dateRange.end}`
-                    : filters.dateRange.start
-                    ? `After ${filters.dateRange.start}`
-                    : `Before ${filters.dateRange.end}`}
-                </span>
-                <button
-                  onClick={() => updateFilters({
-                    dateRange: { start: null, end: null }
-                  })}
-                  className="hover:text-gray-900 transition-colors"
-                  aria-label="Remove date range filter"
                 >
                   <X className="w-3 h-3" />
                 </button>
