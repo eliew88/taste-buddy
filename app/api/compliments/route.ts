@@ -84,8 +84,7 @@ export async function GET(request: NextRequest) {
         recipe: {
           select: {
             id: true,
-            title: true,
-            image: true
+            title: true
           }
         }
       },
@@ -254,8 +253,7 @@ export async function POST(request: NextRequest) {
         recipe: {
           select: {
             id: true,
-            title: true,
-            image: true
+            title: true
           }
         }
       }

@@ -270,12 +270,18 @@ export default function HomePage() {
       if (response.ok) {
         const data = await response.json();
         console.log('📊 API Response:', data);
-        const recipesWithImages = data.data.filter((recipe: any) => recipe.image);
+        const recipesWithImages = data.data.filter((recipe: any) => recipe.images && recipe.images.length > 0);
         console.log('🖼️ Recipes with images:', recipesWithImages.length);
-        console.log('📸 Image URLs:', recipesWithImages.map((recipe: any) => recipe.image));
+        console.log('📸 Image URLs:', recipesWithImages.map((recipe: any) => {
+          const primaryImage = recipe.images?.find((img: any) => img.isPrimary) || recipe.images?.[0];
+          return primaryImage?.url;
+        }));
         
         if (recipesWithImages.length > 0) {
-          const dbImages = recipesWithImages.map((recipe: any) => recipe.image);
+          const dbImages = recipesWithImages.map((recipe: any) => {
+            const primaryImage = recipe.images?.find((img: any) => img.isPrimary) || recipe.images?.[0];
+            return primaryImage?.url;
+          }).filter(Boolean);
           const allImages = [...dbImages, ...FALLBACK_HERO_IMAGES];
           console.log('✅ Setting hero images:', allImages);
           setHeroImages(allImages);

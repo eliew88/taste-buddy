@@ -93,8 +93,7 @@ export async function PUT(
         recipe: {
           select: {
             id: true,
-            title: true,
-            image: true
+            title: true
           }
         }
       }

@@ -138,10 +138,7 @@ export interface UpdateRecipeImageData {
     /** Array of tags for categorization (e.g., ["dessert", "chocolate"]) */
     tags: string[];
     
-    /** URL to recipe image (optional - legacy field) */
-    image?: string;
-    
-    /** Array of recipe images (new multiple images system) */
+    /** Array of recipe images */
     images?: RecipeImage[];
     
     /** ID of the user who created this recipe */
@@ -185,8 +182,7 @@ export interface UpdateRecipeImageData {
     servings?: number;
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
-    image?: string; // Legacy field for backward compatibility
-    images?: CreateRecipeImageData[]; // New multiple images field
+    images?: CreateRecipeImageData[]; // Multiple images field
   }
 
   /**
@@ -202,8 +198,7 @@ export interface UpdateRecipeImageData {
     servings?: number;
     difficulty?: 'easy' | 'medium' | 'hard';
     tags?: string[];
-    image?: string; // Legacy field for backward compatibility
-    images?: CreateRecipeImageData[]; // New multiple images field
+    images?: CreateRecipeImageData[]; // Multiple images field
   }
   
   /**

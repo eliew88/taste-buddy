@@ -27,8 +27,6 @@ interface RecipeImageGalleryProps {
   images?: RecipeImage[];
   /** Recipe title for alt text */
   recipeTitle: string;
-  /** Legacy single image URL (fallback) */
-  legacyImage?: string;
   /** Optional CSS class */
   className?: string;
 }
@@ -142,13 +140,12 @@ const ImageModal: React.FC<ImageModalProps> = ({
 export default function RecipeImageGallery({
   images = [],
   recipeTitle,
-  legacyImage,
   className = ''
 }: RecipeImageGalleryProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Prepare images array with fallback to legacy image
+  // Prepare images array
   const displayImages = React.useMemo(() => {
     if (images && images.length > 0) {
       // Sort images by display order and primary status
@@ -157,16 +154,9 @@ export default function RecipeImageGallery({
         if (!a.isPrimary && b.isPrimary) return 1;
         return a.displayOrder - b.displayOrder;
       });
-    } else if (legacyImage) {
-      // Fallback to legacy single image
-      return [{
-        url: legacyImage,
-        alt: `${recipeTitle} recipe image`,
-        caption: undefined
-      }];
     }
     return [];
-  }, [images, legacyImage, recipeTitle]);
+  }, [images, recipeTitle]);
 
   const openModal = (index: number) => {
     setCurrentImageIndex(index);
@@ -187,7 +177,6 @@ export default function RecipeImageGallery({
       <div className="text-center py-8 text-gray-500">
         <p>No images to display</p>
         <p className="text-sm">Images: {JSON.stringify(images?.map(i => i.url) || [])}</p>
-        <p className="text-sm">Legacy: {legacyImage}</p>
       </div>
     );
   }

@@ -164,7 +164,6 @@ export async function PUT(
       servings, 
       difficulty, 
       tags,
-      image,
       images
     } = body;
 
@@ -247,14 +246,6 @@ export async function PUT(
       updateData.tags = Array.isArray(tags) ? tags : [];
     }
 
-    // Handle image updates
-    if (image !== undefined) {
-      // If new image is provided, delete old image (if it's a local image)
-      if (image && existingRecipe.image && existingRecipe.image !== image) {
-        await deleteRecipeImage(existingRecipe.image);
-      }
-      updateData.image = image || null;
-    }
 
     // Handle multiple images updates (handled separately like ingredients)
     let shouldUpdateImages = false;
@@ -542,10 +533,6 @@ export async function DELETE(
       );
     }
 
-    // Delete associated image file if it exists
-    if (existingRecipe.image) {
-      await deleteRecipeImage(existingRecipe.image);
-    }
 
     // Delete recipe (this will also delete related favorites and ratings due to CASCADE)
     await prisma.recipe.delete({

@@ -452,7 +452,7 @@ export default function RecipeDetailPage() {
               backgroundImage: (() => {
                 // Get primary image from images array, or first image if no primary
                 const primaryImage = recipe.images?.find(img => img.isPrimary) || recipe.images?.[0];
-                const imageUrl = primaryImage?.url || recipe.image;
+                const imageUrl = primaryImage?.url;
                 
                 return imageUrl && getOptimizedImageUrl(imageUrl)
                   ? `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${getOptimizedImageUrl(imageUrl)})`
@@ -752,7 +752,6 @@ export default function RecipeDetailPage() {
           <RecipeImageGallery
             images={recipe.images || []}
             recipeTitle={recipe.title}
-            legacyImage={recipe.image}
             className="w-full"
           />
         </div>
@@ -780,8 +779,7 @@ export default function RecipeDetailPage() {
         toUserName={recipe.author.name}
         recipe={{
           id: recipe.id,
-          title: recipe.title,
-          image: recipe.image
+          title: recipe.title
         }}
         onComplimentSent={() => {
           // Could add a success notification here

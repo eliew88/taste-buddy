@@ -42,7 +42,6 @@ interface ComplimentFormProps {
   recipe?: {
     id: string;
     title: string;
-    image?: string;
   };
   /** Callback when compliment is successfully sent */
   onComplimentSent?: () => void;

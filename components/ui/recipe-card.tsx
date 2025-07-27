@@ -155,9 +155,9 @@ import Avatar from '@/components/ui/avatar';
        <Link href={`/recipes/${recipe.id}`} className="block">
          <div className="h-48 bg-gray-200 overflow-hidden relative group cursor-pointer">
            {(() => {
-             // Get primary image from images array, or first image if no primary, fallback to legacy image
+             // Get primary image from images array, or first image if no primary
              const primaryImage = recipe.images?.find(img => img.isPrimary) || recipe.images?.[0];
-             const imageUrl = primaryImage?.url || recipe.image;
+             const imageUrl = primaryImage?.url;
              
              return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
                <img 

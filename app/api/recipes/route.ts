@@ -35,7 +35,9 @@ export async function GET(request: NextRequest) {
 
     // For featured recipes, only get recipes with images
     if (featured) {
-      where.image = { not: null };
+      where.images = {
+        some: {}
+      };
     }
 
     // Fetch recipes with rating aggregation
@@ -116,7 +118,6 @@ export async function POST(request: NextRequest) {
       servings, 
       difficulty, 
       tags,
-      image,
       images
     } = body;
     
@@ -129,7 +130,6 @@ export async function POST(request: NextRequest) {
       servings,
       difficulty,
       tagsCount: Array.isArray(tags) ? tags.length : 'not array',
-      hasImage: !!image,
       imagesCount: Array.isArray(images) ? images.length : 'not array'
     });
     console.log('Full request body for debugging:', JSON.stringify(body, null, 2));
@@ -237,7 +237,6 @@ export async function POST(request: NextRequest) {
       servings: servings ? Math.max(1, parseInt(servings)) : null,
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
       tags: Array.isArray(tags) ? tags : [],
-      image: image?.trim() || null,
       authorId: userId,
       ingredients: {
         create: ingredients.map((ingredient: any, index: number) => {
@@ -261,7 +260,6 @@ export async function POST(request: NextRequest) {
       ingredientsCount: recipeData.ingredients.create.length,
       hasInstructions: !!recipeData.instructions,
       authorId: recipeData.authorId,
-      hasImage: !!recipeData.image,
       imagesCount: imagesData ? imagesData.create.length : 0
     });
 

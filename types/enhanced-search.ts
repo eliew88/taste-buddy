@@ -199,7 +199,6 @@ export interface Recipe {
   servings?: number;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
-  image?: string;
   authorId: string;
   author: {
     id: string;
