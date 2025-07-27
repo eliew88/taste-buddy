@@ -689,7 +689,7 @@ export default function RecipeDetailPage() {
               <div className="bg-blue-100 rounded-lg p-6 shadow-sm">
                 <div className="prose max-w-none">
                   {recipe.instructions.split('\n').map((step, index) => (
-                    <p key={index} className="mb-4 leading-relaxed">
+                    <p key={index} className="mb-4 leading-relaxed text-gray-800">
                       {step.trim() && step.trim()}
                     </p>
                   ))}
