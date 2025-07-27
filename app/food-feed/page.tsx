@@ -9,7 +9,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Recipe } from '@/types/recipe';
 import { 
@@ -165,7 +165,7 @@ const Pagination: React.FC<PaginationProps> = ({
 /**
  * Main FoodFeed Page Component
  */
-export default function FoodFeedPage() {
+function FoodFeedPageContent() {
   // Next.js hooks
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -903,5 +903,20 @@ export default function FoodFeedPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function FoodFeedPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen">
+        <Navigation />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        </div>
+      </div>
+    }>
+      <FoodFeedPageContent />
+    </Suspense>
   );
 }
