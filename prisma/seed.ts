@@ -43,6 +43,54 @@ async function createSampleUsers() {
 }
 
 /**
+ * Sample meals for the meal journal feature
+ */
+const sampleMeals = [
+  {
+    id: 'meal1',
+    name: 'Saturday Morning Pancakes',
+    description: 'Made these fluffy pancakes for the family this weekend. Used fresh blueberries from the farmers market and real maple syrup. The kids absolutely loved them! Perfect way to start a lazy Saturday.',
+    date: new Date('2024-01-20'),
+    authorId: 'user1',
+  },
+  {
+    id: 'meal2',
+    name: 'Homemade Pizza Night',
+    description: 'Pizza night with the family! Made the dough from scratch and let everyone choose their own toppings. Sarah went with pepperoni, Mike chose veggie supreme, and I did a classic margherita. Such a fun evening!',
+    date: new Date('2024-01-15'),
+    authorId: 'user2',
+  },
+  {
+    id: 'meal3',
+    name: 'Thai Green Curry',
+    description: 'Tried making Thai green curry for the first time using that recipe I found online. It turned out amazing! The balance of spices was perfect and the coconut milk made it so creamy. Definitely making this again.',
+    date: new Date('2024-01-10'),
+    authorId: 'user3',
+  },
+  {
+    id: 'meal4',
+    name: 'Grilled Salmon with Vegetables',
+    description: 'Beautiful dinner tonight. Grilled some fresh salmon with asparagus and bell peppers. Simple seasoning with lemon, herbs, and olive oil. Healthy and delicious!',
+    date: new Date('2024-01-18'),
+    authorId: 'user1',
+  },
+  {
+    id: 'meal5',
+    name: 'Chocolate Birthday Cake',
+    description: 'Made this chocolate cake for my daughter\'s birthday. Three layers with chocolate buttercream frosting. Took me all afternoon but the look on her face was worth it. She said it was the best cake ever!',
+    date: new Date('2024-01-12'),
+    authorId: 'user2',
+  },
+  {
+    id: 'meal6',
+    name: 'Sunday Brunch Spread',
+    description: 'Had friends over for brunch today. Made eggs benedict, fresh fruit salad, and mimosas. Love hosting these casual get-togethers. Good food, good friends, perfect Sunday.',
+    date: new Date('2024-01-14'),
+    authorId: 'user3',
+  }
+];
+
+/**
  * Sample recipes with realistic data
  */
 const sampleRecipes = [
@@ -84,7 +132,6 @@ const sampleRecipes = [
     servings: 36,
     difficulty: 'easy',
     tags: ['dessert', 'cookies', 'chocolate', 'baking', 'family-friendly'],
-    image: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user1',
   },
   {
@@ -124,7 +171,6 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'medium',
     tags: ['dinner', 'pasta', 'chicken', 'italian', 'creamy'],
-    image: 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user2',
   },
   {
@@ -170,7 +216,6 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'medium',
     tags: ['asian', 'curry', 'spicy', 'thai', 'coconut', 'dinner'],
-    image: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user3',
   },
   {
@@ -209,7 +254,6 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'easy',
     tags: ['breakfast', 'pancakes', 'weekend', 'family-friendly', 'quick'],
-    image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user1',
   },
   {
@@ -254,7 +298,6 @@ const sampleRecipes = [
     servings: 4,
     difficulty: 'easy',
     tags: ['healthy', 'mediterranean', 'vegetarian', 'quinoa', 'lunch', 'meal-prep'],
-    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
     authorId: 'user2',
   },
 ];
@@ -354,6 +397,15 @@ async function main() {
       console.log(`   ✓ Created recipe: ${recipe.title}`);
     }
 
+    // Seed sample meals
+    console.log('🍽️  Seeding sample meals...');
+    for (const meal of sampleMeals) {
+      await prisma.meal.create({
+        data: meal
+      });
+      console.log(`   ✓ Created meal: ${meal.name}`);
+    }
+
     // Seed achievements
     console.log('🏆 Seeding achievements...');
     const achievementSuccess = await seedAchievements();
@@ -362,7 +414,7 @@ async function main() {
     }
 
     console.log('✅ Database seeding completed successfully!');
-    console.log(`📊 Created ${sampleUsers.length} users and ${sampleRecipes.length} recipes`);
+    console.log(`📊 Created ${sampleUsers.length} users, ${sampleRecipes.length} recipes, and ${sampleMeals.length} meals`);
     
   } catch (error) {
     console.error('❌ Error during seeding:', error);

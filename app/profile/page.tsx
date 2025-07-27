@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X, Eye, EyeOff, Users } from 'lucide-react';
+import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X, Eye, EyeOff, Users, BookOpen } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -512,7 +512,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <Link
             href="/recipes/new"
             className="bg-green-700 text-white p-4 rounded-lg hover:bg-green-800 transition-colors flex items-center space-x-3"
@@ -521,11 +521,25 @@ export default function ProfilePage() {
             <span className="font-medium">Add New Recipe</span>
           </Link>
           <Link
+            href="/meals/new"
+            className="bg-orange-600 text-white p-4 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-3"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Add New Meal</span>
+          </Link>
+          <Link
             href="/profile/favorites"
             className="bg-white border border-gray-200 text-gray-700 p-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-3"
           >
             <Heart className="w-5 h-5" />
             <span className="font-medium">My Favorites</span>
+          </Link>
+          <Link
+            href="/profile/meals"
+            className="bg-white border border-gray-200 text-gray-700 p-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-3"
+          >
+            <BookOpen className="w-5 h-5" />
+            <span className="font-medium">Meal Journal</span>
           </Link>
           <Link
             href="/food-feed"

@@ -12,6 +12,8 @@ interface UseMultipleImageUploadOptions {
   initialImages?: CreateRecipeImageData[];
   /** Maximum number of images */
   maxImages?: number;
+  /** Upload endpoint (defaults to recipe-image) */
+  uploadEndpoint?: string;
 }
 
 interface UseMultipleImageUploadReturn {
@@ -41,7 +43,8 @@ interface UseMultipleImageUploadReturn {
 
 export function useMultipleImageUpload({
   initialImages = [],
-  maxImages = 5
+  maxImages = 5,
+  uploadEndpoint = '/api/upload/recipe-image'
 }: UseMultipleImageUploadOptions = {}): UseMultipleImageUploadReturn {
   const [images, setImages] = useState<CreateRecipeImageData[]>(initialImages);
 
@@ -114,7 +117,7 @@ export function useMultipleImageUpload({
     const formData = new FormData();
     formData.append('image', file); // Use 'image' key to match API expectation
 
-    const response = await fetch('/api/upload/recipe-image', {
+    const response = await fetch(uploadEndpoint, {
       method: 'POST',
       body: formData,
     });
@@ -131,7 +134,7 @@ export function useMultipleImageUpload({
     }
 
     return data.data.url;
-  }, []);
+  }, [uploadEndpoint]);
 
   const canAddMore = images.length < maxImages;
   const primaryImage = images.find(img => img.isPrimary) || images[0];

@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn } from 'lucide-react';
+import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn, BookOpen } from 'lucide-react';
 import { NotificationBell } from './notification-bell';
 import Avatar from '@/components/ui/avatar';
 
@@ -119,6 +119,15 @@ export default function Navigation() {
                   Favorites
                 </Link>
                 
+                <Link 
+                  href="/profile/meals" 
+                  className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/meals')}`}
+                  aria-current={isActiveLink('/profile/meals') ? 'page' : undefined}
+                >
+                  <BookOpen className="w-4 h-4 mr-1" />
+                  Meal Journal
+                </Link>
+                
                 {/* Primary CTA Button */}
                 <Link 
                   href="/recipes/new" 
@@ -223,6 +232,16 @@ export default function Navigation() {
                   >
                     <Heart className="w-4 h-4 mr-2" />
                     Favorites
+                  </Link>
+                  
+                  <Link
+                    href="/profile/meals"
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/meals')}`}
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Meal Journal
                   </Link>
                   
                   <Link

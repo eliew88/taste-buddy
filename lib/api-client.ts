@@ -11,6 +11,7 @@
 
 // lib/api-client.ts
 import { Recipe, CreateRecipeData, UpdateRecipeData } from '@/types/recipe';
+import { Meal, CreateMealData, UpdateMealData, MealListResponse, MealFilters } from '@/types/meal';
 
 /**
  * Standard API response wrapper interface
@@ -264,6 +265,127 @@ class ApiClient {
     });
   }
 
+  // ==================== MEAL ENDPOINTS ====================
+
+  /**
+   * Fetches a list of meals for the current user with optional filtering and pagination
+   * 
+   * @param params - Search and pagination parameters
+   * @param params.search - Text to search for in meal names and descriptions
+   * @param params.dateFrom - Filter meals from this date onwards
+   * @param params.dateTo - Filter meals up to this date
+   * @param params.page - Page number (default: 1)
+   * @param params.limit - Results per page (default: 12, max: 50)
+   * @returns Promise resolving to meal list with pagination metadata
+   * 
+   * @example
+   * ```typescript
+   * // Get first page of all user's meals
+   * const allMeals = await client.getMeals();
+   * 
+   * // Search for meals containing "pasta"
+   * const pastaMeals = await client.getMeals({ search: 'pasta' });
+   * 
+   * // Get meals from the past week
+   * const recentMeals = await client.getMeals({ 
+   *   dateFrom: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
+   * });
+   * ```
+   */
+  async getMeals(params: MealFilters = {}): Promise<MealListResponse> {
+    const searchParams = new URLSearchParams();
+    
+    if (params.search) searchParams.append('search', params.search);
+    if (params.dateFrom) searchParams.append('dateFrom', params.dateFrom.toISOString());
+    if (params.dateTo) searchParams.append('dateTo', params.dateTo.toISOString());
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+
+    const queryString = searchParams.toString();
+    const endpoint = `/meals${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request<MealListResponse>(endpoint);
+  }
+
+  /**
+   * Fetches a single meal by its ID
+   * 
+   * @param id - The unique meal identifier
+   * @returns Promise resolving to the meal data
+   * 
+   * @example
+   * ```typescript
+   * const meal = await client.getMeal('meal-123');
+   * if (meal.success) {
+   *   console.log(meal.data.name);
+   * }
+   * ```
+   */
+  async getMeal(id: string): Promise<ApiResponse<Meal>> {
+    return this.request<ApiResponse<Meal>>(`/meals/${id}`);
+  }
+
+  /**
+   * Creates a new meal
+   * 
+   * @param data - The meal data to create
+   * @returns Promise resolving to the created meal
+   * 
+   * @example
+   * ```typescript
+   * const newMeal = await client.createMeal({
+   *   name: 'Delicious Pasta',
+   *   description: 'Had this amazing pasta for dinner',
+   *   date: new Date(),
+   *   images: [...]
+   * });
+   * ```
+   */
+  async createMeal(data: CreateMealData): Promise<ApiResponse<Meal>> {
+    return this.request<ApiResponse<Meal>>('/meals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Updates an existing meal
+   * 
+   * @param id - The meal ID to update
+   * @param data - Partial meal data to update
+   * @returns Promise resolving to the updated meal
+   * 
+   * @example
+   * ```typescript
+   * const updated = await client.updateMeal('meal-123', {
+   *   name: 'Updated Meal Name'
+   * });
+   * ```
+   */
+  async updateMeal(id: string, data: UpdateMealData): Promise<ApiResponse<Meal>> {
+    return this.request<ApiResponse<Meal>>(`/meals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Deletes a meal by ID
+   * 
+   * @param id - The meal ID to delete
+   * @returns Promise resolving when deletion is complete
+   * 
+   * @example
+   * ```typescript
+   * await client.deleteMeal('meal-123');
+   * ```
+   */
+  async deleteMeal(id: string): Promise<ApiResponse<void>> {
+    return this.request<ApiResponse<void>>(`/meals/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // ==================== RATING ENDPOINTS ====================
 
   /**
@@ -392,6 +514,11 @@ export const {
   createRecipe,
   updateRecipe,
   deleteRecipe,
+  getMeals,
+  getMeal,
+  createMeal,
+  updateMeal,
+  deleteMeal,
   rateRecipe,
   toggleFavorite,
   getFavorites,
