@@ -83,7 +83,7 @@ export default function Navigation() {
             aria-label="TasteBuddy Home"
           >
             <div className="flex items-center space-x-2">
-              <span className="text-3xl">👅</span>
+              <span className="text-3xl">🍲</span>
               <span>TasteBuddy</span>
             </div>
           </Link>
