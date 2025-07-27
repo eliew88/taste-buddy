@@ -5,8 +5,7 @@ import {
   useStripe, 
   useElements, 
   PaymentElement,
-  PaymentRequestButtonElement,
-  PaymentRequestPaymentMethodEvent
+  PaymentRequestButtonElement
 } from '@stripe/react-stripe-js';
 import { CreditCard, Smartphone, Loader2 } from 'lucide-react';
 
@@ -58,7 +57,7 @@ export default function PaymentForm({
     });
 
     // Handle express payment method selection
-    pr.on('paymentmethod', async (ev: PaymentRequestPaymentMethodEvent) => {
+    pr.on('paymentmethod', async (ev: any) => {
       try {
         setLoading(true);
         
