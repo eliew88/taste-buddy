@@ -29,7 +29,7 @@ import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
-import { getDailyQuoteForDisplay } from '@/lib/quotes';
+import { getDailyHeroContent } from '@/lib/daily-content';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -57,9 +57,10 @@ const HeroSection = ({
   searchLoading: boolean;
   heroImages?: string[];
 }) => {
-  // Use deterministic daily quote and first image to prevent hydration mismatch
-  const heroQuote = getDailyQuoteForDisplay();
-  const selectedImage = heroImages && heroImages.length > 0 ? heroImages[0] : null;
+  // Use deterministic daily content to prevent hydration mismatch
+  const dailyContent = getDailyHeroContent(heroImages);
+  const heroQuote = dailyContent.quote;
+  const selectedImage = dailyContent.image;
   
   console.log('🎨 HeroSection rendering with images:', heroImages);
   
