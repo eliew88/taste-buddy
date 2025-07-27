@@ -29,7 +29,7 @@ import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
-import { getRandomFormattedQuote } from '@/lib/quotes';
+import { getRandomQuoteForDisplay } from '@/lib/quotes';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -58,7 +58,7 @@ const HeroSection = ({
   heroImages?: string[];
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [heroQuote, setHeroQuote] = useState<string>('');
+  const [heroQuote, setHeroQuote] = useState<{ text: string; author: string }>({ text: '', author: '' });
   
   // Select random image and quote on client side only
   useEffect(() => {
@@ -67,8 +67,8 @@ const HeroSection = ({
       setSelectedImage(randomImage);
     }
     
-    // Set random quote
-    const quote = getRandomFormattedQuote(false); // Don't include author for cleaner look
+    // Set random quote with author
+    const quote = getRandomQuoteForDisplay();
     setHeroQuote(quote);
   }, [heroImages]);
   
@@ -94,12 +94,21 @@ const HeroSection = ({
       {/* Content */}
       <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
         {/* Hero Text */}
-        <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-8 font-serif italic" style={{
-          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
-          WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
-        }}>
-          {heroQuote || 'Discover, cook, and share amazing recipes!'}
-        </h1>
+        <div className="mb-8">
+          <h1 className="text-4xl md:text-6xl font-bold text-purple-300 mb-4 font-serif italic" style={{
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
+            WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
+          }}>
+            {heroQuote.text || '"Discover, cook, and share amazing recipes!"'}
+          </h1>
+          {heroQuote.author && (
+            <p className="text-xl md:text-2xl text-purple-200 font-medium" style={{
+              textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
+            }}>
+              — {heroQuote.author}
+            </p>
+          )}
+        </div>
         
         {/* Search Section */}
         <div className="max-w-2xl mx-auto space-y-6">

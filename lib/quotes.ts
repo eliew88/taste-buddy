@@ -48,6 +48,18 @@ export function getRandomFormattedQuote(includeAuthor: boolean = false): string 
 }
 
 /**
+ * Gets a random quote with formatted text (always in quotes) and separate author
+ * @returns Object with formatted quote text and author
+ */
+export function getRandomQuoteForDisplay(): { text: string; author: string } {
+  const quote = getRandomFoodQuote();
+  return {
+    text: `"${quote.text}"`,
+    author: quote.author
+  };
+}
+
+/**
  * Gets all available quotes (useful for testing or admin purposes)
  * @returns Array of all FoodQuote objects
  */
