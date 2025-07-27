@@ -157,6 +157,41 @@ export const ACHIEVEMENT_CRITERIA = {
     }
   },
 
+  // Meal count achievements
+  MEAL_COUNT: {
+    evaluate: async (userId: string) => {
+      const count = await prisma.meal.count({
+        where: { authorId: userId }
+      });
+      return count;
+    }
+  },
+
+  // Photo count achievements (across recipes and meals)
+  PHOTO_COUNT: {
+    evaluate: async (userId: string) => {
+      // Count recipe images
+      const recipeImageCount = await prisma.recipeImage.count({
+        where: {
+          recipe: {
+            authorId: userId
+          }
+        }
+      });
+
+      // Count meal images
+      const mealImageCount = await prisma.mealImage.count({
+        where: {
+          meal: {
+            authorId: userId
+          }
+        }
+      });
+
+      return recipeImageCount + mealImageCount;
+    }
+  },
+
   // Ingredient achievements
   INGREDIENTS_COUNT: {
     evaluate: async (userId: string) => {

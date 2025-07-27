@@ -7,6 +7,7 @@ export interface RecipeStats {
   highestRated: (Recipe & { avgRating: number })[];
   platformStats: {
     totalRecipes: number;
+    totalMeals: number;
     totalUsers: number;
     totalFavorites: number;
     totalRatings: number;

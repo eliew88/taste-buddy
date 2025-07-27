@@ -10,6 +10,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Recipe } from '@/types/recipe';
 import { 
   Search, 
@@ -28,13 +29,17 @@ import {
 import Navigation from '@/components/ui/Navigation';
 import AdvancedSearchFilters from '@/components/ui/advanced-search-filters';
 import RecipeCard from '@/components/ui/recipe-card';
+import MealCard from '@/components/ui/meal-card';
 import { useFavorites } from '@/hooks/use-favorites';
+import { Meal } from '@/types/meal';
+import apiClient from '@/lib/api-client';
 
 /**
  * Type definitions
  */
 type SortOption = 'newest' | 'oldest' | 'popular' | 'rating' | 'title' | 'cookTime' | 'difficulty';
 type ViewMode = 'grid' | 'list';
+type ContentType = 'recipes' | 'meals';
 
 interface SearchFilters {
   difficulty: string[];
@@ -49,6 +54,10 @@ interface SearchFilters {
     start: string | null;
     end: string | null;
   };
+}
+
+interface MealFilters {
+  tastebuddiesOnly: boolean;
 }
 
 /**
@@ -67,6 +76,10 @@ const defaultFilters: SearchFilters = {
     start: null,
     end: null,
   },
+};
+
+const defaultMealFilters: MealFilters = {
+  tastebuddiesOnly: false,
 };
 
 /**
@@ -153,6 +166,10 @@ const Pagination: React.FC<PaginationProps> = ({
  * Main FoodFeed Page Component
  */
 export default function FoodFeedPage() {
+  // Next.js hooks
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   // Favorites hook
   const { isFavorited, toggleFavorite } = useFavorites();
   
@@ -161,10 +178,15 @@ export default function FoodFeedPage() {
     await toggleFavorite(recipeId);
   };
 
-  // State management
+  // State management  
+  const [contentType, setContentType] = useState<ContentType>(() => {
+    const type = searchParams.get('type');
+    return (type === 'meals' || type === 'recipes') ? type : 'recipes';
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [localQuery, setLocalQuery] = useState('');
   const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
+  const [mealFilters, setMealFilters] = useState<MealFilters>(defaultMealFilters);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [currentPage, setCurrentPage] = useState(1);
@@ -173,6 +195,7 @@ export default function FoodFeedPage() {
   
   // Data states
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [meals, setMeals] = useState<Meal[]>([]);
   const [searchMeta, setSearchMeta] = useState<{total: number, pages: number, currentPage: number, suggestions?: string[]} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -182,14 +205,18 @@ export default function FoodFeedPage() {
   // Computed values
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filters.difficulty.length > 0) count++;
-    if (filters.ingredients.length > 0) count++;
-    if (filters.excludedIngredients.length > 0) count++;
-    if (filters.tags.length > 0) count++;
-    if (filters.minRating > 0) count++;
-    if (filters.tastebuddiesOnly) count++;
+    if (contentType === 'recipes') {
+      if (filters.difficulty.length > 0) count++;
+      if (filters.ingredients.length > 0) count++;
+      if (filters.excludedIngredients.length > 0) count++;
+      if (filters.tags.length > 0) count++;
+      if (filters.minRating > 0) count++;
+      if (filters.tastebuddiesOnly) count++;
+    } else {
+      if (mealFilters.tastebuddiesOnly) count++;
+    }
     return count;
-  }, [filters]);
+  }, [contentType, filters, mealFilters]);
 
   // Initialize local query
   useEffect(() => {
@@ -304,6 +331,29 @@ export default function FoodFeedPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleContentTypeChange = (newContentType: ContentType) => {
+    setContentType(newContentType);
+    setCurrentPage(1);
+    setError(null);
+    
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('type', newContentType);
+    router.push(`/food-feed?${params.toString()}`);
+    
+    // Clear data from the other content type
+    if (newContentType === 'recipes') {
+      setMeals([]);
+    } else {
+      setRecipes([]);
+    }
+  };
+
+  const handleMealFiltersChange = (newFilters: MealFilters) => {
+    setMealFilters(newFilters);
+    setCurrentPage(1);
+  };
+
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
   };
@@ -399,11 +449,84 @@ export default function FoodFeedPage() {
     }
   };
 
+  const performMealSearch = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiClient.getMeals({
+        search: searchQuery || undefined,
+        page: currentPage,
+        limit: resultsPerPage,
+      });
+      
+      let filteredMeals = response.meals || [];
+      
+      // Apply TasteBuddies filter client-side for now
+      // TODO: Move this filtering to the API level for better performance
+      if (mealFilters.tastebuddiesOnly) {
+        // For now, we'll show all meals since we don't have following data
+        // In a real implementation, this should filter by users that the current user follows
+        filteredMeals = response.meals || []; // Placeholder - would need following user IDs to filter properly
+      }
+      
+      setMeals(filteredMeals);
+      setSearchMeta({
+        total: filteredMeals.length,
+        pages: Math.ceil(filteredMeals.length / (response.limit || resultsPerPage)),
+        currentPage: response.page || 1,
+      });
+      
+    } catch (err) {
+      console.error('Meal search error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch meals');
+      setMeals([]);
+      setSearchMeta(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Trigger search when dependencies change
   useEffect(() => {
-    const searchParams = buildSearchParams();
-    performSearch(searchParams);
-  }, [searchQuery, filters, sortBy, currentPage, resultsPerPage]);
+    if (contentType === 'recipes') {
+      const searchParams = buildSearchParams();
+      performSearch(searchParams);
+    } else {
+      performMealSearch();
+    }
+  }, [contentType, searchQuery, filters, mealFilters, sortBy, currentPage, resultsPerPage]);
+
+  // Refetch data when page becomes visible (user returns from creating content)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        if (contentType === 'recipes') {
+          const searchParams = buildSearchParams();
+          performSearch(searchParams);
+        } else {
+          performMealSearch();
+        }
+      }
+    };
+
+    const handleFocus = () => {
+      if (contentType === 'recipes') {
+        const searchParams = buildSearchParams();
+        performSearch(searchParams);
+      } else {
+        performMealSearch();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [contentType, searchQuery, filters, mealFilters, sortBy, currentPage, resultsPerPage]);
 
   return (
     <div className="min-h-screen">
@@ -414,12 +537,33 @@ export default function FoodFeedPage() {
       <div className="bg-blue-100 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="space-y-6">
-            {/* Page Title and Description */}
+            {/* Page Title */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900">FoodFeed</h1>
-              <p className="text-gray-600 mt-1">
-                Discover amazing recipes with advanced search and filtering
-              </p>
+            </div>
+
+            {/* Content Type Toggle */}
+            <div className="flex items-center space-x-1 bg-white rounded-lg p-1 w-fit">
+              <button
+                onClick={() => handleContentTypeChange('recipes')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  contentType === 'recipes'
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Recipes
+              </button>
+              <button
+                onClick={() => handleContentTypeChange('meals')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  contentType === 'meals'
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Meals
+              </button>
             </div>
             
             {/* Search Bar */}
@@ -430,7 +574,7 @@ export default function FoodFeedPage() {
                   type="text"
                   value={localQuery}
                   onChange={(e) => setLocalQuery(e.target.value)}
-                  placeholder="Search recipes, ingredients, or tags..."
+                  placeholder={contentType === 'recipes' ? "Search recipes, ingredients, or tags..." : "Search meals..."}
                   className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 />
               </div>
@@ -457,14 +601,50 @@ export default function FoodFeedPage() {
           {/* Sidebar Filters - Desktop */}
           <div className="hidden lg:block w-80 flex-shrink-0">
             <div className="sticky top-6">
-              <AdvancedSearchFilters
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                filterOptions={filterOptions}
-                loading={filterOptionsLoading}
-                onResetFilters={handleResetFilters}
-                activeFilterCount={activeFilterCount}
-              />
+              {contentType === 'recipes' ? (
+                <AdvancedSearchFilters
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  filterOptions={filterOptions}
+                  loading={filterOptionsLoading}
+                  onResetFilters={handleResetFilters}
+                  activeFilterCount={activeFilterCount}
+                />
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm border p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                    {activeFilterCount > 0 && (
+                      <button
+                        onClick={() => setMealFilters(defaultMealFilters)}
+                        className="text-sm text-purple-600 hover:text-purple-700"
+                      >
+                        Clear ({activeFilterCount})
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={mealFilters.tastebuddiesOnly}
+                          onChange={(e) => handleMealFiltersChange({
+                            ...mealFilters,
+                            tastebuddiesOnly: e.target.checked
+                          })}
+                          className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                        />
+                        <span className="text-sm text-gray-700">TasteBuddies Only</span>
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Show meals from people you follow
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -477,11 +657,11 @@ export default function FoodFeedPage() {
                 <h2 className="text-lg font-semibold text-gray-900">
                   {searchMeta && searchMeta.total !== undefined ? (
                     <>
-                      {searchMeta.total.toLocaleString()} Recipe{searchMeta.total !== 1 ? 's' : ''}
+                      {searchMeta.total.toLocaleString()} {contentType === 'recipes' ? 'Recipe' : 'Meal'}{searchMeta.total !== 1 ? 's' : ''}
                       {searchQuery && ` for "${searchQuery}"`}
                     </>
                   ) : (
-                    'Recipes'
+                    contentType === 'recipes' ? 'Recipes' : 'Meals'
                   )}
                 </h2>
                 
@@ -542,14 +722,50 @@ export default function FoodFeedPage() {
             {/* Mobile Filters Panel */}
             {filtersOpen && (
               <div className="lg:hidden mb-6 border border-gray-200 rounded-lg bg-white">
-                <AdvancedSearchFilters
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  filterOptions={filterOptions}
-                  loading={filterOptionsLoading}
-                  onResetFilters={handleResetFilters}
-                  activeFilterCount={activeFilterCount}
-                />
+                {contentType === 'recipes' ? (
+                  <AdvancedSearchFilters
+                    filters={filters}
+                    onFiltersChange={handleFiltersChange}
+                    filterOptions={filterOptions}
+                    loading={filterOptionsLoading}
+                    onResetFilters={handleResetFilters}
+                    activeFilterCount={activeFilterCount}
+                  />
+                ) : (
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                      {activeFilterCount > 0 && (
+                        <button
+                          onClick={() => setMealFilters(defaultMealFilters)}
+                          className="text-sm text-purple-600 hover:text-purple-700"
+                        >
+                          Clear ({activeFilterCount})
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={mealFilters.tastebuddiesOnly}
+                            onChange={(e) => handleMealFiltersChange({
+                              ...mealFilters,
+                              tastebuddiesOnly: e.target.checked
+                            })}
+                            className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                          />
+                          <span className="text-sm text-gray-700">TasteBuddies Only</span>
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Show meals from people you follow
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -557,7 +773,7 @@ export default function FoodFeedPage() {
             {loading && (
               <div className="text-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
-                <p className="text-gray-600">Searching for delicious recipes...</p>
+                <p className="text-gray-600">Searching for {contentType === 'recipes' ? 'delicious recipes' : 'amazing meals'}...</p>
               </div>
             )}
 
@@ -568,7 +784,7 @@ export default function FoodFeedPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Search Error</h3>
                 <p className="text-gray-600 mb-4">{error}</p>
                 <button
-                  onClick={() => performSearch()}
+                  onClick={() => contentType === 'recipes' ? performSearch() : performMealSearch()}
                   className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
                 >
                   Try Again
@@ -577,16 +793,20 @@ export default function FoodFeedPage() {
             )}
 
             {/* No Results */}
-            {!loading && !error && recipes.length === 0 && (
+            {!loading && !error && 
+             ((contentType === 'recipes' && recipes.length === 0) || 
+              (contentType === 'meals' && meals.length === 0)) && (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <Search className="w-16 h-16 mx-auto" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No recipes found</h3>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  No {contentType} found
+                </h3>
                 <p className="text-gray-500 mb-6">
                   {searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search criteria or filters."
-                    : "Search for recipes using the search bar above, or try the advanced filters."}
+                    : `Search for ${contentType} using the search bar above${contentType === 'recipes' ? ', or try the advanced filters' : ''}.`}
                 </p>
                 
                 {/* Search Suggestions */}
@@ -606,7 +826,7 @@ export default function FoodFeedPage() {
                 
                 {activeFilterCount > 0 && (
                   <button
-                    onClick={handleResetFilters}
+                    onClick={() => contentType === 'recipes' ? handleResetFilters() : setMealFilters(defaultMealFilters)}
                     className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
                   >
                     Clear all filters
@@ -615,24 +835,36 @@ export default function FoodFeedPage() {
               </div>
             )}
 
-            {/* Recipe Results */}
-            {!loading && !error && recipes.length > 0 && (
+            {/* Results */}
+            {!loading && !error && 
+             ((contentType === 'recipes' && recipes.length > 0) || 
+              (contentType === 'meals' && meals.length > 0)) && (
               <div className="space-y-6">
-                {/* Recipe Grid/List */}
+                {/* Results Grid/List */}
                 <div className={
                   viewMode === 'grid' 
                     ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                     : "space-y-6"
                 }>
-                  {recipes.map((recipe: Recipe) => (
-                    <RecipeCard 
-                      key={recipe.id} 
-                      recipe={recipe}
-                      className={viewMode === 'list' ? 'flex' : ''}
-                      isFavorited={isFavorited(recipe.id)}
-                      onFavoriteToggle={handleFavoriteToggle}
-                    />
-                  ))}
+                  {contentType === 'recipes' 
+                    ? recipes.map((recipe: Recipe) => (
+                        <RecipeCard 
+                          key={recipe.id} 
+                          recipe={recipe}
+                          className={viewMode === 'list' ? 'flex' : ''}
+                          isFavorited={isFavorited(recipe.id)}
+                          onFavoriteToggle={handleFavoriteToggle}
+                        />
+                      ))
+                    : meals.map((meal: Meal) => (
+                        <MealCard 
+                          key={meal.id} 
+                          meal={meal}
+                          className={viewMode === 'list' ? 'flex' : ''}
+                          isListView={viewMode === 'list'}
+                        />
+                      ))
+                  }
                 </div>
 
                 {/* Pagination */}

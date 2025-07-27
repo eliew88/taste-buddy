@@ -304,7 +304,27 @@ class ApiClient {
     const queryString = searchParams.toString();
     const endpoint = `/meals${queryString ? `?${queryString}` : ''}`;
     
-    return this.request<MealListResponse>(endpoint);
+    const response = await this.request<{
+      success: boolean;
+      data: Meal[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPrevPage: boolean;
+      };
+    }>(endpoint);
+    
+    // Transform API response to match MealListResponse interface
+    return {
+      meals: response.data || [],
+      total: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 12,
+      hasMore: response.pagination?.hasNextPage || false,
+    };
   }
 
   /**

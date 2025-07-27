@@ -401,6 +401,8 @@ model Notification {
  */
 enum AchievementType {
   RECIPE_COUNT     // Based on number of recipes posted
+  MEAL_COUNT       // Based on number of meals posted
+  PHOTO_COUNT      // Based on number of photos uploaded
   FAVORITES_COUNT  // Based on total favorites received
   FOLLOWERS_COUNT  // Based on number of followers
   RATINGS_COUNT    // Based on total ratings received

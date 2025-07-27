@@ -9,7 +9,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Utensils, 
@@ -47,6 +47,7 @@ export default function MealJournalPage() {
     handleDateChange,
     handlePageChange,
     clearFilters,
+    refetch,
     resetError
   } = useMealSearch();
   
@@ -63,8 +64,31 @@ export default function MealJournalPage() {
     }
   }, [session, status, router]);
 
+  // Refetch data when page becomes visible (user returns from creating a meal)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && session?.user?.id) {
+        refetch();
+      }
+    };
+
+    const handleFocus = () => {
+      if (session?.user?.id) {
+        refetch();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [session?.user?.id, refetch]);
+
   // Sort meals locally based on sort option
-  const sortedMeals = [...meals].sort((a, b) => {
+  const sortedMeals = [...(meals || [])].sort((a, b) => {
     switch (sortBy) {
       case 'newest':
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -206,10 +230,10 @@ export default function MealJournalPage() {
           <div className="text-center py-16">
             <Utensils className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {meals.length === 0 ? "No meals yet" : "No meals match your filters"}
+              {(meals || []).length === 0 ? "No meals yet" : "No meals match your filters"}
             </h3>
             <p className="text-gray-600 mb-6">
-              {meals.length === 0
+              {(meals || []).length === 0
                 ? "Start capturing your meal memories!"
                 : "Try adjusting your search criteria or clearing the filters."}
             </p>
@@ -224,7 +248,7 @@ export default function MealJournalPage() {
               )}
               <Link
                 href="/meals/new"
-                className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors inline-flex items-center gap-2"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Add Your First Meal

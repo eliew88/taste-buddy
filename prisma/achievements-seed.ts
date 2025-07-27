@@ -41,6 +41,82 @@ export const ACHIEVEMENT_DEFINITIONS = [
     isActive: true
   },
 
+  // Meal Count Achievements
+  {
+    type: AchievementType.MEAL_COUNT,
+    name: 'First Meal Memory',
+    description: 'Share your very first meal memory with the community',
+    icon: '🍽️',
+    color: '#06B6D4', // cyan-500
+    threshold: 1,
+    isActive: true
+  },
+  {
+    type: AchievementType.MEAL_COUNT,
+    name: 'Meal Enthusiast',
+    description: 'Share 5 delicious meal memories',
+    icon: '🥘',
+    color: '#06B6D4', // cyan-500
+    threshold: 5,
+    isActive: true
+  },
+  {
+    type: AchievementType.MEAL_COUNT,
+    name: 'Meal Chronicler',
+    description: 'Share 10 wonderful meal experiences',
+    icon: '📸',
+    color: '#0EA5E9', // sky-500
+    threshold: 10,
+    isActive: true
+  },
+  {
+    type: AchievementType.MEAL_COUNT,
+    name: 'Memory Keeper',
+    description: 'Share 25 amazing meal memories',
+    icon: '🏆',
+    color: '#F59E0B', // yellow-500
+    threshold: 25,
+    isActive: true
+  },
+  {
+    type: AchievementType.MEAL_COUNT,
+    name: 'Meal Master',
+    description: 'Share 50 incredible meal memories - you\'re a true foodie!',
+    icon: '👑',
+    color: '#8B5CF6', // purple-500
+    threshold: 50,
+    isActive: true
+  },
+
+  // Photo Count Achievements
+  {
+    type: AchievementType.PHOTO_COUNT,
+    name: 'Snap Happy',
+    description: 'Upload your first photo to share your culinary journey',
+    icon: '📷',
+    color: '#10B981', // green-500
+    threshold: 1,
+    isActive: true
+  },
+  {
+    type: AchievementType.PHOTO_COUNT,
+    name: 'Food Photographer',
+    description: 'Upload 10 beautiful food photos',
+    icon: '📸',
+    color: '#F59E0B', // yellow-500
+    threshold: 10,
+    isActive: true
+  },
+  {
+    type: AchievementType.PHOTO_COUNT,
+    name: 'Visual Storyteller',
+    description: 'Upload 50 stunning food photos - your gallery is amazing!',
+    icon: '🎨',
+    color: '#8B5CF6', // purple-500
+    threshold: 50,
+    isActive: true
+  },
+
   // Popularity Achievements (Favorites)
   {
     type: AchievementType.FAVORITES_COUNT,
@@ -196,6 +272,41 @@ export const ACHIEVEMENT_CRITERIA = {
         where: { authorId: userId }
       });
       return count;
+    }
+  },
+
+  // Meal count achievements
+  MEAL_COUNT: {
+    evaluate: async (userId: string) => {
+      const count = await prisma.meal.count({
+        where: { authorId: userId }
+      });
+      return count;
+    }
+  },
+
+  // Photo count achievements (across recipes and meals)
+  PHOTO_COUNT: {
+    evaluate: async (userId: string) => {
+      // Count recipe images
+      const recipeImageCount = await prisma.recipeImage.count({
+        where: {
+          recipe: {
+            authorId: userId
+          }
+        }
+      });
+
+      // Count meal images
+      const mealImageCount = await prisma.mealImage.count({
+        where: {
+          meal: {
+            authorId: userId
+          }
+        }
+      });
+
+      return recipeImageCount + mealImageCount;
     }
   },
 

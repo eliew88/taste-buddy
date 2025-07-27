@@ -176,12 +176,13 @@ export async function GET(req: NextRequest) {
     // Get platform statistics
     const platformStats = await prisma.$transaction([
       prisma.recipe.count(),
+      prisma.meal.count(),
       prisma.user.count(),
       prisma.favorite.count(),
       prisma.rating.count()
     ]);
 
-    const [totalRecipes, totalUsers, totalFavorites, totalRatings] = platformStats;
+    const [totalRecipes, totalMeals, totalUsers, totalFavorites, totalRatings] = platformStats;
 
     // Get trending tags (most used in recent recipes)
     const trendingTags = await prisma.recipe.findMany({
@@ -216,6 +217,7 @@ export async function GET(req: NextRequest) {
         highestRated: recipesWithAvgRating,
         platformStats: {
           totalRecipes,
+          totalMeals,
           totalUsers,
           totalFavorites,
           totalRatings

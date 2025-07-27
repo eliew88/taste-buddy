@@ -110,6 +110,18 @@ export async function POST(
             console.log(`Achievement ${achievement.name}: progress=${progress}, threshold=${achievement.threshold}, earned=${earned}`);
             break;
 
+          case 'MEAL_COUNT':
+            progress = await ACHIEVEMENT_CRITERIA.MEAL_COUNT.evaluate(userId);
+            earned = achievement.threshold ? progress >= achievement.threshold : false;
+            console.log(`Achievement ${achievement.name}: progress=${progress}, threshold=${achievement.threshold}, earned=${earned}`);
+            break;
+
+          case 'PHOTO_COUNT':
+            progress = await ACHIEVEMENT_CRITERIA.PHOTO_COUNT.evaluate(userId);
+            earned = achievement.threshold ? progress >= achievement.threshold : false;
+            console.log(`Achievement ${achievement.name}: progress=${progress}, threshold=${achievement.threshold}, earned=${earned}`);
+            break;
+
           case 'RATINGS_COUNT':
             if (achievement.name === '5-Star Chef') {
               progress = await ACHIEVEMENT_CRITERIA.RATINGS_COUNT['5-Star Chef'](userId);

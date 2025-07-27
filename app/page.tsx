@@ -28,8 +28,11 @@ import {
 import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
+import MealCard from '@/components/ui/meal-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
 import { getDailyHeroContent } from '@/lib/daily-content';
+import apiClient from '@/lib/api-client';
+import { Meal } from '@/types/meal';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -316,18 +319,23 @@ export default function HomePage() {
     refetch,
   } = useRecipeSearch();
 
-  // For featured recipes (no filters), we want top 9 without pagination
+  // For featured recipes (no filters), we want top 6 without pagination
   const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([]);
   const [featuredLoading, setFeaturedLoading] = useState(false);
   const [featuredError, setFeaturedError] = useState<string | null>(null);
 
-  // Fetch top 9 featured recipes when no filters are active
+  // For recent meals from all users
+  const [recentMeals, setRecentMeals] = useState<Meal[]>([]);
+  const [mealsLoading, setMealsLoading] = useState(false);
+  const [mealsError, setMealsError] = useState<string | null>(null);
+
+  // Fetch top 6 featured recipes when no filters are active
   const fetchFeaturedRecipes = useCallback(async () => {
     try {
       setFeaturedLoading(true);
       setFeaturedError(null);
       
-      const response = await fetch('/api/recipes?limit=9&featured=true');
+      const response = await fetch('/api/recipes?limit=6&featured=true');
       const data = await response.json();
       
       if (data.success) {
@@ -345,15 +353,40 @@ export default function HomePage() {
     }
   }, []);
 
+  // Fetch 6 most recent meals from all users
+  const fetchRecentMeals = useCallback(async () => {
+    try {
+      setMealsLoading(true);
+      setMealsError(null);
+      
+      const response = await fetch('/api/meals/recent?limit=6');
+      const data = await response.json();
+      
+      if (data.success) {
+        setRecentMeals(data.data || []);
+      } else {
+        throw new Error(data.error || 'Failed to fetch recent meals');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch recent meals';
+      setMealsError(errorMessage);
+      setRecentMeals([]);
+      console.error('Failed to fetch recent meals:', err);
+    } finally {
+      setMealsLoading(false);
+    }
+  }, []);
+
   // Check if any filters are active
   const hasActiveFilters = !!(searchTerm || difficulty);
 
-  // Fetch featured recipes when component mounts and when filters are cleared
+  // Fetch featured recipes and recent meals when component mounts and when filters are cleared
   useEffect(() => {
     if (!hasActiveFilters) {
       fetchFeaturedRecipes();
+      fetchRecentMeals();
     }
-  }, [hasActiveFilters, fetchFeaturedRecipes]);
+  }, [hasActiveFilters, fetchFeaturedRecipes, fetchRecentMeals]);
 
   /**
    * Enhanced search handler with loading state
@@ -389,20 +422,20 @@ export default function HomePage() {
         <main className="max-w-7xl mx-auto px-4 py-8">
           {/* Results Section */}
           <section>
-            <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 space-y-4 sm:space-y-0">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900">
+            <header className="mb-8">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
                   {hasActiveFilters ? 'Search Results' : 'Featured Recipes'}
                 </h2>
                 {hasActiveFilters ? (
                   !loading && (
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600">
                       {pagination.total} recipe{pagination.total !== 1 ? 's' : ''} found
                     </p>
                   )
                 ) : (
                   !featuredLoading && (
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600">
                       Top {featuredRecipes.length} most popular recipes
                     </p>
                   )
@@ -410,13 +443,15 @@ export default function HomePage() {
               </div>
               
               {hasActiveFilters && (
-                <LoadingButton
-                  loading={false}
-                  onClick={clearFilters}
-                  variant="outline"
-                >
-                  Clear Filters
-                </LoadingButton>
+                <div className="text-center">
+                  <LoadingButton
+                    loading={false}
+                    onClick={clearFilters}
+                    variant="outline"
+                  >
+                    Clear Filters
+                  </LoadingButton>
+                </div>
               )}
             </header>
             
@@ -481,7 +516,7 @@ export default function HomePage() {
               // Featured Recipes without Pagination
               <>
                 {featuredLoading ? (
-                  <RecipeGridSkeleton count={9} />
+                  <RecipeGridSkeleton count={6} />
                 ) : featuredError ? (
                   <ErrorMessage message={featuredError} onRetry={() => fetchFeaturedRecipes()} />
                 ) : featuredRecipes.length > 0 ? (
@@ -506,6 +541,71 @@ export default function HomePage() {
             )}
           </section>
         </main>
+
+        {/* Recently Cooked Meals Section - only show when no active filters */}
+        {!hasActiveFilters && (
+          <section className="max-w-7xl mx-auto px-4 py-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Recently Cooked Meals</h2>
+              <p className="text-gray-600">Fresh meal memories from the TasteBuddy community</p>
+            </div>
+
+            {mealsLoading ? (
+              <RecipeGridSkeleton count={6} />
+            ) : mealsError ? (
+              <div className="text-center py-12">
+                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Meals</h3>
+                <p className="text-gray-600 mb-4">{mealsError}</p>
+                <button
+                  onClick={fetchRecentMeals}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : recentMeals.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+                {recentMeals.map(meal => (
+                  <MealCard 
+                    key={meal.id} 
+                    meal={meal}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <Search className="w-16 h-16 mx-auto" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No meals yet</h3>
+                <p className="text-gray-500 mb-6">
+                  Be the first to share a meal memory with the community!
+                </p>
+                {session && (
+                  <Link
+                    href="/meals/new"
+                    className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="w-5 h-5" />
+                    <span>Add Your First Meal</span>
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {recentMeals.length > 0 && (
+              <div className="text-center">
+                <Link
+                  href="/food-feed?type=meals"
+                  className="inline-flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <span>View All Meals</span>
+                </Link>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Recipe Statistics Section - only show when no active filters */}
         {!hasActiveFilters && !featuredLoading && (

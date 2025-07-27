@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Users, Heart, Star, Clock, Crown, Flame, BarChart3 } from 'lucide-react';
+import { Users, Heart, Star, Clock, Crown, Flame, BarChart3, Utensils } from 'lucide-react';
 import { useRecipeStats } from '@/hooks/use-recipe-stats';
 import { LoadingSpinner } from '@/components/ui/loading';
 import RecipeCard from '@/components/ui/recipe-card';
@@ -80,7 +80,7 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
         {/* Section Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            TasteBuddy Recipe Stats
+            TasteBuddy Stats
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             See the most loved recipes and explore the latest additions to our community.
@@ -88,18 +88,18 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
         </div>
 
         {/* Platform Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-16">
           <StatCard 
             icon={BarChart3} 
             label="Total Recipes" 
             value={stats.platformStats.totalRecipes.toLocaleString()} 
-            color="blue" 
+            color="green" 
           />
           <StatCard 
-            icon={Users} 
-            label="Community Members" 
-            value={stats.platformStats.totalUsers.toLocaleString()} 
-            color="green" 
+            icon={Utensils} 
+            label="Total Meals" 
+            value={stats.platformStats.totalMeals.toLocaleString()} 
+            color="blue" 
           />
           <StatCard 
             icon={Heart} 
@@ -112,6 +112,12 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
             label="Recipe Ratings" 
             value={stats.platformStats.totalRatings.toLocaleString()} 
             color="yellow" 
+          />
+          <StatCard 
+            icon={Users} 
+            label="Community Members" 
+            value={stats.platformStats.totalUsers.toLocaleString()} 
+            color="purple" 
           />
         </div>
 
