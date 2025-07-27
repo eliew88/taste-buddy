@@ -152,33 +152,35 @@ import Avatar from '@/components/ui/avatar';
        aria-label={`Recipe: ${recipe.title}`}
      >
        {/* Recipe Image */}
-       <div className="h-48 bg-gray-200 overflow-hidden relative group">
-         {(() => {
-           // Get primary image from images array, or first image if no primary, fallback to legacy image
-           const primaryImage = recipe.images?.find(img => img.isPrimary) || recipe.images?.[0];
-           const imageUrl = primaryImage?.url || recipe.image;
-           
-           return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
-             <img 
-               src={getOptimizedImageUrl(imageUrl)!} 
-               alt={primaryImage?.alt || `${recipe.title} recipe`}
-               className="w-full h-full object-cover transition-transform group-hover:scale-105"
-               loading="lazy"
-               onError={() => {
-                 // If B2 image fails, show placeholder immediately
-                 setImageError(true);
-               }}
-             />
-           ) : (
-             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-               <div className="text-center text-gray-400">
-                 <ChefHat className="w-16 h-16 mx-auto mb-2 opacity-50" />
-                 <p className="text-sm font-medium">No image</p>
+       <Link href={`/recipes/${recipe.id}`} className="block">
+         <div className="h-48 bg-gray-200 overflow-hidden relative group cursor-pointer">
+           {(() => {
+             // Get primary image from images array, or first image if no primary, fallback to legacy image
+             const primaryImage = recipe.images?.find(img => img.isPrimary) || recipe.images?.[0];
+             const imageUrl = primaryImage?.url || recipe.image;
+             
+             return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
+               <img 
+                 src={getOptimizedImageUrl(imageUrl)!} 
+                 alt={primaryImage?.alt || `${recipe.title} recipe`}
+                 className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                 loading="lazy"
+                 onError={() => {
+                   // If B2 image fails, show placeholder immediately
+                   setImageError(true);
+                 }}
+               />
+             ) : (
+               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                 <div className="text-center text-gray-400">
+                   <ChefHat className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                   <p className="text-sm font-medium">No image</p>
+                 </div>
                </div>
-             </div>
-           );
-         })()}
-       </div>
+             );
+           })()}
+         </div>
+       </Link>
        
        <div className="p-6">
          {/* Header with title and favorite button */}

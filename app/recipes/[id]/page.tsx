@@ -34,7 +34,8 @@ import {
   Printer,
   Share2,
   Edit,
-  Coins
+  Coins,
+  Info
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
@@ -738,7 +739,16 @@ export default function RecipeDetailPage() {
 
         {/* Recipe Image Gallery */}
         <div className="mt-12 mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Recipe Photos</h2>
+          <div className="flex items-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Recipe Photos</h2>
+            <div className="relative group ml-2">
+              <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                Click on photos to see full size image
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+              </div>
+            </div>
+          </div>
           <RecipeImageGallery
             images={recipe.images || []}
             recipeTitle={recipe.title}

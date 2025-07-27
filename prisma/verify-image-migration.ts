@@ -97,16 +97,7 @@ async function verifyMigration() {
       });
     }
 
-    // Check for orphaned images
-    const orphanedImages = await prisma.recipeImage.findMany({
-      where: {
-        recipeId: null
-      }
-    });
-
-    if (orphanedImages.length > 0) {
-      console.log(`\n⚠️  Found ${orphanedImages.length} orphaned images (not linked to any recipe)`);
-    }
+    // Note: Orphaned image check not needed since recipeId is required in schema
 
   } catch (error) {
     console.error('Error during verification:', error);

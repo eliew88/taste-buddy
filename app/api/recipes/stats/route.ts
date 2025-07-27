@@ -5,7 +5,17 @@ export async function GET(req: NextRequest) {
   try {
     // Get most popular recipes (by favorites count)
     const mostPopularRecipes = await prisma.recipe.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        cookTime: true,
+        servings: true,
+        difficulty: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
+        authorId: true,
         author: {
           select: {
             id: true,
@@ -13,6 +23,20 @@ export async function GET(req: NextRequest) {
             email: true,
             image: true
           }
+        },
+        images: {
+          select: {
+            id: true,
+            url: true,
+            caption: true,
+            alt: true,
+            isPrimary: true,
+            displayOrder: true
+          },
+          orderBy: [
+            { isPrimary: 'desc' },
+            { displayOrder: 'asc' }
+          ]
         },
         _count: {
           select: {
@@ -32,7 +56,17 @@ export async function GET(req: NextRequest) {
 
     // Get newest recipes
     const newestRecipes = await prisma.recipe.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        cookTime: true,
+        servings: true,
+        difficulty: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
+        authorId: true,
         author: {
           select: {
             id: true,
@@ -40,6 +74,20 @@ export async function GET(req: NextRequest) {
             email: true,
             image: true
           }
+        },
+        images: {
+          select: {
+            id: true,
+            url: true,
+            caption: true,
+            alt: true,
+            isPrimary: true,
+            displayOrder: true
+          },
+          orderBy: [
+            { isPrimary: 'desc' },
+            { displayOrder: 'asc' }
+          ]
         },
         _count: {
           select: {
@@ -57,7 +105,17 @@ export async function GET(req: NextRequest) {
 
     // Get highest rated recipes
     const recipesWithRatings = await prisma.recipe.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        cookTime: true,
+        servings: true,
+        difficulty: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
+        authorId: true,
         author: {
           select: {
             id: true,
@@ -65,6 +123,20 @@ export async function GET(req: NextRequest) {
             email: true,
             image: true
           }
+        },
+        images: {
+          select: {
+            id: true,
+            url: true,
+            caption: true,
+            alt: true,
+            isPrimary: true,
+            displayOrder: true
+          },
+          orderBy: [
+            { isPrimary: 'desc' },
+            { displayOrder: 'asc' }
+          ]
         },
         ratings: {
           select: {
