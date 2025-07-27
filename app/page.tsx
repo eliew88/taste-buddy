@@ -29,6 +29,7 @@ import ErrorBoundary from '@/components/error-boundary';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
+import { getRandomFormattedQuote } from '@/lib/quotes';
 
 // Fallback images in case database doesn't have enough recipes with images
 const FALLBACK_HERO_IMAGES = [
@@ -57,13 +58,18 @@ const HeroSection = ({
   heroImages?: string[];
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [heroQuote, setHeroQuote] = useState<string>('');
   
-  // Select random image on client side only
+  // Select random image and quote on client side only
   useEffect(() => {
     if (heroImages && heroImages.length > 0) {
       const randomImage = heroImages[Math.floor(Math.random() * heroImages.length)];
       setSelectedImage(randomImage);
     }
+    
+    // Set random quote
+    const quote = getRandomFormattedQuote(false); // Don't include author for cleaner look
+    setHeroQuote(quote);
   }, [heroImages]);
   
   console.log('🎨 HeroSection rendering with images:', heroImages);
@@ -92,7 +98,7 @@ const HeroSection = ({
           textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6)',
           WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
         }}>
-          Discover, cook, and share amazing recipes!
+          {heroQuote || 'Discover, cook, and share amazing recipes!'}
         </h1>
         
         {/* Search Section */}
