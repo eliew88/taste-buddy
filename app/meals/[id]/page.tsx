@@ -236,21 +236,59 @@ export default function MealDetailPage() {
               </div>
             </div>
 
-            {/* Right side - Chef info */}
-            <div className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm flex-shrink-0">
-              <Avatar 
-                imageUrl={meal.author.image} 
-                name={meal.author.name || meal.author.email}
-                size="md"
-              />
-              <div>
-                <div className="font-medium text-gray-900">
-                  {meal.author.name || meal.author.email}
-                </div>
-                <div className="text-sm text-gray-500">
-                  Chef
+            {/* Right side - Chef info and tagged users */}
+            <div className="flex-shrink-0">
+              {/* Posted by info */}
+              <div className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm mb-3">
+                <Link href={`/profile/${meal.author.id}`}>
+                  <Avatar 
+                    imageUrl={meal.author.image} 
+                    name={meal.author.name || meal.author.email}
+                    size="md"
+                  />
+                </Link>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Posted by
+                  </div>
+                  <Link 
+                    href={`/profile/${meal.author.id}`}
+                    className="font-medium text-gray-900 hover:text-orange-600 transition-colors"
+                  >
+                    {meal.author.name || meal.author.email}
+                  </Link>
                 </div>
               </div>
+
+              {/* Tagged users compact list */}
+              {meal.taggedUsers && meal.taggedUsers.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-3">
+                  <h3 className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1">
+                    <User className="w-3 h-3" />
+                    Tagged ({meal.taggedUsers.length})
+                  </h3>
+                  <div className="space-y-1.5">
+                    {meal.taggedUsers.map((tag) => (
+                      <Link 
+                        key={tag.id}
+                        href={`/profile/${tag.userId}`}
+                        className="flex items-center gap-1.5 hover:bg-gray-50 rounded-md p-0.5 -m-0.5 transition-colors"
+                      >
+                        <div className="w-6 h-6 flex-shrink-0">
+                          <Avatar 
+                            imageUrl={tag.user?.image} 
+                            name={tag.user?.name || tag.user?.email || 'Unknown'}
+                            size="xs"
+                          />
+                        </div>
+                        <span className="text-xs text-gray-600 hover:text-orange-600 transition-colors truncate">
+                          {tag.user?.name || tag.user?.email || 'Unknown'}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -266,6 +304,7 @@ export default function MealDetailPage() {
             </div>
           </section>
         )}
+
 
         {/* Photo Gallery */}
         {galleryImages.length > 0 ? (

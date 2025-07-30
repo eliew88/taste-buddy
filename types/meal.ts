@@ -1,8 +1,8 @@
 /**
- * Type definitions for the TasteBuddy meal system
+ * Type definitions for the TasteBuddy meal memory system
  * 
- * This file contains all TypeScript interfaces and types related to meals,
- * which are simplified posts for meal memories without complex recipe details.
+ * This file contains all TypeScript interfaces and types related to meal memories,
+ * which are posts about meals with photos, descriptions, and tagged TasteBuddies.
  */
 
 /**
@@ -76,25 +76,59 @@ export interface UpdateMealImageData {
 }
 
 /**
- * Main Meal interface - represents a meal memory post with photos and description
+ * MealTag interface - represents a user tagged in a meal memory
  */
-export interface Meal {
-  /** Unique identifier for the meal */
+export interface MealTag {
+  /** Unique identifier for the tag */
   id: string;
   
-  /** Meal name/title */
+  /** ID of the meal */
+  mealId: string;
+  
+  /** ID of the tagged user */
+  userId: string;
+  
+  /** When the user was tagged */
+  taggedAt: Date;
+  
+  /** ID of the user who created the tag */
+  taggedBy: string;
+  
+  /** Tagged user information (populated from User table) */
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+  };
+}
+
+/**
+ * Main Meal interface - represents a meal memory post with photos, description, and tagged users
+ */
+export interface Meal {
+  /** Unique identifier for the meal memory */
+  id: string;
+  
+  /** Meal memory name/title */
   name: string;
   
-  /** Optional description of the meal */
+  /** Optional description of the meal memory */
   description?: string;
   
   /** Optional date when the meal was made */
   date?: Date;
   
+  /** Whether this meal memory is public (true) or private (false) */
+  isPublic: boolean;
+  
   /** Array of meal images (up to 5) */
   images?: MealImage[];
   
-  /** ID of the user who created this meal */
+  /** Array of tagged users (TasteBuddies) */
+  taggedUsers?: MealTag[];
+  
+  /** ID of the user who created this meal memory */
   authorId: string;
   
   /** Author information (populated from User table) */
@@ -105,33 +139,37 @@ export interface Meal {
     image?: string;
   };
   
-  /** When the meal was created */
+  /** When the meal memory was created */
   createdAt: Date;
   
-  /** When the meal was last updated */
+  /** When the meal memory was last updated */
   updatedAt: Date;
 }
 
 /**
- * Data structure for creating a new meal
+ * Data structure for creating a new meal memory
  * Excludes auto-generated fields like ID, timestamps, and author info
  */
 export interface CreateMealData {
   name: string;
   description?: string;
   date?: Date;
+  isPublic?: boolean; // Defaults to true if not specified
   images?: CreateMealImageData[]; // Up to 5 images
+  taggedUserIds?: string[]; // IDs of TasteBuddies to tag
 }
 
 /**
- * Data structure for updating an existing meal
+ * Data structure for updating an existing meal memory
  * All fields are optional to allow partial updates
  */
 export interface UpdateMealData {
   name?: string;
   description?: string;
   date?: Date;
+  isPublic?: boolean;
   images?: CreateMealImageData[];
+  taggedUserIds?: string[]; // IDs of TasteBuddies to tag
 }
 
 /**
@@ -155,6 +193,9 @@ export interface MealFilters {
   /** Filter by date range */
   dateFrom?: Date;
   dateTo?: Date;
+  
+  /** Filter by meal type - meals created by user, tagged in, or both */
+  mealType?: 'created' | 'tagged' | 'all';
   
   /** Pagination */
   page?: number;

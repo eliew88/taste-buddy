@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
+    const mealType = searchParams.get('mealType') as 'created' | 'tagged' | 'all' || 'all';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')));
     const skip = (page - 1) * limit;
@@ -20,17 +21,76 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build where clause
-    const where: Record<string, unknown> = {
-      authorId: userId, // Only show user's own meals
-    };
+    // Build where clause based on meal type filter
+    let where: Record<string, unknown>;
+    
+    if (mealType === 'created') {
+      // Show only meals created by the user
+      where = {
+        authorId: userId
+      };
+    } else if (mealType === 'tagged') {
+      // Show only public meals where user is tagged (excluding their own)
+      where = {
+        AND: [
+          { isPublic: true },
+          { authorId: { not: userId } }, // Exclude user's own meals
+          {
+            taggedUsers: {
+              some: {
+                userId: userId
+              }
+            }
+          }
+        ]
+      };
+    } else {
+      // Show all meals (default behavior) - authored meals and public tagged meals
+      where = {
+        OR: [
+          { authorId: userId }, // All meals the user created (public and private)
+          { 
+            AND: [
+              { isPublic: true }, // Only public meals where user is tagged
+              {
+                taggedUsers: {
+                  some: {
+                    userId: userId
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      };
+    }
 
     // Search functionality (PostgreSQL with case-insensitive search)
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
+      const searchCondition = {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ]
+      };
+
+      if (where.AND) {
+        // If where already has AND condition, combine them
+        where.AND = Array.isArray(where.AND) 
+          ? [...where.AND, searchCondition]
+          : [where.AND, searchCondition];
+      } else if (where.OR) {
+        // If where has OR condition, wrap it in AND with search
+        where = {
+          AND: [
+            { OR: where.OR },
+            searchCondition
+          ]
+        };
+      } else {
+        // Simple case, just add search to existing condition
+        where.AND = searchCondition;
+      }
     }
 
     // Fetch meals
@@ -43,6 +103,13 @@ export async function GET(request: NextRequest) {
         images: {
           orderBy: { displayOrder: 'asc' }
         },
+        taggedUsers: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, image: true }
+            }
+          }
+        }
       },
       orderBy: { createdAt: 'desc' },
       skip,
@@ -84,7 +151,9 @@ export async function POST(request: NextRequest) {
       name, 
       description, 
       date,
-      images
+      isPublic = true, // Default to public if not specified
+      images,
+      taggedUserIds
     } = body;
     
     console.log('Extracted fields:', {
@@ -137,6 +206,38 @@ export async function POST(request: NextRequest) {
     // Prepare data for PostgreSQL database storage
     console.log('Preparing meal data...');
     
+    // Validate tagged users are TasteBuddies
+    let validTaggedUserIds: string[] = [];
+    if (Array.isArray(taggedUserIds) && taggedUserIds.length > 0) {
+      console.log('Validating tagged users...');
+      
+      // Get mutual follows (TasteBuddies)
+      const following = await prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true }
+      });
+      
+      const followingIds = following.map(f => f.followingId);
+      
+      const tastebuddies = await prisma.user.findMany({
+        where: {
+          id: { in: followingIds },
+          followers: {
+            some: {
+              followerId: userId
+            }
+          }
+        },
+        select: { id: true }
+      });
+      
+      const tastebuddyIds = new Set(tastebuddies.map(tb => tb.id));
+      
+      // Filter only valid TasteBuddies
+      validTaggedUserIds = taggedUserIds.filter(id => tastebuddyIds.has(id));
+      console.log(`Valid tagged users: ${validTaggedUserIds.length} of ${taggedUserIds.length}`);
+    }
+
     // Prepare images data if provided
     let imagesData = undefined;
     if (Array.isArray(images) && images.length > 0) {
@@ -160,12 +261,25 @@ export async function POST(request: NextRequest) {
       };
     }
     
+    // Prepare tags data if provided
+    let tagsData = undefined;
+    if (validTaggedUserIds.length > 0) {
+      tagsData = {
+        create: validTaggedUserIds.map(taggedUserId => ({
+          userId: taggedUserId,
+          taggedBy: userId // The meal author is the one tagging
+        }))
+      };
+    }
+    
     const mealData = {
       name: name.trim(),
       description: description?.trim() || null,
       date: date ? new Date(date) : null,
+      isPublic: isPublic,
       authorId: userId,
-      ...(imagesData && { images: imagesData })
+      ...(imagesData && { images: imagesData }),
+      ...(tagsData && { taggedUsers: tagsData })
     };
     
     console.log('Meal data prepared:', {
@@ -187,6 +301,13 @@ export async function POST(request: NextRequest) {
         images: {
           orderBy: { displayOrder: 'asc' }
         },
+        taggedUsers: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, image: true }
+            }
+          }
+        }
       },
     });
     

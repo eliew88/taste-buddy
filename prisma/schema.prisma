@@ -72,6 +72,7 @@ model User {
   
   // Meal relationships
   meals Meal[]
+  taggedInMeals MealTag[]
 
   @@map("users")
 }
@@ -470,13 +471,14 @@ model UserAchievement {
 }
 
 /**
- * Meal Model - Simplified posts for meal memories
+ * Meal Model - Meal memories with tagging support and privacy settings
  */
 model Meal {
   id          String   @id @default(cuid())
   name        String
   description String?
   date        DateTime? // Optional date when meal was made
+  isPublic    Boolean  @default(true) // Whether this meal memory is public or private
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   authorId    String
@@ -484,10 +486,12 @@ model Meal {
   // === RELATIONSHIPS ===
   author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   images MealImage[]
+  taggedUsers MealTag[] // Users tagged in this meal
 
   @@index([authorId])
   @@index([date])
   @@index([createdAt])
+  @@index([isPublic])
   @@map("meals")
 }
 
@@ -525,5 +529,33 @@ model MealImage {
   @@index([isPrimary])
   @@index([displayOrder])
   @@map("meal_images")
+}
+
+/**
+ * MealTag Model - For tagging TasteBuddies in meal memories
+ */
+model MealTag {
+  id String @id @default(cuid())
+  
+  // === MEAL AND USER ===
+  mealId String
+  userId String
+  
+  // === TAG METADATA ===
+  taggedAt DateTime @default(now())
+  taggedBy String // ID of the user who created the tag (usually the meal author)
+  
+  // === RELATIONSHIPS ===
+  meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // === CONSTRAINTS ===
+  @@unique([mealId, userId]) // User can only be tagged once per meal
+  
+  // === INDEXES ===
+  @@index([mealId])
+  @@index([userId])
+  @@index([taggedAt])
+  @@map("meal_tags")
 }
 

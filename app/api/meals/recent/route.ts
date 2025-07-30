@@ -7,8 +7,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '6')));
 
-    // Fetch recent meals from all users (public data)
+    // Fetch recent PUBLIC meals from all users
     const meals = await prisma.meal.findMany({
+      where: {
+        isPublic: true // Only show public meal memories
+      },
       include: {
         author: {
           select: { id: true, name: true, email: true, image: true },

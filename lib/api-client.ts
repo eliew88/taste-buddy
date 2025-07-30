@@ -298,6 +298,7 @@ class ApiClient {
     if (params.search) searchParams.append('search', params.search);
     if (params.dateFrom) searchParams.append('dateFrom', params.dateFrom.toISOString());
     if (params.dateTo) searchParams.append('dateTo', params.dateTo.toISOString());
+    if (params.mealType) searchParams.append('mealType', params.mealType);
     if (params.page) searchParams.append('page', params.page.toString());
     if (params.limit) searchParams.append('limit', params.limit.toString());
 

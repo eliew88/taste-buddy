@@ -18,6 +18,9 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  
+  // Check if we're in production based on the URL
+  const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,42 +102,46 @@ export default function SignInPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {/* Demo Users Section */}
-          <div className="mb-6 p-4 bg-purple-100 rounded-lg">
-            <h3 className="text-sm font-medium text-purple-900 mb-3">Demo Users (Click to Login)</h3>
-            <div className="space-y-2">
-              <button
-                onClick={() => handleDemoLogin('sarah@example.com')}
-                disabled={loading}
-                className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
-              >
-                <strong>Sarah Chen</strong> - Recipe Creator
-              </button>
-              <button
-                onClick={() => handleDemoLogin('mike@example.com')}
-                disabled={loading}
-                className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
-              >
-                <strong>Mike Rodriguez</strong> - Food Enthusiast
-              </button>
-              <button
-                onClick={() => handleDemoLogin('david@example.com')}
-                disabled={loading}
-                className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
-              >
-                <strong>David Kim</strong> - Cooking Expert
-              </button>
-            </div>
-          </div>
+          {/* Demo Users Section - Only show in development */}
+          {!isProduction && (
+            <>
+              <div className="mb-6 p-4 bg-purple-100 rounded-lg">
+                <h3 className="text-sm font-medium text-purple-900 mb-3">Demo Users (Click to Login)</h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleDemoLogin('sarah@example.com')}
+                    disabled={loading}
+                    className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  >
+                    <strong>Sarah Chen</strong> - Recipe Creator
+                  </button>
+                  <button
+                    onClick={() => handleDemoLogin('mike@example.com')}
+                    disabled={loading}
+                    className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  >
+                    <strong>Mike Rodriguez</strong> - Food Enthusiast
+                  </button>
+                  <button
+                    onClick={() => handleDemoLogin('david@example.com')}
+                    disabled={loading}
+                    className="w-full text-left text-sm text-purple-800 hover:text-purple-900 p-2 rounded hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  >
+                    <strong>David Kim</strong> - Cooking Expert
+                  </button>
+                </div>
+              </div>
 
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or sign in manually</span>
-            </div>
-          </div>
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Or sign in manually</span>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Sign In Form */}
           <form onSubmit={handleSubmit} className="space-y-6">

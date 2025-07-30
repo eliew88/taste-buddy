@@ -19,7 +19,7 @@ interface AvatarProps {
   /** User's name for fallback initials */
   name?: string | null;
   /** Size of the avatar */
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   /** Additional CSS classes */
   className?: string;
   /** Whether to show online status indicator */
@@ -33,6 +33,8 @@ interface AvatarProps {
  */
 const getSizeClasses = (size: AvatarProps['size']) => {
   switch (size) {
+    case 'xs':
+      return 'w-6 h-6 text-xs';
     case 'sm':
       return 'w-8 h-8 text-xs';
     case 'md':
@@ -53,6 +55,8 @@ const getSizeClasses = (size: AvatarProps['size']) => {
  */
 const getIconSize = (size: AvatarProps['size']) => {
   switch (size) {
+    case 'xs':
+      return 'w-3 h-3';
     case 'sm':
       return 'w-4 h-4';
     case 'md':

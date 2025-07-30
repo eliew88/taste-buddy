@@ -336,6 +336,14 @@ function FoodFeedPageContent() {
     setCurrentPage(1);
     setError(null);
     
+    // Reset sort option if switching to meals and current sort is not valid for meals
+    if (newContentType === 'meals') {
+      const validMealSorts = ['newest', 'oldest', 'title'];
+      if (!validMealSorts.includes(sortBy)) {
+        setSortBy('newest');
+      }
+    }
+    
     // Update URL
     const params = new URLSearchParams(searchParams.toString());
     params.set('type', newContentType);
@@ -694,11 +702,21 @@ function FoodFeedPageContent() {
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 >
-                  {sortOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  {contentType === 'meals' ? (
+                    // Meal-specific sort options
+                    <>
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                      <option value="title">A-Z</option>
+                    </>
+                  ) : (
+                    // Recipe sort options
+                    sortOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))
+                  )}
                 </select>
 
                 {/* View Mode Toggle */}

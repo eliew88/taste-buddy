@@ -119,13 +119,13 @@ export default function Navigation() {
                   Favorites
                 </Link>
                 
-                {/* Add Meal Button */}
+                {/* Add Meal Memory Button */}
                 <Link 
                   href="/meals/new" 
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Add Meal
+                  Add Meal Memory
                 </Link>
                 
                 {/* Primary CTA Button */}
@@ -257,7 +257,7 @@ export default function Navigation() {
                     role="menuitem"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Meal
+                    Add Meal Memory
                   </Link>
                   
                   {/* Mobile CTA Button */}

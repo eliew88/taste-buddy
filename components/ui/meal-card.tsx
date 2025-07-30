@@ -9,7 +9,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Calendar, Eye, Utensils } from 'lucide-react';
+import { Calendar, Eye, Utensils, Users, Lock } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { Meal } from '@/types/meal';
 import { truncateText } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/image-client-utils';
@@ -47,6 +48,16 @@ export default function MealCard({
   showFullDescription = false,
   isListView = false
 }: MealCardProps) {
+  // Get current user to check if they're tagged
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
+  
+  // Check if current user is tagged in this meal
+  const isUserTagged = currentUserId && meal.taggedUsers?.some(tag => tag.userId === currentUserId);
+  
+  // Check if current user is the author
+  const isAuthor = currentUserId === meal.authorId;
+  
   // Local state for image handling
   const [imageError, setImageError] = useState(false);
 
@@ -139,6 +150,22 @@ export default function MealCard({
             </h3>
           </Link>
           
+          {/* Tagged indicator */}
+          {isUserTagged && !isAuthor && (
+            <div className="flex items-center gap-1.5 text-sm text-blue-600 font-medium mb-2">
+              <Users className="w-4 h-4" />
+              <span>You're tagged in this meal memory</span>
+            </div>
+          )}
+          
+          {/* Privacy indicator - only show for author's own private meals */}
+          {!meal.isPublic && isAuthor && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-2">
+              <Lock className="w-4 h-4" />
+              <span>Private meal memory</span>
+            </div>
+          )}
+          
           {/* Date info (only show if meal.date exists) */}
           {getMealDate() && (
             <div className="flex items-center gap-1 text-sm text-gray-600">
@@ -187,20 +214,46 @@ export default function MealCard({
 
         {/* Author Information */}
         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-          <Avatar 
-            imageUrl={meal.author.image} 
-            name={meal.author.name || meal.author.email}
-            size="sm"
-          />
+          <Link href={`/profile/${meal.author.id}`}>
+            <Avatar 
+              imageUrl={meal.author.image} 
+              name={meal.author.name || meal.author.email}
+              size="sm"
+            />
+          </Link>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
+            <Link 
+              href={`/profile/${meal.author.id}`}
+              className="text-sm font-medium text-gray-900 hover:text-orange-600 transition-colors truncate block"
+            >
               {meal.author.name || meal.author.email}
-            </div>
+            </Link>
             <div className="text-xs text-gray-500">
               Chef
             </div>
           </div>
         </div>
+
+        {/* Tagged users */}
+        {meal.taggedUsers && meal.taggedUsers.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-start gap-2">
+              <Users className="w-4 h-4 text-gray-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-gray-600">
+                  With: {meal.taggedUsers.map((tag, index) => (
+                    <span key={tag.id}>
+                      <span className="font-medium text-gray-800">
+                        {tag.user?.name || 'Unknown'}
+                      </span>
+                      {index < meal.taggedUsers!.length - 1 && ', '}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer with view link */}
         <footer className="pt-4 border-t border-gray-100">
@@ -209,7 +262,7 @@ export default function MealCard({
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
           >
             <Eye className="w-4 h-4" />
-            View Meal
+            View Meal Memory
           </Link>
         </footer>
       </div>

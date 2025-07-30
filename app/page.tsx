@@ -433,13 +433,7 @@ export default function HomePage() {
                       {pagination.total} recipe{pagination.total !== 1 ? 's' : ''} found
                     </p>
                   )
-                ) : (
-                  !featuredLoading && (
-                    <p className="text-gray-600">
-                      Top {featuredRecipes.length} most popular recipes
-                    </p>
-                  )
-                )}
+                ) : null}
               </div>
               
               {hasActiveFilters && (

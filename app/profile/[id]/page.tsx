@@ -7,11 +7,13 @@ import { FollowButton } from '@/components/ui/follow-button';
 import ComplimentForm from '@/components/compliment-form';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
+import MealCard from '@/components/ui/meal-card';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useUserAchievements } from '@/hooks/use-achievements';
 import { AchievementGrid } from '@/components/achievement-badge';
 import { Recipe } from '@/types/recipe';
-import { Instagram, Globe, ExternalLink, Edit2, Coins, X, ChefHat, Loader2, Trophy } from 'lucide-react';
+import { Meal } from '@/types/meal';
+import { Instagram, Globe, ExternalLink, Edit2, Coins, X, ChefHat, Loader2, Trophy, Utensils } from 'lucide-react';
 
 interface User {
   id: string;
@@ -42,6 +44,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [followers, setFollowers] = useState<User[]>([]);
   const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
   const [recipesLoading, setRecipesLoading] = useState(false);
+  const [userMeals, setUserMeals] = useState<Meal[]>([]);
+  const [mealsLoading, setMealsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -119,20 +123,40 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
         setFollowing(followingData);
         setFollowers(followersData);
 
-        // Fetch user's recipes
-        setRecipesLoading(true);
-        try {
-          const recipesResponse = await fetch(`/api/users/${userId}/recipes`);
-          const recipesData = await recipesResponse.json();
-          
-          if (recipesData.success) {
-            setUserRecipes(recipesData.data);
+        // Fetch user's recipes and meals in parallel
+        const fetchUserContent = async () => {
+          // Fetch recipes
+          setRecipesLoading(true);
+          try {
+            const recipesResponse = await fetch(`/api/users/${userId}/recipes`);
+            const recipesData = await recipesResponse.json();
+            
+            if (recipesData.success) {
+              setUserRecipes(recipesData.data);
+            }
+          } catch (recipesErr) {
+            console.error('Error fetching user recipes:', recipesErr);
+          } finally {
+            setRecipesLoading(false);
           }
-        } catch (recipesErr) {
-          console.error('Error fetching user recipes:', recipesErr);
-        } finally {
-          setRecipesLoading(false);
-        }
+
+          // Fetch meals
+          setMealsLoading(true);
+          try {
+            const mealsResponse = await fetch(`/api/users/${userId}/meals`);
+            const mealsData = await mealsResponse.json();
+            
+            if (mealsData.success) {
+              setUserMeals(mealsData.data);
+            }
+          } catch (mealsErr) {
+            console.error('Error fetching user meals:', mealsErr);
+          } finally {
+            setMealsLoading(false);
+          }
+        };
+
+        fetchUserContent();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load user data');
       } finally {
@@ -446,8 +470,54 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
           )}
         </div>
 
+        {/* User's Meal Memories */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <Utensils className="w-6 h-6 text-blue-600" />
+              <h2 className="text-xl font-bold text-gray-900">
+                {isOwnProfile ? 'My Meal Memories' : `${user.name || user.email}'s Meal Memories`}
+              </h2>
+            </div>
+            {userMeals.length > 0 && (
+              <span className="text-sm text-gray-600">
+                {userMeals.length} meal{userMeals.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+
+          {mealsLoading ? (
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+              <p className="text-gray-600">Loading meal memories...</p>
+            </div>
+          ) : userMeals.length === 0 ? (
+            <div className="text-center py-12">
+              <Utensils className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {isOwnProfile ? 'No meal memories yet' : 'No public meal memories'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {isOwnProfile 
+                  ? 'Start capturing your memorable meals with photos and stories!'
+                  : `${user.name || user.email} hasn't shared any public meal memories yet.`
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userMeals.map((meal) => (
+                <MealCard 
+                  key={meal.id} 
+                  meal={meal}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Achievement Badges */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
               <Trophy className="w-6 h-6 text-yellow-500" />

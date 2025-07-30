@@ -43,8 +43,10 @@ export default function MealJournalPage() {
     searchTerm,
     dateFrom,
     dateTo,
+    mealType,
     handleSearch,
     handleDateChange,
+    handleMealTypeChange,
     handlePageChange,
     clearFilters,
     refetch,
@@ -101,7 +103,7 @@ export default function MealJournalPage() {
     }
   });
 
-  const hasActiveFilters = searchTerm;
+  const hasActiveFilters = searchTerm || mealType !== 'all';
 
   if (status === 'loading') {
     return (
@@ -131,7 +133,7 @@ export default function MealJournalPage() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Meal Journal</h1>
                 <p className="text-gray-600">
-                  {pagination.total} meal{pagination.total !== 1 ? 's' : ''} in your journal
+                  {pagination.total} meal memor{pagination.total !== 1 ? 'ies' : 'y'} in your journal
                 </p>
               </div>
             </div>
@@ -140,61 +142,107 @@ export default function MealJournalPage() {
 
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search your meals..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
-                />
+          <div className="flex flex-col gap-4">
+            {/* Top Row - Search and Meal Type Filter */}
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search your meal memories..."
+                    value={searchTerm}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                  />
+                </div>
+              </div>
+
+              {/* Meal Type Filter */}
+              <div className="flex-shrink-0">
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => handleMealTypeChange('all')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      mealType === 'all'
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    All Meals
+                  </button>
+                  <button
+                    onClick={() => handleMealTypeChange('created')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      mealType === 'created'
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    My Meals
+                  </button>
+                  <button
+                    onClick={() => handleMealTypeChange('tagged')}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      mealType === 'tagged'
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Tagged In
+                  </button>
+                </div>
               </div>
             </div>
 
+            {/* Bottom Row - Sort and View Mode */}
+            <div className="flex justify-between items-center">
+              {/* Sort */}
+              <div>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-white"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="name">A-Z</option>
+                </select>
+              </div>
 
-            {/* Sort */}
-            <div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-white"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name">A-Z</option>
-              </select>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex border border-gray-300 rounded-lg">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
-              >
-                <List className="w-4 h-4" />
-              </button>
+              {/* View Mode Toggle */}
+              <div className="flex border border-gray-300 rounded-lg">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Active Filters */}
           {hasActiveFilters && (
             <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="flex items-center flex-wrap gap-2 text-sm text-gray-600">
                 <Filter className="w-4 h-4" />
                 <span>Filters active:</span>
                 {searchTerm && (
                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
                     Search: &quot;{searchTerm}&quot;
+                  </span>
+                )}
+                {mealType !== 'all' && (
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                    Type: {mealType === 'created' ? 'My Meals' : 'Tagged In'}
                   </span>
                 )}
               </div>
@@ -230,7 +278,7 @@ export default function MealJournalPage() {
           <div className="text-center py-16">
             <Utensils className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {(meals || []).length === 0 ? "No meals yet" : "No meals match your filters"}
+              {(meals || []).length === 0 ? "No meal memories yet" : "No meal memories match your filters"}
             </h3>
             <p className="text-gray-600 mb-6">
               {(meals || []).length === 0
@@ -251,7 +299,7 @@ export default function MealJournalPage() {
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
-                Add Your First Meal
+                Add Your First Meal Memory
               </Link>
             </div>
           </div>
@@ -260,7 +308,7 @@ export default function MealJournalPage() {
             {/* Results Summary */}
             <div className="mb-6">
               <p className="text-gray-600">
-                Showing {sortedMeals.length} of {pagination.total} meal{pagination.total !== 1 ? 's' : ''}
+                Showing {sortedMeals.length} of {pagination.total} meal memor{pagination.total !== 1 ? 'ies' : 'y'}
               </p>
             </div>
 

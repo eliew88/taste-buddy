@@ -441,7 +441,7 @@ export default function RecipeForm({
                   onChange={(e) => updateFormData({ 
                     servings: e.target.value ? parseInt(e.target.value) : undefined 
                   })}
-                  className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-purple-600 focus:border-purple-600 ${
+                  className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-purple-600 focus:border-purple-600 ${
                     errors.servings ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="4"
@@ -562,7 +562,7 @@ export default function RecipeForm({
                 value={currentTag}
                 onChange={(e) => setCurrentTag(e.target.value)}
                 onKeyPress={handleTagKeyPress}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
                 placeholder="Add a tag (e.g., vegetarian, quick, dessert)"
               />
               <button

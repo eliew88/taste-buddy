@@ -177,7 +177,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
                 onChange={(e) => handleAmountChange(entry.id, e.target.value)}
                 onBlur={(e) => handleAmountBlur(entry.id, e.target.value)}
                 onKeyDown={(e) => handleAmountKeyDown(e, index)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 title="Enter amount (optional - leave empty for ingredients like 'pinch of salt' or 'to taste')"
               />
             </div>
@@ -192,7 +192,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
                 onChange={(e) => updateEntry(entry.id, 'unit', e.target.value || undefined)}
                 onKeyDown={(e) => handleUnitKeyDown(e, index)}
                 list={`units-${entry.id}`}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
               <datalist id={`units-${entry.id}`}>
                 {commonUnits.map(unit => (
@@ -210,7 +210,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
                 value={entry.ingredient}
                 onChange={(e) => updateEntry(entry.id, 'ingredient', e.target.value)}
                 onKeyDown={(e) => handleIngredientKeyDown(e, index)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
             </div>
 

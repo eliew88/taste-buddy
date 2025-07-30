@@ -1,7 +1,7 @@
 /**
- * Meal Creation Form Component
+ * Meal Memory Creation Form Component
  * 
- * A simplified form for creating meal memories with photos and descriptions.
+ * A form for creating meal memories with photos, descriptions, and tagging TasteBuddies.
  * Much simpler than recipe forms - focuses on capturing meal memories
  * rather than providing cooking instructions.
  * 
@@ -27,12 +27,17 @@ import {
   Calendar,
   Image as ImageIcon,
   FileText,
-  Utensils
+  Utensils,
+  Users,
+  X,
+  Globe,
+  Lock
 } from 'lucide-react';
 import { LoadingButton } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
 import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 import { useMultipleImageUpload } from '@/hooks/use-multiple-image-upload';
+import { useTasteBuddies } from '@/hooks/use-tastebuddies';
 import apiClient from '@/lib/api-client';
 import { CreateMealData, CreateMealImageData } from '@/types/meal';
 import { CreateRecipeImageData } from '@/types/recipe';
@@ -65,7 +70,7 @@ export default function MealForm({
   initialData = {},
   onSubmit,
   onCancel,
-  submitLabel = 'Save Meal',
+  submitLabel = 'Save Meal Memory',
   isEditing = false
 }: MealFormProps) {
   const router = useRouter();
@@ -88,7 +93,9 @@ export default function MealForm({
     name: '',
     description: '',
     date: undefined,
+    isPublic: true, // Default to public
     images: [],
+    taggedUserIds: [],
     ...initialData
   });
 
@@ -96,6 +103,9 @@ export default function MealForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  
+  // TasteBuddies state
+  const { tastebuddies, loading: tastebuddiesLoading } = useTasteBuddies();
 
   // Auto-save key for localStorage
   const autoSaveKey = 'tastebuddy-meal-draft';
@@ -269,6 +279,24 @@ export default function MealForm({
     if (isNaN(d.getTime())) return '';
     return d.toISOString().split('T')[0];
   };
+  
+  /**
+   * Toggle a TasteBuddy tag
+   */
+  const toggleTasteBuddy = (userId: string) => {
+    const currentTags = formData.taggedUserIds || [];
+    const isTagged = currentTags.includes(userId);
+    
+    if (isTagged) {
+      updateFormData({
+        taggedUserIds: currentTags.filter(id => id !== userId)
+      });
+    } else {
+      updateFormData({
+        taggedUserIds: [...currentTags, userId]
+      });
+    }
+  };
 
   return (
     <ErrorBoundary>
@@ -283,7 +311,7 @@ export default function MealForm({
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {isEditing ? 'Edit Meal' : 'Add New Meal'}
+              {isEditing ? 'Edit Meal Memory' : 'Add New Meal Memory'}
             </h1>
             <p className="text-gray-600 text-sm">
               Capture your meal memories with photos and notes
@@ -300,18 +328,18 @@ export default function MealForm({
             </div>
           )}
 
-          {/* Meal Name */}
+          {/* Name */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <Utensils className="w-4 h-4" />
-              Meal Name *
+              Name *
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => updateFormData({ name: e.target.value })}
-              placeholder="What did you eat?"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              placeholder="What would you like to remember this meal as?"
+              className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                 errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
               maxLength={100}
@@ -335,7 +363,7 @@ export default function MealForm({
               onChange={(e) => updateFormData({ description: e.target.value })}
               placeholder="Tell us about this meal... How was it? Where did you have it? Any special memories?"
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
               maxLength={500}
             />
             <div className="text-xs text-gray-500 text-right">
@@ -356,7 +384,7 @@ export default function MealForm({
                 date: e.target.value ? new Date(e.target.value) : undefined 
               })}
               max={new Date().toISOString().split('T')[0]}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                 errors.date ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
             />
@@ -369,6 +397,92 @@ export default function MealForm({
             <p className="text-xs text-gray-500">
               When did you have this meal? Leave blank if you're not sure.
             </p>
+          </div>
+
+          {/* Privacy Setting */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Privacy</label>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => updateFormData({ isPublic: true })}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  formData.isPublic
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="font-medium">Public</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateFormData({ isPublic: false })}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  !formData.isPublic
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                }`}
+              >
+                <Lock className="w-4 h-4" />
+                <span className="font-medium">Private</span>
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              {formData.isPublic
+                ? "Public meal memories appear in feeds and can be seen by anyone."
+                : "Private meal memories are only visible to you in your journal."}
+            </p>
+          </div>
+
+          {/* Tag TasteBuddies */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Users className="w-4 h-4" />
+              Tag TasteBuddies
+            </label>
+            {tastebuddiesLoading ? (
+              <p className="text-sm text-gray-500">Loading your TasteBuddies...</p>
+            ) : tastebuddies.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                You don't have any TasteBuddies yet. TasteBuddies are people you follow who also follow you back.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {tastebuddies.map((buddy) => {
+                    const isTagged = formData.taggedUserIds?.includes(buddy.id);
+                    return (
+                      <button
+                        key={buddy.id}
+                        type="button"
+                        onClick={() => toggleTasteBuddy(buddy.id)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                          isTagged
+                            ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+                            : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200'
+                        }`}
+                      >
+                        {buddy.image && (
+                          <img
+                            src={buddy.image}
+                            alt={buddy.name}
+                            className="w-5 h-5 rounded-full"
+                          />
+                        )}
+                        <span>{buddy.name}</span>
+                        {isTagged && <X className="w-3 h-3 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500">
+                  {formData.isPublic
+                    ? "Tag TasteBuddies who were part of this meal memory. They'll be able to see this meal in their journal."
+                    : "Tag TasteBuddies who were part of this meal memory. Note: Since this is a private meal, tagged users won't be able to see it."}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Photos */}

@@ -50,6 +50,13 @@ export async function GET(
         images: {
           orderBy: { displayOrder: 'asc' }
         },
+        taggedUsers: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, image: true }
+            }
+          }
+        }
       },
     });
 
@@ -208,6 +215,13 @@ export async function PUT(
         images: {
           orderBy: { displayOrder: 'asc' }
         },
+        taggedUsers: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, image: true }
+            }
+          }
+        }
       },
     });
     
@@ -264,6 +278,13 @@ export async function PUT(
           images: {
             orderBy: { displayOrder: 'asc' }
           },
+          taggedUsers: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true, image: true }
+              }
+            }
+          }
         },
       });
       

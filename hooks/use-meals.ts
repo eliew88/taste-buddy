@@ -119,6 +119,7 @@ export function useMeals(initialParams: UseMealsParams = {}): UseMealsReturn {
         search: fetchParams.search?.trim() || undefined,
         dateFrom: fetchParams.dateFrom,
         dateTo: fetchParams.dateTo,
+        mealType: fetchParams.mealType,
       });
 
       setMeals(response.meals);
@@ -220,6 +221,7 @@ export function useMealSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [mealType, setMealType] = useState<'created' | 'tagged' | 'all'>('all');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Meal data management (disable auto-fetch since we control it)
@@ -248,9 +250,10 @@ export function useMealSearch() {
       search: debouncedSearch,
       dateFrom,
       dateTo,
+      mealType,
       page: 1,
     });
-  }, [debouncedSearch, dateFrom, dateTo, fetchMeals]);
+  }, [debouncedSearch, dateFrom, dateTo, mealType, fetchMeals]);
 
   /**
    * Updates the search term and triggers debounced search
@@ -277,6 +280,15 @@ export function useMealSearch() {
   }, []);
 
   /**
+   * Updates meal type filter and triggers immediate search
+   * 
+   * @param type - The meal type filter to set
+   */
+  const handleMealTypeChange = useCallback((type: 'created' | 'tagged' | 'all') => {
+    setMealType(type);
+  }, []);
+
+  /**
    * Handles page navigation while preserving current filters
    * 
    * @param page - Page number to navigate to
@@ -286,9 +298,10 @@ export function useMealSearch() {
       search: debouncedSearch,
       dateFrom,
       dateTo,
+      mealType,
       page,
     });
-  }, [debouncedSearch, dateFrom, dateTo, fetchMeals]);
+  }, [debouncedSearch, dateFrom, dateTo, mealType, fetchMeals]);
 
   /**
    * Clears all search filters and resets to initial state
@@ -297,6 +310,7 @@ export function useMealSearch() {
     setSearchTerm('');
     setDateFrom(undefined);
     setDateTo(undefined);
+    setMealType('all');
   }, []);
 
   return {
@@ -307,11 +321,13 @@ export function useMealSearch() {
     searchTerm,
     dateFrom,
     dateTo,
+    mealType,
     handleSearch,
     handleDateChange,
+    handleMealTypeChange,
     handlePageChange,
     clearFilters,
-    refetch: () => fetchMeals({ search: debouncedSearch, dateFrom, dateTo }),
+    refetch: () => fetchMeals({ search: debouncedSearch, dateFrom, dateTo, mealType }),
     resetError,
   };
 }

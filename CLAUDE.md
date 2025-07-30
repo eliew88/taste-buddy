@@ -276,6 +276,38 @@ Complete favorites functionality with persistent storage:
 - Include related data with `include` option for complete recipe objects
 - Use `_count` for social feature statistics
 
+### ⚠️ CRITICAL DATABASE SAFETY GUIDELINES ⚠️
+
+**ALWAYS check with the user before running ANY database commands that could:**
+- Delete or modify production data
+- Run migrations on production
+- Execute `npx prisma db push` 
+- Execute `npx prisma migrate deploy`
+- Drop tables or columns
+- Reset databases
+- Seed databases with existing data
+
+**Before running database commands:**
+1. **VERIFY** which database you're targeting by checking the DATABASE_URL
+2. **ASK THE USER** for explicit permission before proceeding
+3. **CONFIRM** whether it's development or production environment
+4. **NEVER ASSUME** - always ask first!
+
+**Safe commands that don't require permission:**
+- `npx prisma generate` (only generates client code)
+- `npx prisma studio` (read-only database browser)
+- Read-only queries for inspection
+
+**Example of checking first:**
+```
+Before I run `npx prisma db push`, I need to confirm:
+- This will apply schema changes to your database
+- Current DATABASE_URL points to: [show environment]
+- Should I proceed with this database operation?
+```
+
+This prevents accidental data loss and ensures all database operations are intentional.
+
 ## File Structure Conventions
 
 - `/app` - Next.js App Router pages and API routes
