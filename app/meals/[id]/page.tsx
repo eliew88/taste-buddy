@@ -2,6 +2,7 @@ import MealDetailClient from './meal-detail-client';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { getOptimizedImageUrl } from '@/lib/image-client-utils';
+import { isB2Url } from '@/lib/image-optimization';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -106,7 +107,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // Only add image if we have a valid image URL
     if (imageUrl) {
       // Ensure we have an absolute URL for the image
-      const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+      let absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+      
+      // Use image proxy for B2 images to ensure WhatsApp compatibility
+      if (isB2Url(absoluteImageUrl)) {
+        absoluteImageUrl = `${baseUrl}/api/og-image?url=${encodeURIComponent(absoluteImageUrl)}`;
+      }
       
       metadata.openGraph.images = [{
         url: absoluteImageUrl,
