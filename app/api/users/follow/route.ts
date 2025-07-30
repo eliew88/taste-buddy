@@ -95,16 +95,22 @@ export async function POST(req: NextRequest) {
       }
 
       // Evaluate achievements for both users
+      let currentUserAchievements: any[] = [];
       try {
         console.log('Evaluating achievements for follow action...');
         const achievementResults = await evaluateFollowAchievements(session.user.id, userId);
         
-        // Log any new achievements
+        // Log any new achievements and collect current user's achievements
         achievementResults.forEach((result, index) => {
           const userType = index === 0 ? 'followed user' : 'follower';
           if (result.newAchievements.length > 0) {
             console.log(`${userType} earned achievements:`, 
               result.newAchievements.map(a => a.achievement.name));
+            
+            // If this is the follower (current user), collect their achievements
+            if (index === 1) {
+              currentUserAchievements.push(...result.newAchievements);
+            }
           }
         });
         
@@ -112,6 +118,11 @@ export async function POST(req: NextRequest) {
         console.error('Failed to evaluate achievements for follow:', error);
         // Don't fail the follow action if achievement evaluation fails
       }
+
+      return NextResponse.json({ 
+        success: true,
+        newAchievements: currentUserAchievements // Return current user's new achievements
+      });
     } else {
       // Remove follow relationship
       await prisma.follow.deleteMany({
@@ -122,9 +133,15 @@ export async function POST(req: NextRequest) {
       });
 
       // Evaluate achievements after unfollow (follower counts may have decreased)
+      let currentUserAchievements: any[] = [];
       try {
         console.log('Evaluating achievements for unfollow action...');
         const achievementResults = await evaluateFollowAchievements(session.user.id, userId);
+        
+        // Collect current user's achievements (in case they lost/regained some)
+        if (achievementResults.length > 1 && achievementResults[1].newAchievements.length > 0) {
+          currentUserAchievements.push(...achievementResults[1].newAchievements);
+        }
         
         console.log('Achievement evaluation completed after unfollow');
         
@@ -132,9 +149,12 @@ export async function POST(req: NextRequest) {
         console.error('Failed to evaluate achievements for unfollow:', error);
         // Don't fail the unfollow action if achievement evaluation fails
       }
-    }
 
-    return NextResponse.json({ success: true });
+      return NextResponse.json({ 
+        success: true,
+        newAchievements: currentUserAchievements // Return current user's new achievements
+      });
+    }
   } catch (error) {
     console.error('Follow API error:', error);
     return NextResponse.json(

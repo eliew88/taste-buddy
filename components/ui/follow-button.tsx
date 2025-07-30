@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFollowing } from '@/hooks/use-following';
+import { useGlobalAchievements } from '@/components/providers/achievement-provider';
 
 interface FollowButtonProps {
   userId: string;
@@ -10,10 +11,12 @@ interface FollowButtonProps {
 }
 
 export function FollowButton({ userId, className = '', variant = 'default' }: FollowButtonProps) {
-  const { followUser, unfollowUser, getFollowStatus, loading, error, isAuthenticated } = useFollowing();
+  const { getFollowStatus, loading: hookLoading, error, isAuthenticated } = useFollowing();
+  const { showAchievements } = useGlobalAchievements();
   const [isFollowing, setIsFollowing] = useState(false);
   const [canFollow, setCanFollow] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -36,12 +39,37 @@ export function FollowButton({ userId, className = '', variant = 'default' }: Fo
   const handleClick = async () => {
     if (!isAuthenticated || !canFollow) return;
 
-    const success = isFollowing 
-      ? await unfollowUser(userId)
-      : await followUser(userId);
+    setLoading(true);
+    
+    try {
+      const response = await fetch('/api/users/follow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: isFollowing ? 'unfollow' : 'follow'
+        }),
+      });
 
-    if (success) {
-      setIsFollowing(!isFollowing);
+      const data = await response.json();
+
+      if (data.success) {
+        setIsFollowing(!isFollowing);
+        
+        // Show achievement notifications if any were earned
+        if (data.newAchievements && data.newAchievements.length > 0) {
+          console.log('🏆 Follow action unlocked achievements:', data.newAchievements.map((a: any) => a.achievement.name));
+          showAchievements(data.newAchievements);
+        }
+      } else {
+        console.error('Follow action failed:', data.error);
+      }
+    } catch (error) {
+      console.error('Follow action error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
