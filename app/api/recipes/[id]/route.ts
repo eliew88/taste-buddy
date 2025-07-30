@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
 import { deleteRecipeImage } from '@/lib/image-utils';
+import { evaluateRecipeAchievements, evaluatePhotoAchievements } from '@/lib/achievement-service';
 
 /**
  * GET /api/recipes/[id]
@@ -534,10 +535,33 @@ export async function DELETE(
     }
 
 
+    // Store author ID before deletion for achievement evaluation
+    const authorId = existingRecipe.authorId;
+    
     // Delete recipe (this will also delete related favorites and ratings due to CASCADE)
     await prisma.recipe.delete({
       where: { id },
     });
+
+    // Evaluate achievements after recipe deletion
+    try {
+      console.log('Evaluating achievements for recipe deletion...');
+      
+      // Re-evaluate recipe count and ingredient achievements (counts may have decreased)
+      const recipeAchievements = await evaluateRecipeAchievements(authorId);
+      
+      // Re-evaluate photo achievements (photo count may have decreased)
+      const photoAchievements = await evaluatePhotoAchievements(authorId);
+      
+      // Note: We don't expect new achievements from deletion, but this ensures consistency
+      // and could be useful if we add "minimalist" achievements for having fewer items
+      
+      console.log('Achievement evaluation completed after recipe deletion');
+      
+    } catch (error) {
+      console.error('Failed to evaluate achievements after recipe deletion:', error);
+      // Don't fail the deletion if achievement evaluation fails
+    }
 
     return NextResponse.json({
       success: true,

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
 import { z } from 'zod';
+import { evaluateRatingAchievements } from '@/lib/achievement-service';
 
 const ratingSchema = z.object({
   rating: z.number().min(1).max(5).int(),
@@ -104,6 +105,22 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       _avg: { rating: true },
       _count: { rating: true }
     });
+
+    // Evaluate achievements for the recipe author when ratings change
+    try {
+      console.log('Evaluating achievements for rating submission...');
+      const achievementResult = await evaluateRatingAchievements(recipe.authorId);
+      
+      // Log any new achievements
+      if (achievementResult.newAchievements.length > 0) {
+        console.log(`Recipe author earned achievements:`, 
+          achievementResult.newAchievements.map(a => a.achievement.name));
+      }
+      
+    } catch (error) {
+      console.error('Failed to evaluate achievements for rating:', error);
+      // Don't fail the rating submission if achievement evaluation fails
+    }
 
     return NextResponse.json({
       success: true,

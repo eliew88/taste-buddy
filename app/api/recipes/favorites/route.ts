@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
 import { z } from 'zod';
+import { evaluateFavoriteAchievements } from '@/lib/achievement-service';
 
 const favoriteSchema = z.object({
   recipeId: z.string().min(1, 'Recipe ID is required'),
@@ -66,6 +67,9 @@ export async function POST(request: NextRequest) {
     let isFavorited = false;
     let message = '';
 
+    let shouldEvaluateAchievements = false;
+    const recipeAuthorId = recipe.authorId;
+
     if (action === 'add' || (action === 'toggle' && !existingFavorite)) {
       // Add to favorites
       if (!existingFavorite) {
@@ -77,6 +81,7 @@ export async function POST(request: NextRequest) {
         });
         isFavorited = true;
         message = 'Recipe added to favorites';
+        shouldEvaluateAchievements = true;
       } else {
         isFavorited = true;
         message = 'Recipe already in favorites';
@@ -94,9 +99,28 @@ export async function POST(request: NextRequest) {
         });
         isFavorited = false;
         message = 'Recipe removed from favorites';
+        shouldEvaluateAchievements = true;
       } else {
         isFavorited = false;
         message = 'Recipe not in favorites';
+      }
+    }
+
+    // Evaluate achievements for the recipe author when favorites change
+    if (shouldEvaluateAchievements) {
+      try {
+        console.log('Evaluating achievements for favorite action...');
+        const achievementResult = await evaluateFavoriteAchievements(recipeAuthorId);
+        
+        // Log any new achievements
+        if (achievementResult.newAchievements.length > 0) {
+          console.log(`Recipe author earned achievements:`, 
+            achievementResult.newAchievements.map(a => a.achievement.name));
+        }
+        
+      } catch (error) {
+        console.error('Failed to evaluate achievements for favorite:', error);
+        // Don't fail the favorite action if achievement evaluation fails
       }
     }
 

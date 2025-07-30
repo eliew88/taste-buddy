@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
+import { evaluateMealAchievements, evaluatePhotoAchievements } from '@/lib/achievement-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -317,6 +318,34 @@ export async function POST(request: NextRequest) {
       imagesCount: meal.images?.length || 0,
       authorId: meal.authorId
     });
+
+    // Evaluate achievements for the meal author
+    try {
+      console.log('Evaluating achievements for meal creation...');
+      const achievementResults = [];
+      
+      // Check meal count achievements
+      const mealAchievements = await evaluateMealAchievements(meal.authorId);
+      achievementResults.push(mealAchievements);
+      
+      // Check photo achievements if images were uploaded
+      if (meal.images && meal.images.length > 0) {
+        const photoAchievements = await evaluatePhotoAchievements(meal.authorId);
+        achievementResults.push(photoAchievements);
+      }
+      
+      // Log any new achievements
+      achievementResults.forEach(result => {
+        if (result.newAchievements.length > 0) {
+          console.log(`User ${meal.authorId} earned achievements:`, 
+            result.newAchievements.map(a => a.achievement.name));
+        }
+      });
+      
+    } catch (error) {
+      console.error('Failed to evaluate achievements:', error);
+      // Don't fail the meal creation if achievement evaluation fails
+    }
 
     console.log('Returning successful response');
     console.log('=== MEAL CREATION SUCCESS ===');

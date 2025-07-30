@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
 import { createNewRecipeNotification } from '@/lib/notification-utils';
+import { evaluateRecipeAchievements, evaluatePhotoAchievements } from '@/lib/achievement-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -288,6 +289,34 @@ export async function POST(request: NextRequest) {
       imagesCount: recipe.images?.length || 0,
       authorId: recipe.authorId
     });
+
+    // Evaluate achievements for the recipe author
+    try {
+      console.log('Evaluating achievements for recipe creation...');
+      const achievementResults = [];
+      
+      // Check recipe count and ingredient achievements
+      const recipeAchievements = await evaluateRecipeAchievements(recipe.authorId);
+      achievementResults.push(recipeAchievements);
+      
+      // Check photo achievements if images were uploaded
+      if (recipe.images && recipe.images.length > 0) {
+        const photoAchievements = await evaluatePhotoAchievements(recipe.authorId);
+        achievementResults.push(photoAchievements);
+      }
+      
+      // Log any new achievements
+      achievementResults.forEach(result => {
+        if (result.newAchievements.length > 0) {
+          console.log(`User ${recipe.authorId} earned achievements:`, 
+            result.newAchievements.map(a => a.achievement.name));
+        }
+      });
+      
+    } catch (error) {
+      console.error('Failed to evaluate achievements:', error);
+      // Don't fail the recipe creation if achievement evaluation fails
+    }
 
     // Notify followers about the new recipe
     try {

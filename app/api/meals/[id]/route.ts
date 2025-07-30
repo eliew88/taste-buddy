@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
+import { evaluateMealAchievements, evaluatePhotoAchievements } from '@/lib/achievement-service';
 
 /**
  * GET /api/meals/[id]
@@ -377,10 +378,30 @@ export async function DELETE(
       );
     }
 
+    // Store author ID before deletion for achievement evaluation
+    const authorId = existingMeal.authorId;
+    
     // Delete meal (this will also delete related images due to CASCADE)
     await prisma.meal.delete({
       where: { id },
     });
+
+    // Evaluate achievements after meal deletion
+    try {
+      console.log('Evaluating achievements for meal deletion...');
+      
+      // Re-evaluate meal count achievements (count may have decreased)
+      const mealAchievements = await evaluateMealAchievements(authorId);
+      
+      // Re-evaluate photo achievements (photo count may have decreased)
+      const photoAchievements = await evaluatePhotoAchievements(authorId);
+      
+      console.log('Achievement evaluation completed after meal deletion');
+      
+    } catch (error) {
+      console.error('Failed to evaluate achievements after meal deletion:', error);
+      // Don't fail the deletion if achievement evaluation fails
+    }
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { createNewFollowerNotification } from '@/lib/notification-utils';
+import { evaluateFollowAchievements } from '@/lib/achievement-service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,6 +93,25 @@ export async function POST(req: NextRequest) {
         console.error('Failed to create follow notification:', error);
         // Don't fail the follow action if notification fails
       }
+
+      // Evaluate achievements for both users
+      try {
+        console.log('Evaluating achievements for follow action...');
+        const achievementResults = await evaluateFollowAchievements(session.user.id, userId);
+        
+        // Log any new achievements
+        achievementResults.forEach((result, index) => {
+          const userType = index === 0 ? 'followed user' : 'follower';
+          if (result.newAchievements.length > 0) {
+            console.log(`${userType} earned achievements:`, 
+              result.newAchievements.map(a => a.achievement.name));
+          }
+        });
+        
+      } catch (error) {
+        console.error('Failed to evaluate achievements for follow:', error);
+        // Don't fail the follow action if achievement evaluation fails
+      }
     } else {
       // Remove follow relationship
       await prisma.follow.deleteMany({
@@ -100,6 +120,18 @@ export async function POST(req: NextRequest) {
           followingId: userId
         }
       });
+
+      // Evaluate achievements after unfollow (follower counts may have decreased)
+      try {
+        console.log('Evaluating achievements for unfollow action...');
+        const achievementResults = await evaluateFollowAchievements(session.user.id, userId);
+        
+        console.log('Achievement evaluation completed after unfollow');
+        
+      } catch (error) {
+        console.error('Failed to evaluate achievements for unfollow:', error);
+        // Don't fail the unfollow action if achievement evaluation fails
+      }
     }
 
     return NextResponse.json({ success: true });
