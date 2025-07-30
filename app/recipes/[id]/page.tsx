@@ -45,12 +45,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // Get the primary image or first available image
     let imageUrl = '';
     if (recipe.images && recipe.images.length > 0) {
-      imageUrl = recipe.images[0].url;
-    }
-
-    // Optimize the image for Open Graph
-    if (imageUrl) {
-      imageUrl = getOptimizedImageUrl(imageUrl) || imageUrl;
+      const rawImageUrl = recipe.images[0].url;
+      // Optimize the image for Open Graph
+      imageUrl = getOptimizedImageUrl(rawImageUrl) || rawImageUrl;
+      
+      // Debug logging for development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Recipe OG Image Debug:', {
+          recipeId,
+          rawImageUrl,
+          optimizedUrl: getOptimizedImageUrl(rawImageUrl),
+          finalUrl: imageUrl
+        });
+      }
     }
 
     // Create a proper description
@@ -61,14 +68,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // Get the base URL from environment or use production URL
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                     process.env.NEXTAUTH_URL || 
-                    'https://tastebuddy.vercel.app';
+                    'https://tastebuddy-8zwrbfgw8-elis-projects-a122fa34.vercel.app';
 
-    // Ensure we have an absolute URL for the image
-    const absoluteImageUrl = imageUrl ? 
-      (imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`) : 
-      `${baseUrl}/images/recipe-placeholder.jpg`; // Add a default OG image
-
-    return {
+    // Prepare Open Graph metadata
+    const metadata: any = {
       title: `${recipe.title} - TasteBuddy`,
       description: description.substring(0, 160), // Keep description under 160 chars
       openGraph: {
@@ -76,21 +79,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: description.substring(0, 160),
         type: 'website',
         url: `${baseUrl}/recipes/${recipeId}`,
-        images: [
-          {
-            url: absoluteImageUrl,
-            width: 1200,
-            height: 630,
-            alt: recipe.title,
-          }
-        ],
         siteName: 'TasteBuddy',
-      },
-      // Also add basic meta tags
-      other: {
-        'og:image:secure_url': absoluteImageUrl,
       }
     };
+
+    // Only add image if we have a valid image URL
+    if (imageUrl) {
+      // Ensure we have an absolute URL for the image
+      const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+      
+      metadata.openGraph.images = [{
+        url: absoluteImageUrl,
+        width: 1200,
+        height: 630,
+        alt: recipe.title,
+      }];
+      
+      // Also add basic meta tags
+      metadata.other = {
+        'og:image:secure_url': absoluteImageUrl,
+      };
+    }
+
+    return metadata;
   } catch (error) {
     console.error('Error generating metadata:', error);
     return {
