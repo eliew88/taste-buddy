@@ -478,10 +478,24 @@ function FoodFeedPageContent() {
         filteredMeals = response.meals || []; // Placeholder - would need following user IDs to filter properly
       }
       
-      setMeals(filteredMeals);
+      // Apply client-side sorting based on sortBy option
+      const sortedMeals = [...filteredMeals].sort((a, b) => {
+        switch (sortBy) {
+          case 'newest':
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          case 'oldest':
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          case 'title': // A-Z sorting by name
+            return a.name.localeCompare(b.name);
+          default:
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+      });
+      
+      setMeals(sortedMeals);
       setSearchMeta({
-        total: filteredMeals.length,
-        pages: Math.ceil(filteredMeals.length / (response.limit || resultsPerPage)),
+        total: sortedMeals.length,
+        pages: Math.ceil(sortedMeals.length / (response.limit || resultsPerPage)),
         currentPage: response.page || 1,
       });
       

@@ -105,40 +105,42 @@ export default function MealCard({
     >
       {/* Grid view - show primary photo at top */}
       {!isListView && (
-        <div className="h-48 bg-gray-200 overflow-hidden relative group">
-          {(() => {
-            // Get primary image from images array, or first image if no primary
-            const primaryImage = meal.images?.find(img => img.isPrimary) || meal.images?.[0];
-            const imageUrl = primaryImage?.url;
-            
-            return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
-              <img 
-                src={getOptimizedImageUrl(imageUrl)!} 
-                alt={primaryImage?.alt || `${meal.name} meal`}
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                loading="lazy"
-                onError={() => {
-                  // If B2 image fails, show placeholder immediately
-                  setImageError(true);
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                <div className="text-center text-gray-400">
-                  <Utensils className="w-16 h-16 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm font-medium">No photo</p>
+        <Link href={`/meals/${meal.id}`} className="block">
+          <div className="h-48 bg-gray-200 overflow-hidden relative group cursor-pointer">
+            {(() => {
+              // Get primary image from images array, or first image if no primary
+              const primaryImage = meal.images?.find(img => img.isPrimary) || meal.images?.[0];
+              const imageUrl = primaryImage?.url;
+              
+              return imageUrl && !imageError && getOptimizedImageUrl(imageUrl) ? (
+                <img 
+                  src={getOptimizedImageUrl(imageUrl)!} 
+                  alt={primaryImage?.alt || `${meal.name} meal`}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  loading="lazy"
+                  onError={() => {
+                    // If B2 image fails, show placeholder immediately
+                    setImageError(true);
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                  <div className="text-center text-gray-400">
+                    <Utensils className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-medium">No photo</p>
+                  </div>
                 </div>
+              );
+            })()}
+            
+            {/* Photo count indicator */}
+            {meal.images && meal.images.length > 1 && (
+              <div className="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs font-medium">
+                {meal.images.length} photos
               </div>
-            );
-          })()}
-          
-          {/* Photo count indicator */}
-          {meal.images && meal.images.length > 1 && (
-            <div className="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2 py-1 rounded-full text-xs font-medium">
-              {meal.images.length} photos
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </Link>
       )}
 
       <div className="p-6">
@@ -199,14 +201,16 @@ export default function MealCard({
               }}
             >
               {meal.images.map((image, index) => (
-                <div key={image.id || index} className="w-60 h-60 flex-shrink-0 overflow-hidden rounded-md">
-                  <img 
-                    src={getOptimizedImageUrl(image.url) || image.url} 
-                    alt={image.alt || `${meal.name} meal photo ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
+                <Link key={image.id || index} href={`/meals/${meal.id}`} className="block">
+                  <div className="w-60 h-60 flex-shrink-0 overflow-hidden rounded-md cursor-pointer group">
+                    <img 
+                      src={getOptimizedImageUrl(image.url) || image.url} 
+                      alt={image.alt || `${meal.name} meal photo ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                </Link>
               ))}
             </div>
           </div>

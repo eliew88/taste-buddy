@@ -50,10 +50,10 @@ export function getRandomFormattedQuote(includeAuthor: boolean = false): string 
 /**
  * Gets a deterministic "random" quote based on the current hour
  * This ensures server and client render the same quote (no hydration mismatch)
- * Quote changes every hour instead of every day
+ * Quote changes every hour
  * @returns Object with formatted quote text and author
  */
-export function getDailyQuoteForDisplay(): { text: string; author: string } {
+export function getHourlyQuoteForDisplay(): { text: string; author: string } {
   // Get current date and hour as a string (YYYY-MM-DD-HH)
   const now = new Date();
   const hourKey = `${now.toISOString().split('T')[0]}-${now.getHours().toString().padStart(2, '0')}`;
@@ -103,3 +103,6 @@ export function getAllQuotes(): FoodQuote[] {
 export function getQuoteCount(): number {
   return foodQuotes.length;
 }
+
+// Backward compatibility export
+export const getDailyQuoteForDisplay = getHourlyQuoteForDisplay;

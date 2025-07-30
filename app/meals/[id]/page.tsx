@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // Get the primary meal image or first available image
     let imageUrl = '';
     if (meal.images && meal.images.length > 0) {
-      imageUrl = getOptimizedImageUrl(meal.images[0].url, { width: 1200, height: 630, fit: 'cover' });
+      imageUrl = getOptimizedImageUrl(meal.images[0].url) || '';
     }
 
     // Create description including tagged users

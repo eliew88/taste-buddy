@@ -52,20 +52,36 @@ vercel env add NEXT_PUBLIC_FEATURE_ENABLEPAYMENTS
 ## Database Architecture
 
 The application uses PostgreSQL with Prisma ORM. The schema includes:
-- **Users** - User accounts with authentication data (email, hashed password, profile info)
+- **Users** - User accounts with authentication data, profile info, social links
 - **Recipes** - Core recipe data with structured ingredients and multiple images support
 - **RecipeImages** - Multiple images per recipe with primary image designation
 - **IngredientEntries** - Structured ingredient data with amounts, units, and ingredient names
-- **Favorites** - Many-to-many relationship between users and recipes (implemented)
-- **Ratings** - User ratings for recipes (1-5 stars) - placeholder for future implementation
+- **Meals** - Meal memories with photos, tagging, and privacy controls
+- **MealImages** - Multiple images per meal with primary image designation
+- **MealTags** - Tagging system for TasteBuddies in meal memories
+- **Follows** - User following system for social features
+- **Favorites** - Many-to-many relationship between users and recipes
+- **Ratings** - User ratings for recipes (1-5 stars)
+- **Comments** - User comments on recipes and meals
+- **Compliments** - Tip/compliment system with optional Stripe integration
+- **Achievements** - Gamification system with various achievement types
+- **UserAchievements** - Tracking which users have earned which achievements  
+- **Notifications** - In-app notification system
+- **PaymentAccounts** - Stripe Connect integration for tipping
 
 ### Database Relationships
 - **User → Recipes**: One-to-many (user can create multiple recipes)
-- **Recipe → RecipeImages**: One-to-many (recipe can have multiple images with primary designation)
-- **Recipe → IngredientEntries**: One-to-many (recipe has structured ingredient data)
-- **User → Favorites**: One-to-many (user can have multiple favorites)
-- **Recipe → Favorites**: One-to-many (recipe can be favorited by multiple users)
+- **User → Meals**: One-to-many (user can create multiple meal memories)
+- **Recipe → RecipeImages**: One-to-many (recipe can have multiple images)
+- **Meal → MealImages**: One-to-many (meal can have multiple images)
+- **Recipe → IngredientEntries**: One-to-many (structured ingredient data)
+- **Meal ↔ User**: Many-to-many through MealTags (tagging TasteBuddies)
+- **User ↔ User**: Many-to-many through Follows (following system)
 - **User ↔ Recipe**: Many-to-many through Favorites table
+- **User → Achievements**: Many-to-many through UserAchievements table
+- **User → Comments**: One-to-many (users can comment on recipes/meals)
+- **User → Compliments**: One-to-many (users can send compliments/tips)
+- **User → Notifications**: One-to-many (users receive notifications)
 
 ### PostgreSQL Features
 
@@ -240,7 +256,11 @@ The application now includes a complete authentication system:
 ### Custom Hooks Usage
 - Use `useRecipes()` for general recipe fetching
 - Use `useRecipeSearch()` for search pages with filters
-- Use `useFavorites()` for favorites management (implemented)
+- Use `useFavorites()` for favorites management
+- Use `useMeals()` and `useMealSearch()` for meal memory management
+- Use `useFollowing()` for social following features
+- Use `useUserAchievements()` for gamification system
+- Use `useTasteBuddies()` for mutual follows (TasteBuddies)
 
 ### Favorites System
 **Status: ✅ IMPLEMENTED**
@@ -266,15 +286,350 @@ Complete favorites functionality with persistent storage:
 - `/app/profile/favorites/page.tsx` - Favorites page component
 - `/components/ui/recipe-card.tsx` - Updated with favorites functionality
 
+## Meal Memory System
+**Status: ✅ IMPLEMENTED**
+
+Complete meal memory system for users to share their culinary experiences:
+
+### Features
+- **Photo Upload** - Upload multiple photos per meal memory
+- **TasteBuddy Tagging** - Tag mutual follows (TasteBuddies) in meal memories
+- **Privacy Controls** - Mark meals as public or private
+- **Meal Journal** - Personal meal memory journal at `/profile/meals`
+- **Filtering** - Filter by created meals, tagged meals, or all meals
+- **Rich Metadata** - Date, description, and location information
+
+### Privacy System
+- **Public Meals** - Visible to all users, appear in Food Feed and social sharing
+- **Private Meals** - Only visible to the meal author
+- **Tagged User Access** - Tagged TasteBuddies can see meals they're tagged in
+- **Profile Display** - Only public meals appear on user profiles
+
+### TasteBuddy Tagging
+- **Mutual Follow Requirement** - Only mutual follows can be tagged
+- **Tag Validation** - Server-side validation prevents unauthorized tagging
+- **Notification System** - Users get notified when tagged in meals
+- **Tagged User Display** - Shows tagged users on meal detail pages
+
+### Implementation
+```typescript
+// Creating a meal with tags and privacy
+const meal = {
+  name: "Sunday Brunch",
+  description: "Amazing brunch with friends",
+  isPublic: true,
+  taggedUserIds: ["user1", "user2"], // Only TasteBuddies
+  images: [...] // Multiple images supported
+};
+```
+
+### Key Files
+- `/app/meals/` - Meal creation, editing, and detail pages
+- `/app/profile/meals/page.tsx` - Personal meal journal
+- `/components/meal-form.tsx` - Meal creation/editing form
+- `/components/ui/meal-card.tsx` - Meal display component
+- `/hooks/use-meals.ts` - Meal data management hooks
+- `/api/meals/` - Meal API endpoints with privacy controls
+
+## Social Features System
+**Status: ✅ IMPLEMENTED**
+
+Comprehensive social features for community interaction:
+
+### Following System
+- **Follow/Unfollow** - Users can follow other users
+- **TasteBuddies** - Mutual follows create "TasteBuddy" relationships
+- **Follow Button** - Consistent follow/unfollow UI across the platform
+- **Following/Followers Lists** - View who users follow and who follows them
+
+### Social Discovery
+- **Food Feed** - Browse all public recipes and meals at `/food-feed`
+- **User Profiles** - View other users' public content at `/profile/[id]`
+- **Social Stats** - Follower/following counts on profiles
+- **TasteBuddy-Only Features** - Some features require mutual following
+
+### User Profiles
+- **Public Profiles** - Showcase user's public recipes and meals
+- **Profile Customization** - Bio, Instagram/website links, profile photos
+- **Social Links** - Instagram and website URL integration
+- **Achievement Display** - Show earned achievements on profiles
+
+### Implementation
+```typescript
+// Following/unfollowing users
+const { isFollowing, followUser, unfollowUser } = useFollowing();
+
+// Getting TasteBuddies (mutual follows)
+const { tastebuddies } = useTasteBuddies();
+
+// Checking follow status
+const followStatus = await getFollowStatus(userId);
+```
+
+### Key Files
+- `/app/profile/[id]/page.tsx` - Public user profiles
+- `/components/ui/follow-button.tsx` - Follow/unfollow functionality
+- `/hooks/use-following.ts` - Following state management
+- `/hooks/use-tastebuddies.ts` - TasteBuddy relationship management
+- `/api/users/follow/route.ts` - Follow/unfollow API
+- `/api/users/tastebuddies/route.ts` - TasteBuddy relationship API
+
+## Enhanced Sharing System
+**Status: ✅ IMPLEMENTED**
+
+Rich sharing capabilities with social media integration:
+
+### Share Button Features
+- **Copy Link** - One-click URL copying with visual feedback
+- **Native Sharing** - Uses device's native share menu when available
+- **Dropdown Interface** - Clean dropdown with multiple share options
+- **Error Handling** - Graceful fallback for older browsers
+
+### Open Graph Integration
+- **Rich Previews** - Recipe and meal links show rich previews on social media
+- **Dynamic Meta Tags** - Server-generated metadata for each recipe/meal
+- **Image Optimization** - Automatically optimized images for social sharing (1200x630)
+- **Privacy Aware** - Only public content shows rich previews
+
+### Social Media Support
+- **Facebook** - Rich link previews with recipe images and details
+- **WhatsApp** - Recipe/meal previews in chat conversations
+- **Slack** - Professional-looking link previews in workspace chats
+- **Twitter** - Clean link previews (basic Open Graph support)
+
+### Implementation
+```typescript
+// Using the share button component
+<ShareButton
+  title={recipe.title}
+  text={`Check out this ${recipe.title} recipe!`}
+  url={window.location.href}
+/>
+
+// Open Graph metadata (server-side)
+export async function generateMetadata({ params }) {
+  const recipe = await getRecipe(params.id);
+  return {
+    title: recipe.title,
+    openGraph: {
+      images: [recipe.primaryImage.url],
+      description: recipe.description
+    }
+  };
+}
+```
+
+### Key Files
+- `/components/ui/share-button.tsx` - Reusable share button component
+- `/app/recipes/[id]/page.tsx` - Recipe metadata generation
+- `/app/meals/[id]/page.tsx` - Meal metadata generation
+- `/app/test-og/page.tsx` - Open Graph testing utilities
+
+## Delete Functionality
+**Status: ✅ IMPLEMENTED**
+
+Safe deletion system for recipes and meals:
+
+### Features
+- **Authorization** - Only content owners can delete their own content
+- **Confirmation Dialog** - Clear warning about permanent deletion
+- **Visual Design** - Red trash icon in top-right of edit pages
+- **Cascade Deletion** - Properly removes related images, comments, etc.
+- **Proper Redirects** - Users redirected to appropriate pages after deletion
+
+### Safety Measures
+- **Double Confirmation** - Dialog requires explicit user confirmation
+- **Warning Message** - Clear warning that deletion cannot be undone
+- **Loading States** - Visual feedback during deletion process
+- **Error Handling** - Proper error messages if deletion fails
+
+### Implementation
+```typescript
+// Confirmation dialog usage
+<ConfirmationDialog
+  isOpen={showDeleteDialog}
+  onConfirm={handleDelete}
+  title="Delete Recipe"
+  message="Are you sure? This cannot be undone."
+  variant="danger"
+/>
+```
+
+### Key Files
+- `/components/ui/confirmation-dialog.tsx` - Reusable confirmation dialog
+- `/app/recipes/[id]/edit/page.tsx` - Recipe deletion interface
+- `/app/meals/[id]/edit/page.tsx` - Meal deletion interface
+- `/api/recipes/[id]/route.ts` - Recipe deletion API (DELETE method)
+- `/api/meals/[id]/route.ts` - Meal deletion API (DELETE method)
+
+## Gamification System
+**Status: ✅ IMPLEMENTED**
+
+Comprehensive achievement system to encourage user engagement:
+
+### Achievement Types
+- **RECIPE_COUNT** - Based on number of recipes posted (First Recipe, Recipe Master, etc.)
+- **MEAL_COUNT** - Based on number of meals posted (First Meal, Meal Explorer, etc.)
+- **PHOTO_COUNT** - Based on photos uploaded (First Shot, Photographer, etc.)
+- **FAVORITES_COUNT** - Based on total favorites received
+- **FOLLOWERS_COUNT** - Based on number of followers
+- **RATINGS_COUNT** - Based on total ratings received
+- **SPECIAL** - One-time special achievements
+
+### Achievement System
+- **Automatic Triggering** - Achievements unlock automatically when conditions are met
+- **Real-time Updates** - Achievement progress updates immediately
+- **Badge Display** - Visual achievement badges on user profiles
+- **Achievement Grid** - Organized display of earned achievements
+- **Progress Tracking** - Shows progress toward next achievements
+
+### User Experience
+- **Profile Integration** - Achievements prominently displayed on user profiles
+- **Social Recognition** - Achievements visible to other users
+- **Motivation System** - Encourages continued platform engagement
+- **Fair Distribution** - Achievements for different types of users (creators, browsers, social users)
+
+### Implementation
+```typescript
+// Achievement definitions
+const achievement = {
+  type: 'RECIPE_COUNT',
+  name: 'Recipe Master',
+  description: 'Post 25 amazing recipes',
+  icon: '👨‍🍳',
+  color: '#3B82F6',
+  threshold: 25
+};
+
+// Using achievements in components
+const { achievements, loading } = useUserAchievements(userId);
+```
+
+### Key Files
+- `/lib/achievement-utils.ts` - Achievement logic and triggering
+- `/hooks/use-achievements.ts` - Achievement data management
+- `/components/achievement-badge.tsx` - Achievement display components
+- `/api/users/[id]/achievements/route.ts` - Achievement API endpoints
+- Database: `Achievement` and `UserAchievement` models
+
+## Notification System
+**Status: ✅ IMPLEMENTED**
+
+Real-time notification system for user engagement:
+
+### Notification Types
+- **NEW_FOLLOWER** - When someone starts following you
+- **RECIPE_COMMENT** - Comments on your recipes
+- **COMPLIMENT_RECEIVED** - Tips/compliments received
+- **NEW_RECIPE_FROM_FOLLOWING** - New recipes from people you follow
+- **MEAL_TAG** - When tagged in meal memories
+
+### Features
+- **Real-time Updates** - Notifications appear immediately
+- **Notification Bell** - Visual indicator with unread count
+- **Mark as Read** - Individual and bulk read management
+- **Notification Preferences** - Users can customize notification types
+- **In-app Display** - Clean notification list interface
+
+### Key Files
+- `/components/ui/notification-bell.tsx` - Notification bell component
+- `/lib/notification-utils.ts` - Notification creation utilities
+- `/api/notifications/` - Notification management APIs
+- `/app/profile/privacy/page.tsx` - Notification preferences
+
+## Comments and Compliments System
+**Status: ✅ IMPLEMENTED**
+
+User interaction features for community engagement:
+
+### Comments System
+- **Recipe Comments** - Users can comment on recipes
+- **Threaded Discussions** - Organized comment threads
+- **Author Interactions** - Recipe authors can respond to comments
+- **Comment Management** - Edit/delete your own comments
+
+### Compliments System
+- **Tip Integration** - Send compliments with optional Stripe tips
+- **Text Messages** - Send appreciative messages to recipe/meal authors
+- **Payment Processing** - Secure Stripe integration for monetary tips
+- **Feature Flag Control** - Payment features can be enabled/disabled
+
+### Key Files
+- `/components/comment-form.tsx` - Comment creation interface
+- `/components/compliment-form.tsx` - Compliment/tip interface
+- `/api/comments/` - Comment management APIs
+- `/api/compliments/` - Compliment and tipping APIs
+
+## Page Structure and Navigation
+
+### Core Pages
+- **Homepage (`/`)** - Featured recipes with search and filtering
+- **Food Feed (`/food-feed`)** - Browse all public recipes and meals
+- **Recipe Pages** - Create (`/recipes/new`), view (`/recipes/[id]`), edit (`/recipes/[id]/edit`)
+- **Meal Pages** - Create (`/meals/new`), view (`/meals/[id]`), edit (`/meals/[id]/edit`)
+
+### Profile Pages
+- **Personal Profile (`/profile`)** - User's own profile and content management
+- **Public Profiles (`/profile/[id]`)** - View other users' public content
+- **Favorites (`/profile/favorites`)** - User's favorited recipes
+- **Meal Journal (`/profile/meals`)** - Personal meal memory journal
+- **Privacy Settings (`/profile/privacy`)** - Notification and privacy preferences
+- **Payment Setup (`/profile/payment-setup`)** - Stripe Connect integration
+
+### Authentication Pages
+- **Sign In (`/auth/signin`)** - Login with demo account shortcuts
+- **Sign Up (`/auth/signup`)** - User registration
+
+### Development/Testing Pages
+- **Open Graph Test (`/test-og`)** - Test social media link previews
+
+## UI Component Architecture
+
+### Core UI Components
+- **ShareButton** - Social sharing with copy link and native share
+- **ConfirmationDialog** - Reusable confirmation dialogs
+- **FollowButton** - Follow/unfollow functionality
+- **NotificationBell** - Real-time notification indicator
+- **Avatar** - User profile image display
+- **Loading Components** - Consistent loading states throughout app
+
+### Form Components
+- **RecipeForm** - Recipe creation/editing with image upload
+- **MealForm** - Meal memory creation with tagging and privacy
+- **CommentForm** - Comment creation interface
+- **ComplimentForm** - Tip/compliment interface
+- **IngredientInput** - Structured ingredient input
+
+### Display Components
+- **RecipeCard** - Recipe preview cards with favorites
+- **MealCard** - Meal memory cards
+- **RecipeImageGallery** - Multiple image display with modal
+- **RecipeScaleSlider** - Interactive recipe scaling
+- **AchievementBadge** - Achievement display components
+
+## Development Environment
+
+### Environment Differences
+- **Development** - Uses local PostgreSQL, shows all recipes in Featured section
+- **Production** - Uses Neon PostgreSQL, Featured recipes require images
+- **Feature Flags** - Payment system disabled by default for safety
+
+### Image Storage
+- **Backblaze B2** - Production image storage with CDN
+- **Image Optimization** - Automatic resizing and optimization
+- **Multiple Formats** - Support for various image formats and sizes
+
 ### Error Handling
 - API routes return structured `{ success: boolean, data?: T, error?: string }` responses
 - Custom hooks handle loading states and error management
 - Error boundaries catch React component errors
+- Confirmation dialogs prevent accidental destructive actions
 
 ### Database Operations
 - Always use the singleton `prisma` instance from `lib/db.ts`
-- Include related data with `include` option for complete recipe objects
+- Include related data with `include` option for complete objects
 - Use `_count` for social feature statistics
+- Proper cascade deletion for data integrity
 
 ### ⚠️ CRITICAL DATABASE SAFETY GUIDELINES ⚠️
 

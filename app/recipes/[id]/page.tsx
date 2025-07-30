@@ -48,9 +48,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       imageUrl = recipe.images[0].url;
     }
 
-    // Optimize the image for Open Graph (1200x630 is recommended)
+    // Optimize the image for Open Graph
     if (imageUrl) {
-      imageUrl = getOptimizedImageUrl(imageUrl, { width: 1200, height: 630, fit: 'cover' });
+      imageUrl = getOptimizedImageUrl(imageUrl) || imageUrl;
     }
 
     // Create a proper description

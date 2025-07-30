@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Search, Plus, AlertCircle, LogIn } from 'lucide-react';
@@ -30,7 +30,7 @@ import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import MealCard from '@/components/ui/meal-card';
 import RecipeStatsSection from '@/components/recipe-stats-section';
-import { getDailyHeroContent } from '@/lib/daily-content';
+import { getHourlyHeroContent } from '@/lib/hourly-content';
 import apiClient from '@/lib/api-client';
 import { Meal } from '@/types/meal';
 
@@ -60,26 +60,71 @@ const HeroSection = ({
   searchLoading: boolean;
   heroImages?: string[];
 }) => {
-  // Use deterministic daily content to prevent hydration mismatch
-  const dailyContent = getDailyHeroContent(heroImages);
-  const heroQuote = dailyContent.quote;
-  const selectedImage = dailyContent.image;
+  // Ensure we always have fallback images available
+  const imagesWithFallback = heroImages && heroImages.length > 0 ? heroImages : FALLBACK_HERO_IMAGES;
   
-  console.log('🎨 HeroSection rendering with images:', heroImages);
+  // Use deterministic hourly content to prevent hydration mismatch
+  const hourlyContent = getHourlyHeroContent(imagesWithFallback);
+  const heroQuote = hourlyContent.quote;
+  const selectedImage = hourlyContent.image;
+  
+  // Create a fallback system: try external image, fall back to beautiful gradient
+  const [imageLoadError, setImageLoadError] = React.useState(false);
+  const imageToUse = selectedImage;
   
   return (
     <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
       {/* Single Random Recipe Background */}
       <div className="absolute inset-0 z-0">
-        {selectedImage ? (
-          <div 
-            className="w-full h-full bg-cover bg-center transition-transform duration-700"
-            style={{ 
-              backgroundImage: `url(${selectedImage})` 
-            }}
-          />
+        {selectedImage && selectedImage.trim() !== '' ? (
+          <>
+            {/* Test if image loads, fall back to gradient if it doesn't */}
+            <img 
+              src={imageToUse}
+              alt=""
+              style={{ display: 'none' }}
+              onLoad={() => setImageLoadError(false)}
+              onError={() => setImageLoadError(true)}
+            />
+            
+            {!imageLoadError ? (
+              /* Show the actual image if it loads */
+              <div 
+                className="w-full h-full bg-cover bg-center transition-transform duration-700"
+                style={{ 
+                  backgroundImage: `url(${imageToUse})`,
+                  minHeight: '100%'
+                }}
+              />
+            ) : (
+              /* Show beautiful food image fallback */
+              <div className="relative w-full h-full">
+                {/* Try another food image from a different source */}
+                <div 
+                  className="w-full h-full bg-cover bg-center transition-transform duration-700"
+                  style={{ 
+                    backgroundImage: `url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
+                    minHeight: '100%'
+                  }}
+                />
+                {/* CSS-only food pattern fallback if all images fail */}
+                <div 
+                  className="absolute inset-0 w-full h-full"
+                  style={{
+                    background: `
+                      radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.8) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.6) 0%, transparent 50%),
+                      radial-gradient(circle at 40% 80%, rgba(251, 191, 36, 0.7) 0%, transparent 50%),
+                      linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%)
+                    `,
+                    zIndex: -1
+                  }}
+                />
+              </div>
+            )}
+          </>
         ) : (
-          /* Fallback gradient background */
+          /* Fallback gradient background (should not be used now with improved fallback logic) */
           <div className="w-full h-full bg-gradient-to-br from-green-600 to-green-800" />
         )}
       </div>
@@ -268,17 +313,10 @@ export default function HomePage() {
   // Fetch recipes with images for hero background
   const fetchHeroImages = async () => {
     try {
-      console.log('🔍 Fetching recipes for hero background...');
       const response = await fetch('/api/recipes?limit=4&featured=true');
       if (response.ok) {
         const data = await response.json();
-        console.log('📊 API Response:', data);
-        const recipesWithImages = data.data.filter((recipe: any) => recipe.images && recipe.images.length > 0);
-        console.log('🖼️ Recipes with images:', recipesWithImages.length);
-        console.log('📸 Image URLs:', recipesWithImages.map((recipe: any) => {
-          const primaryImage = recipe.images?.find((img: any) => img.isPrimary) || recipe.images?.[0];
-          return primaryImage?.url;
-        }));
+        const recipesWithImages = data.data?.filter((recipe: any) => recipe.images && recipe.images.length > 0) || [];
         
         if (recipesWithImages.length > 0) {
           const dbImages = recipesWithImages.map((recipe: any) => {
@@ -286,17 +324,17 @@ export default function HomePage() {
             return primaryImage?.url;
           }).filter(Boolean);
           const allImages = [...dbImages, ...FALLBACK_HERO_IMAGES];
-          console.log('✅ Setting hero images:', allImages);
           setHeroImages(allImages);
         } else {
           // Use fallback images if no recipes with images
-          console.log('🔄 Using fallback images');
           setHeroImages(FALLBACK_HERO_IMAGES);
         }
+      } else {
+        setHeroImages(FALLBACK_HERO_IMAGES);
       }
     } catch (error) {
       console.error('Error fetching hero images:', error);
-      // Keep fallback images on error
+      // Ensure fallback images are always set on error
       setHeroImages(FALLBACK_HERO_IMAGES);
     }
   };
