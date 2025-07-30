@@ -42,7 +42,7 @@ import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 import IngredientInput from '@/components/ui/ingredient-input';
 import { useMultipleImageUpload } from '@/hooks/use-multiple-image-upload';
 import apiClient from '@/lib/api-client';
-import { checkAndNotifyAchievements } from '@/lib/achievement-client';
+import { useGlobalAchievements } from '@/components/providers/achievement-provider';
 import { CreateRecipeData, CreateIngredientEntryData, CreateRecipeImageData } from '@/types/recipe';
 
 interface RecipeFormData extends CreateRecipeData {
@@ -78,6 +78,7 @@ export default function RecipeForm({
 }: RecipeFormProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { showAchievements } = useGlobalAchievements();
 
   // Multiple image upload state
   const {
@@ -304,11 +305,10 @@ export default function RecipeForm({
         if (response.success) {
           clearDraft();
           
-          // Check for achievement notifications after successful recipe creation
-          if (session?.user?.id && !isEditing) {
-            checkAndNotifyAchievements(session.user.id).catch(error => {
-              console.error('Failed to check achievements after recipe creation:', error);
-            });
+          // Show achievement notifications if any were earned
+          if (response.newAchievements && response.newAchievements.length > 0) {
+            console.log('🏆 Recipe creation unlocked achievements:', response.newAchievements.map((a: any) => a.achievement.name));
+            showAchievements(response.newAchievements);
           }
           
           router.push(`/recipes/${response.data?.id}`);

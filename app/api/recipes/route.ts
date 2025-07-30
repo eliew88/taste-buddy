@@ -291,6 +291,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Evaluate achievements for the recipe author
+    let allNewAchievements: any[] = [];
     try {
       console.log('Evaluating achievements for recipe creation...');
       const achievementResults = [];
@@ -305,11 +306,12 @@ export async function POST(request: NextRequest) {
         achievementResults.push(photoAchievements);
       }
       
-      // Log any new achievements
+      // Collect all new achievements
       achievementResults.forEach(result => {
         if (result.newAchievements.length > 0) {
           console.log(`User ${recipe.authorId} earned achievements:`, 
             result.newAchievements.map(a => a.achievement.name));
+          allNewAchievements.push(...result.newAchievements);
         }
       });
       
@@ -356,7 +358,11 @@ export async function POST(request: NextRequest) {
     console.log('Returning successful response');
     console.log('=== RECIPE CREATION SUCCESS ===');
     return NextResponse.json(
-      { success: true, data: transformedRecipe }, 
+      { 
+        success: true, 
+        data: transformedRecipe,
+        newAchievements: allNewAchievements // Include achievements in response
+      }, 
       { status: 201 }
     );
   } catch (error) {

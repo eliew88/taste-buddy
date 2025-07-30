@@ -24,6 +24,8 @@ interface ApiResponse<T> {
   data?: T;
   /** Error message (only present when success is false) */
   error?: string;
+  /** New achievements earned (optional, for creation endpoints) */
+  newAchievements?: any[];
 }
 
 /**

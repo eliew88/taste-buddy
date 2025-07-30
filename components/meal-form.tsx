@@ -40,7 +40,7 @@ import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 import { useMultipleImageUpload } from '@/hooks/use-multiple-image-upload';
 import { useTasteBuddies } from '@/hooks/use-tastebuddies';
 import apiClient from '@/lib/api-client';
-import { checkAndNotifyAchievements } from '@/lib/achievement-client';
+import { useGlobalAchievements } from '@/components/providers/achievement-provider';
 import { CreateMealData, CreateMealImageData } from '@/types/meal';
 import { CreateRecipeImageData } from '@/types/recipe';
 
@@ -77,6 +77,7 @@ export default function MealForm({
 }: MealFormProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { showAchievements } = useGlobalAchievements();
 
   // Multiple image upload state (updated to use meal-specific upload endpoint)
   const {
@@ -248,11 +249,10 @@ export default function MealForm({
         if (response.success) {
           clearDraft();
           
-          // Check for achievement notifications after successful meal creation
-          if (session?.user?.id && !isEditing) {
-            checkAndNotifyAchievements(session.user.id).catch(error => {
-              console.error('Failed to check achievements after meal creation:', error);
-            });
+          // Show achievement notifications if any were earned
+          if (response.newAchievements && response.newAchievements.length > 0) {
+            console.log('🏆 Meal creation unlocked achievements:', response.newAchievements.map((a: any) => a.achievement.name));
+            showAchievements(response.newAchievements);
           }
           
           router.push('/profile/meals');
