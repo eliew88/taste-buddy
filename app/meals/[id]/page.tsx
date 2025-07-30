@@ -83,10 +83,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       }
     }
 
-    // Get the base URL from environment or use production URL
+    // Get the base URL from environment variables
+    // Prioritize VERCEL_URL (current deployment) over NEXTAUTH_URL (can be outdated)
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                    process.env.NEXTAUTH_URL || 
-                    'https://tastebuddy-8zwrbfgw8-elis-projects-a122fa34.vercel.app';
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                     process.env.NEXTAUTH_URL) || 
+                    'https://tastebuddy-nikmf9xxu-elis-projects-a122fa34.vercel.app';
 
     // Prepare Open Graph metadata
     const metadata: any = {

@@ -55,9 +55,9 @@ export async function GET(request: NextRequest) {
       }
 
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                      process.env.NEXTAUTH_URL || 
                       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                       'https://tastebuddy-3ri413hc1-elis-projects-a122fa34.vercel.app');
+                       process.env.NEXTAUTH_URL) || 
+                      'https://tastebuddy-nikmf9xxu-elis-projects-a122fa34.vercel.app';
 
       const absoluteImageUrl = imageUrl ? 
         (imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`) : 
@@ -141,9 +141,9 @@ export async function GET(request: NextRequest) {
       }
 
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                      process.env.NEXTAUTH_URL || 
                       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                       'https://tastebuddy-3ri413hc1-elis-projects-a122fa34.vercel.app');
+                       process.env.NEXTAUTH_URL) || 
+                      'https://tastebuddy-nikmf9xxu-elis-projects-a122fa34.vercel.app';
 
       const absoluteImageUrl = imageUrl ? 
         (imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`) : 
