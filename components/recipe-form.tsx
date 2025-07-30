@@ -21,6 +21,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Plus,
   X,
@@ -41,6 +42,7 @@ import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 import IngredientInput from '@/components/ui/ingredient-input';
 import { useMultipleImageUpload } from '@/hooks/use-multiple-image-upload';
 import apiClient from '@/lib/api-client';
+import { checkAndNotifyAchievements } from '@/lib/achievement-client';
 import { CreateRecipeData, CreateIngredientEntryData, CreateRecipeImageData } from '@/types/recipe';
 
 interface RecipeFormData extends CreateRecipeData {
@@ -75,6 +77,7 @@ export default function RecipeForm({
   isEditing = false
 }: RecipeFormProps) {
   const router = useRouter();
+  const { data: session } = useSession();
 
   // Multiple image upload state
   const {
@@ -300,6 +303,14 @@ export default function RecipeForm({
         
         if (response.success) {
           clearDraft();
+          
+          // Check for achievement notifications after successful recipe creation
+          if (session?.user?.id && !isEditing) {
+            checkAndNotifyAchievements(session.user.id).catch(error => {
+              console.error('Failed to check achievements after recipe creation:', error);
+            });
+          }
+          
           router.push(`/recipes/${response.data?.id}`);
         } else {
           throw new Error(response.error || 'Failed to create recipe');

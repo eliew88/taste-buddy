@@ -107,6 +107,8 @@ export default function ProfilePage() {
       const result = await evaluateUserAchievements();
       if (result.newAchievements.length > 0) {
         showAchievements(result.newAchievements);
+        // Refresh the achievements list to show new achievements immediately
+        await evaluateAchievements();
       }
     } catch (error) {
       console.error('Error evaluating achievements:', error);

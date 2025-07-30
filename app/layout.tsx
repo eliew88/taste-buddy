@@ -20,6 +20,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ErrorBoundary from '@/components/error-boundary';
 import AuthSessionProvider from '@/components/providers/session-provider';
+import { AchievementProvider } from '@/components/providers/achievement-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -91,10 +92,13 @@ export default function RootLayout({
         <ErrorBoundary>
           {/* Session Provider for Authentication */}
           <AuthSessionProvider>
-            {/* Main Application Content */}
-            <main id="main-content">
-              {children}
-            </main>
+            {/* Achievement Provider for Real-time Notifications */}
+            <AchievementProvider>
+              {/* Main Application Content */}
+              <main id="main-content">
+                {children}
+              </main>
+            </AchievementProvider>
           </AuthSessionProvider>
         </ErrorBoundary>
         

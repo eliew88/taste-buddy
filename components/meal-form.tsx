@@ -20,6 +20,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Save,
   ArrowLeft,
@@ -39,6 +40,7 @@ import MultipleImageUpload from '@/components/ui/multiple-image-upload';
 import { useMultipleImageUpload } from '@/hooks/use-multiple-image-upload';
 import { useTasteBuddies } from '@/hooks/use-tastebuddies';
 import apiClient from '@/lib/api-client';
+import { checkAndNotifyAchievements } from '@/lib/achievement-client';
 import { CreateMealData, CreateMealImageData } from '@/types/meal';
 import { CreateRecipeImageData } from '@/types/recipe';
 
@@ -74,6 +76,7 @@ export default function MealForm({
   isEditing = false
 }: MealFormProps) {
   const router = useRouter();
+  const { data: session } = useSession();
 
   // Multiple image upload state (updated to use meal-specific upload endpoint)
   const {
@@ -244,6 +247,14 @@ export default function MealForm({
         
         if (response.success) {
           clearDraft();
+          
+          // Check for achievement notifications after successful meal creation
+          if (session?.user?.id && !isEditing) {
+            checkAndNotifyAchievements(session.user.id).catch(error => {
+              console.error('Failed to check achievements after meal creation:', error);
+            });
+          }
+          
           router.push('/profile/meals');
         } else {
           throw new Error(response.error || 'Failed to save meal');
