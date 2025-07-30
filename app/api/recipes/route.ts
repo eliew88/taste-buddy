@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
       where.difficulty = difficulty;
     }
 
-    // For featured recipes, only get recipes with images
-    if (featured) {
+    // For featured recipes, only get recipes with images (in production only)
+    if (featured && process.env.NODE_ENV === 'production') {
       where.images = {
         some: {}
       };

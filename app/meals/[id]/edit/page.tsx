@@ -12,12 +12,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import MealForm from '@/components/meal-form';
 import { Meal, UpdateMealData, CreateMealData } from '@/types/meal';
 import { CreateRecipeImageData } from '@/types/recipe';
 import apiClient from '@/lib/api-client';
+import ConfirmationDialog from '@/components/ui/confirmation-dialog';
 
 /**
  * Loading Skeleton Component
@@ -97,6 +98,8 @@ export default function EditMealPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   /**
    * Fetches meal data from the API
@@ -176,6 +179,34 @@ export default function EditMealPage() {
     router.push(`/meals/${mealId}`);
   };
 
+  /**
+   * Handles meal deletion
+   */
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      
+      const response = await fetch(`/api/meals/${mealId}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Navigate to meal journal after successful deletion
+        router.push('/profile/meals');
+      } else {
+        throw new Error(data.error || 'Failed to delete meal');
+      }
+    } catch (error) {
+      console.error('Failed to delete meal:', error);
+      alert('Failed to delete meal. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   // Show loading skeleton while session is loading
   if (status === 'loading' || loading) {
     return <EditMealPageSkeleton />;
@@ -230,13 +261,23 @@ export default function EditMealPage() {
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href={`/meals/${mealId}`}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Meal
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link 
+              href={`/meals/${mealId}`}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Meal
+            </Link>
+            
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete Meal"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -247,6 +288,19 @@ export default function EditMealPage() {
         onCancel={handleCancel}
         submitLabel={submitting ? 'Updating...' : 'Update Meal'}
         isEditing={true}
+      />
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete Meal Memory"
+        message={`Are you sure you want to delete "${meal.name}"? This action cannot be undone and the meal memory will be permanently removed.`}
+        confirmText="Delete Meal"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting}
       />
     </div>
   );

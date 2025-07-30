@@ -12,11 +12,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import RecipeForm from '@/components/recipe-form';
 import { Recipe, UpdateRecipeData } from '@/types/recipe';
 import apiClient from '@/lib/api-client';
+import ConfirmationDialog from '@/components/ui/confirmation-dialog';
 
 /**
  * Loading Skeleton Component
@@ -96,6 +97,8 @@ export default function EditRecipePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   /**
    * Fetches recipe data from the API
@@ -157,6 +160,34 @@ export default function EditRecipePage() {
     router.push(`/recipes/${recipeId}`);
   };
 
+  /**
+   * Handles recipe deletion
+   */
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      
+      const response = await fetch(`/api/recipes/${recipeId}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Navigate to home page after successful deletion
+        router.push('/');
+      } else {
+        throw new Error(data.error || 'Failed to delete recipe');
+      }
+    } catch (error) {
+      console.error('Failed to delete recipe:', error);
+      alert('Failed to delete recipe. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   // Show loading skeleton while session is loading
   if (status === 'loading' || loading) {
     return <EditRecipePageSkeleton />;
@@ -206,13 +237,23 @@ export default function EditRecipePage() {
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Link 
-            href={`/recipes/${recipeId}`}
-            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Recipe
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link 
+              href={`/recipes/${recipeId}`}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Recipe
+            </Link>
+            
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete Recipe"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -223,6 +264,19 @@ export default function EditRecipePage() {
         onCancel={handleCancel}
         submitLabel={submitting ? 'Updating...' : 'Update Recipe'}
         isEditing={true}
+      />
+      
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete Recipe"
+        message={`Are you sure you want to delete "${recipe.title}"? This action cannot be undone and the recipe will be permanently removed.`}
+        confirmText="Delete Recipe"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting}
       />
     </div>
   );
