@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, User, MessageCircle, Gift, ChefHat, Mail, Calendar } from 'lucide-react';
+import { Bell, User, MessageCircle, Gift, ChefHat } from 'lucide-react';
 
 interface NotificationPreferences {
   notifyOnNewFollower: boolean;
   notifyOnRecipeComment: boolean;
   notifyOnCompliment: boolean;
   notifyOnNewRecipeFromFollowing: boolean;
-  emailNotifications: boolean;
-  emailDigest: boolean;
 }
 
 interface NotificationSettingsProps {
@@ -22,8 +20,6 @@ export function NotificationSettings({ onPreferencesChange }: NotificationSettin
     notifyOnRecipeComment: true,
     notifyOnCompliment: true,
     notifyOnNewRecipeFromFollowing: true,
-    emailNotifications: false,
-    emailDigest: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -130,22 +126,6 @@ export function NotificationSettings({ onPreferencesChange }: NotificationSettin
     }
   ];
 
-  const emailSettings = [
-    {
-      key: 'emailNotifications' as keyof NotificationPreferences,
-      icon: Mail,
-      title: 'Email Notifications',
-      description: 'Receive notifications via email (in addition to in-app notifications)',
-      category: 'Email'
-    },
-    {
-      key: 'emailDigest' as keyof NotificationPreferences,
-      icon: Calendar,
-      title: 'Weekly Digest',
-      description: 'Receive a weekly summary of activity from people you follow',
-      category: 'Email'
-    }
-  ];
 
   if (loading) {
     return (
@@ -155,7 +135,7 @@ export function NotificationSettings({ onPreferencesChange }: NotificationSettin
           <h2 className="text-lg font-semibold text-gray-900">Notification Settings</h2>
         </div>
         <div className="animate-pulse space-y-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
               <div className="space-y-2">
                 <div className="h-4 bg-gray-200 rounded w-32"></div>
@@ -238,50 +218,6 @@ export function NotificationSettings({ onPreferencesChange }: NotificationSettin
         </div>
       </div>
 
-      {/* Email Notifications */}
-      <div className="space-y-4">
-        <h3 className="text-md font-medium text-gray-900">Email Notifications</h3>
-        <p className="text-sm text-gray-600">
-          Configure email notifications and digest preferences.
-        </p>
-        
-        <div className="space-y-3">
-          {emailSettings.map((setting) => {
-            const IconComponent = setting.icon;
-            return (
-              <div
-                key={setting.key}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="p-2 bg-white rounded-lg">
-                    <IconComponent className="w-4 h-4 text-gray-600" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium text-gray-900">
-                      {setting.title}
-                    </h4>
-                    <p className="text-xs text-gray-500">
-                      {setting.description}
-                    </p>
-                  </div>
-                </div>
-                
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preferences[setting.key]}
-                    onChange={(e) => updatePreference(setting.key, e.target.checked)}
-                    disabled={saving}
-                    className="sr-only peer"
-                  />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Additional Info */}
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -292,8 +228,8 @@ export function NotificationSettings({ onPreferencesChange }: NotificationSettin
               About Notifications
             </h4>
             <p className="text-xs text-blue-700">
-              You can always adjust these preferences later. In-app notifications appear in your notification bell, 
-              while email notifications are sent to your registered email address.
+              You can always adjust these preferences later. Notifications will appear in your notification bell 
+              when you're using TasteBuddy.
             </p>
           </div>
         </div>
