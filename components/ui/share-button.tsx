@@ -93,20 +93,20 @@ export default function ShareButton({ title, text, url, className = '' }: ShareB
       </button>
 
       {showMenu && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-300 py-2 z-50">
           <button
             onClick={handleCopyLink}
-            className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+            className="w-full px-4 py-3 text-left hover:bg-gray-100 active:bg-gray-200 flex items-center space-x-3 transition-colors touch-manipulation"
           >
             {copied ? (
               <>
                 <Check className="w-4 h-4 text-green-600" />
-                <span className="text-green-600">Link Copied!</span>
+                <span className="text-green-600 font-medium">Link Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="w-4 h-4" />
-                <span>Copy Link</span>
+                <Copy className="w-4 h-4 text-gray-700" />
+                <span className="text-gray-900 font-medium">Copy Link</span>
               </>
             )}
           </button>
@@ -114,10 +114,10 @@ export default function ShareButton({ title, text, url, className = '' }: ShareB
           {typeof navigator !== 'undefined' && 'share' in navigator && (
             <button
               onClick={handleNativeShare}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+              className="w-full px-4 py-3 text-left hover:bg-gray-100 active:bg-gray-200 flex items-center space-x-3 transition-colors touch-manipulation"
             >
-              <Share className="w-4 h-4" />
-              <span>Share...</span>
+              <Share className="w-4 h-4 text-gray-700" />
+              <span className="text-gray-900 font-medium">Share...</span>
             </button>
           )}
         </div>
