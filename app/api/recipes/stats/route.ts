@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+// Helper function to transform recipe data to use Recipe Book favorites count
+function transformRecipeWithRecipeBookFavorites(recipe: any) {
+  const recipeBookFavoritesCount = recipe._count.recipeBookEntries;
+  const updatedCount = {
+    ...recipe._count,
+    favorites: recipeBookFavoritesCount // Replace legacy count with Recipe Book count
+  };
+  
+  return {
+    ...recipe,
+    _count: updatedCount
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     // Get most popular recipes (by favorites count)
@@ -40,14 +54,23 @@ export async function GET(req: NextRequest) {
         },
         _count: {
           select: {
+            // Count legacy favorites temporarily for backwards compatibility
             favorites: true,
             ratings: true,
-            comments: true
+            comments: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
           }
         }
       },
       orderBy: {
-        favorites: {
+        recipeBookEntries: {
           _count: 'desc'
         }
       },
@@ -91,9 +114,18 @@ export async function GET(req: NextRequest) {
         },
         _count: {
           select: {
+            // Count legacy favorites temporarily for backwards compatibility
             favorites: true,
             ratings: true,
-            comments: true
+            comments: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
           }
         }
       },
@@ -145,9 +177,18 @@ export async function GET(req: NextRequest) {
         },
         _count: {
           select: {
+            // Count legacy favorites temporarily for backwards compatibility
             favorites: true,
             ratings: true,
-            comments: true
+            comments: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
           }
         }
       },
@@ -178,7 +219,14 @@ export async function GET(req: NextRequest) {
       prisma.recipe.count(),
       prisma.meal.count(),
       prisma.user.count(),
-      prisma.favorite.count(),
+      // Count Recipe Book entries in "Favorites" category instead of legacy favorites
+      prisma.recipeBookEntry.count({
+        where: {
+          category: {
+            name: "Favorites"
+          }
+        }
+      }),
       prisma.rating.count()
     ]);
 
@@ -212,9 +260,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        mostPopular: mostPopularRecipes,
-        newest: newestRecipes,
-        highestRated: recipesWithAvgRating,
+        mostPopular: mostPopularRecipes.map(transformRecipeWithRecipeBookFavorites),
+        newest: newestRecipes.map(transformRecipeWithRecipeBookFavorites),
+        highestRated: recipesWithAvgRating.map(transformRecipeWithRecipeBookFavorites),
         platformStats: {
           totalRecipes,
           totalMeals,

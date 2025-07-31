@@ -15,19 +15,35 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')));
     const skip = (page - 1) * limit;
 
-    // Build where clause for SQLite (no mode: 'insensitive' support)
+    // Get current user ID to handle visibility
+    const currentUserId = await getCurrentUserId();
+
+    // Build where clause for PostgreSQL with case-insensitive search
     const where: Record<string, unknown> = {};
+
+    // Visibility filter: only show public recipes for public feeds
+    // Private recipes should not appear in public feeds, even for their authors
+    where.isPublic = true;
 
     // Search functionality (PostgreSQL with case-insensitive search)
     if (search) {
       const searchLower = search.toLowerCase();
-      where.OR = [
+      const searchConditions = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         // Search in structured ingredients
         { ingredients: { some: { ingredient: { contains: search, mode: 'insensitive' } } } },
         { tags: { hasSome: [searchLower] } },
       ];
+
+      // Combine search with visibility - only public recipes for public feeds
+      where.AND = [
+        { isPublic: true },
+        {
+          OR: searchConditions
+        }
+      ];
+      delete where.isPublic; // Remove since it's now in AND
     }
 
     if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty)) {
@@ -53,7 +69,20 @@ export async function GET(request: NextRequest) {
           orderBy: { displayOrder: 'asc' }
         },
         _count: {
-          select: { favorites: true, ratings: true, comments: true },
+          select: { 
+            // Count legacy favorites for backwards compatibility temporarily
+            favorites: true, 
+            ratings: true, 
+            comments: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
+          },
         },
         ratings: {
           select: { rating: true },
@@ -70,10 +99,17 @@ export async function GET(request: NextRequest) {
       const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
 
+      // Use Recipe Book favorites count instead of legacy favorites
+      const recipeBookFavoritesCount = recipe._count.recipeBookEntries;
+      const updatedCount = {
+        ...recipe._count,
+        favorites: recipeBookFavoritesCount // Replace legacy count with Recipe Book count
+      };
 
       return {
         ...recipe,
         avgRating: Math.round(avgRating * 10) / 10, // Round to 1 decimal place
+        _count: updatedCount,
         // Remove ratings array from response for cleaner API
         ratings: undefined,
       };
@@ -119,7 +155,8 @@ export async function POST(request: NextRequest) {
       servings, 
       difficulty, 
       tags,
-      images
+      images,
+      isPublic
     } = body;
     
     console.log('Extracted fields:', {
@@ -238,6 +275,7 @@ export async function POST(request: NextRequest) {
       servings: servings ? Math.max(1, parseInt(servings)) : null,
       difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
       tags: Array.isArray(tags) ? tags : [],
+      isPublic: isPublic !== undefined ? Boolean(isPublic) : true, // Default to public for backward compatibility
       authorId: userId,
       ingredients: {
         create: ingredients.map((ingredient: any, index: number) => {
@@ -277,7 +315,20 @@ export async function POST(request: NextRequest) {
           orderBy: { displayOrder: 'asc' }
         },
         _count: {
-          select: { favorites: true, ratings: true, comments: true },
+          select: { 
+            // Count legacy favorites for backwards compatibility temporarily
+            favorites: true, 
+            ratings: true, 
+            comments: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
+          },
         },
       },
     });

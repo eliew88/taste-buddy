@@ -73,6 +73,10 @@ model User {
   // Meal relationships
   meals Meal[]
   taggedInMeals MealTag[]
+  
+  // Recipe Book relationships  
+  recipeBookCategories RecipeBookCategory[]
+  recipeBookEntries RecipeBookEntry[]
 
   @@map("users")
 }
@@ -114,6 +118,7 @@ model Recipe {
   servings     Int?
   difficulty   String            @default("easy")
   tags         String[]          @default([])
+  isPublic     Boolean           @default(true) // Public by default for backward compatibility
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   authorId     String
@@ -126,6 +131,9 @@ model Recipe {
   ratings     Rating[]
   compliments Compliment[]
   notifications Notification[] @relation("NotificationRecipes")
+  
+  // Recipe Book relationships
+  recipeBookEntries RecipeBookEntry[]
 
   @@index([authorId])
   @@index([difficulty])
@@ -557,5 +565,73 @@ model MealTag {
   @@index([userId])
   @@index([taggedAt])
   @@map("meal_tags")
+}
+
+/**
+ * RecipeBookCategory Model - User-defined categories for organizing recipes
+ */
+model RecipeBookCategory {
+  id String @id @default(cuid())
+  
+  // === CATEGORY DETAILS ===
+  name String // Category name (e.g., "Desserts", "Vegetarian", "Favorites")
+  description String? // Optional description of the category
+  color String? // Optional color for visual organization
+  
+  // === USER RELATIONSHIP ===
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // === TIMESTAMPS ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === RELATIONSHIPS ===
+  recipeBookEntries RecipeBookEntry[]
+  
+  // === CONSTRAINTS ===
+  @@unique([userId, name]) // User cannot have duplicate category names
+  
+  // === INDEXES ===
+  @@index([userId])
+  @@index([name])
+  @@index([createdAt])
+  @@map("recipe_book_categories")
+}
+
+/**
+ * RecipeBookEntry Model - Junction table for recipes in user's recipe book with categories
+ */
+model RecipeBookEntry {
+  id String @id @default(cuid())
+  
+  // === USER AND RECIPE ===
+  userId String
+  recipeId String
+  
+  // === CATEGORY RELATIONSHIP (OPTIONAL) ===
+  categoryId String?
+  
+  // === PERSONAL NOTES ===
+  notes String? // User's personal notes about this recipe
+  
+  // === TIMESTAMPS ===
+  addedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // === RELATIONSHIPS ===
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  category RecipeBookCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  // === CONSTRAINTS ===
+  @@unique([userId, recipeId, categoryId]) // Recipe can only be in the same category once per user
+  
+  // === INDEXES ===
+  @@index([userId])
+  @@index([recipeId])
+  @@index([categoryId])
+  @@index([addedAt])
+  @@map("recipe_book_entries")
 }
 

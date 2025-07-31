@@ -122,6 +122,12 @@ export async function GET(request: NextRequest) {
     
     const andConditions = where.AND as Prisma.RecipeWhereInput[];
     
+    // Privacy filter: only show public recipes for public search/feeds
+    // Private recipes should not appear in search results, even for their authors
+    andConditions.push({
+      isPublic: true
+    });
+    
     // Text search - PostgreSQL with case-insensitive search
     if (params.query && params.query.trim()) {
       const searchQuery = params.query.toLowerCase();
@@ -267,7 +273,7 @@ export async function GET(request: NextRequest) {
         orderBy.createdAt = 'asc';
         break;
       case 'popular':
-        orderBy.favorites = { _count: 'desc' };
+        orderBy.recipeBookEntries = { _count: 'desc' };
         break;
       case 'rating':
         orderBy.ratings = { _count: 'desc' };
@@ -303,7 +309,20 @@ export async function GET(request: NextRequest) {
             orderBy: { displayOrder: 'asc' }
           },
           _count: {
-            select: { favorites: true, ratings: true, comments: true },
+            select: { 
+              // Count legacy favorites temporarily for backwards compatibility
+              favorites: true, 
+              ratings: true, 
+              comments: true,
+              // Count Recipe Book entries in "Favorites" category
+              recipeBookEntries: {
+                where: {
+                  category: {
+                    name: "Favorites"
+                  }
+                }
+              }
+            },
           },
           ratings: {
             select: { rating: true },
@@ -326,9 +345,17 @@ export async function GET(request: NextRequest) {
       const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
       
+      // Use Recipe Book favorites count instead of legacy favorites
+      const recipeBookFavoritesCount = recipe._count.recipeBookEntries;
+      const updatedCount = {
+        ...recipe._count,
+        favorites: recipeBookFavoritesCount // Replace legacy count with Recipe Book count
+      };
+      
       return {
         ...transformed,
         avgRating: Math.round(avgRating * 10) / 10,
+        _count: updatedCount,
         // Remove ratings array from response
         ratings: undefined,
       };

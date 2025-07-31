@@ -18,11 +18,14 @@ export const ACHIEVEMENT_CRITERIA = {
   // Favorites count achievements
   FAVORITES_COUNT: {
     evaluate: async (userId: string) => {
-      // Get actual favorites count for this user's recipes
-      const favorites = await prisma.favorite.count({
+      // Get Recipe Book favorites count for this user's recipes
+      const favorites = await prisma.recipeBookEntry.count({
         where: {
           recipe: {
             authorId: userId
+          },
+          category: {
+            name: "Favorites"
           }
         }
       });

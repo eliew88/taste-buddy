@@ -19,7 +19,6 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Search, Plus, AlertCircle, LogIn } from 'lucide-react';
 import { useRecipeSearch } from '@/hooks/use-recipes';
-import { useFavorites } from '@/hooks/use-favorites';
 import { 
   LoadingSpinner, 
   LoadingButton, 
@@ -303,12 +302,6 @@ export default function HomePage() {
   const { data: session } = useSession();
   
   // Use the custom hooks for state management
-  const { isFavorited, toggleFavorite } = useFavorites();
-  
-  // Handle favorite toggle - same pattern as recipe details page
-  const handleFavoriteToggle = async (recipeId: string) => {
-    await toggleFavorite(recipeId);
-  };
 
   // Fetch recipes with images for hero background
   const fetchHeroImages = async () => {
@@ -503,8 +496,8 @@ export default function HomePage() {
                         <RecipeCard 
                           key={recipe.id} 
                           recipe={recipe}
-                          isFavorited={isFavorited(recipe.id)}
-                          onFavoriteToggle={handleFavoriteToggle}
+                          showFavoriteButton={false}
+                          showRecipeBookButton={true}
                         />
                       ))}
                     </div>
@@ -557,8 +550,8 @@ export default function HomePage() {
                       <RecipeCard 
                         key={recipe.id} 
                         recipe={recipe}
-                        isFavorited={isFavorited(recipe.id)}
-                        onFavoriteToggle={handleFavoriteToggle}
+                        showFavoriteButton={false}
+                        showRecipeBookButton={true}
                       />
                     ))}
                   </div>

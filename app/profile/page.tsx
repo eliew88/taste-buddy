@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X, Eye, EyeOff, Users, BookOpen } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
-import { useFavorites } from '@/hooks/use-favorites';
 import { useFollowing } from '@/hooks/use-following';
 import { useUserAchievements, useAchievementEvaluation } from '@/hooks/use-achievements';
 import { AchievementGrid } from '@/components/achievement-badge';
@@ -34,6 +33,8 @@ interface UserRecipe {
   servings?: number;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
+  isPublic: boolean;
+  images?: any[];
   image?: string;
   authorId: string;
   createdAt: Date;
@@ -88,18 +89,10 @@ export default function ProfilePage() {
   const [following, setFollowing] = useState<User[]>([]);
   const [emailVisibility, setEmailVisibility] = useState<EmailVisibility>('HIDDEN');
   
-  // Use the favorites hook for persistent state management
-  const { isFavorited, toggleFavorite } = useFavorites();
-  
   // Achievement management
   const { achievements, loading: achievementsLoading, evaluateAchievements } = useUserAchievements();
   const { evaluateUserAchievements, evaluating } = useAchievementEvaluation();
   const { notifications, showAchievements, clearNotifications } = useAchievementNotifications();
-  
-  // Wrapper function to match the expected signature
-  const handleFavoriteToggle = async (recipeId: string): Promise<void> => {
-    await toggleFavorite(recipeId);
-  };
 
   // Handle achievement evaluation
   const handleEvaluateAchievements = async () => {
@@ -216,17 +209,12 @@ export default function ProfilePage() {
       
       try {
         setLoading(true);
-        // For now, we'll fetch all recipes and filter client-side
-        // In a real app, you'd have an API endpoint like /api/users/[id]/recipes
-        const response = await fetch('/api/recipes');
+        // Use the user-specific recipes endpoint to get all user's recipes (public and private)
+        const response = await fetch(`/api/users/${session.user.id}/recipes`);
         const data = await response.json();
         
         if (data.success) {
-          // Filter recipes by current user
-          const filtered = data.data.filter((recipe: UserRecipe) => 
-            recipe.author.id === session.user.id
-          );
-          setUserRecipes(filtered);
+          setUserRecipes(data.data);
         }
       } catch (error) {
         console.error('Error fetching user recipes:', error);
@@ -523,11 +511,11 @@ export default function ProfilePage() {
             <span className="font-medium">Add Recipe</span>
           </Link>
           <Link
-            href="/profile/favorites"
+            href="/profile/recipe-book"
             className="bg-white border border-gray-200 text-gray-700 p-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-3"
           >
-            <Heart className="w-5 h-5" />
-            <span className="font-medium">Favorite Recipes</span>
+            <BookOpen className="w-5 h-5" />
+            <span className="font-medium">My Recipe Book</span>
           </Link>
           <Link
             href="/meals/new"
@@ -589,9 +577,8 @@ export default function ProfilePage() {
                 <RecipeCard 
                   key={recipe.id} 
                   recipe={recipe}
-                  showFavoriteButton={true}
-                  isFavorited={isFavorited(recipe.id)}
-                  onFavoriteToggle={handleFavoriteToggle}
+                  showFavoriteButton={false}
+                  showRecipeBookButton={true}
                 />
               ))}
             </div>

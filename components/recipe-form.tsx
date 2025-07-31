@@ -34,7 +34,9 @@ import {
   // Check,
   Image as ImageIcon,
   Tag,
-  List
+  List,
+  Globe,
+  Lock
 } from 'lucide-react';
 import { LoadingButton } from '@/components/ui/loading';
 import ErrorBoundary from '@/components/error-boundary';
@@ -103,6 +105,7 @@ export default function RecipeForm({
     difficulty: 'easy',
     tags: [],
     images: [],
+    isPublic: true, // Default to public
     ...initialData
   });
 
@@ -483,6 +486,44 @@ export default function RecipeForm({
                     </label>
                   ))}
                 </div>
+              </div>
+
+              {/* Privacy Settings */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Privacy
+                </label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => updateFormData({ isPublic: true })}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                      formData.isPublic
+                        ? 'border-green-700 bg-green-50 text-green-700'
+                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span className="font-medium">Public</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateFormData({ isPublic: false })}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                      !formData.isPublic
+                        ? 'border-green-700 bg-green-50 text-green-700'
+                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span className="font-medium">Private</span>
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {formData.isPublic
+                    ? "Public recipes appear in feeds and search results and can be seen by anyone."
+                    : "Private recipes are only visible to you in your recipe collection."}
+                </p>
               </div>
             </div>
           </section>

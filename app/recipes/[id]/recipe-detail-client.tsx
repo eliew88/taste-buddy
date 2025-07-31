@@ -26,7 +26,6 @@ import {
   Clock, 
   Users, 
   ChefHat, 
-  Heart, 
   Star, 
   Calendar,
   User,
@@ -35,12 +34,15 @@ import {
   Share2,
   Edit,
   Coins,
-  Info
+  Info,
+  Lock,
+  Globe,
+  Settings
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
 import { getOptimizedImageUrl } from '@/lib/image-client-utils';
-import { useFavorites } from '@/hooks/use-favorites';
+import RecipeBookButton from '@/components/ui/recipe-book-button';
 import CommentForm from '@/components/comment-form';
 import CommentsSection from '@/components/comments-section';
 import ComplimentForm from '@/components/compliment-form';
@@ -186,8 +188,6 @@ export default function RecipeDetailPage() {
   const [avgRating, setAvgRating] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
   
-  // Use favorites hook
-  const { isFavorited, toggleFavorite } = useFavorites();
   
   // Comments state
   const [newComment, setNewComment] = useState<any>(null);
@@ -197,6 +197,10 @@ export default function RecipeDetailPage() {
   
   // Recipe scaling state (local only, not persisted)
   const [recipeScale, setRecipeScale] = useState(1);
+  
+  // Privacy controls state
+  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
+  const [showPrivacyControls, setShowPrivacyControls] = useState(false);
   
   // Calculate scaled ingredients when scale or recipe changes
   const scaledIngredients = useMemo(() => {
@@ -322,12 +326,6 @@ export default function RecipeDetailPage() {
     }
   };
 
-  /**
-   * Handles favorite toggle
-   */
-  const handleFavorite = async () => {
-    await toggleFavorite(recipeId);
-  };
 
   /**
    * Formats date for display
@@ -345,6 +343,37 @@ export default function RecipeDetailPage() {
    */
   const handlePrint = () => {
     window.print();
+  };
+
+  /**
+   * Handles recipe privacy toggle
+   */
+  const handlePrivacyToggle = async () => {
+    if (!recipe || !session?.user?.id || session.user.id !== recipe.authorId) {
+      return;
+    }
+
+    try {
+      setIsUpdatingPrivacy(true);
+      
+      const response = await apiClient.updateRecipe(recipe.id, {
+        isPublic: !recipe.isPublic
+      });
+
+      if (response.success && response.data) {
+        setRecipe(response.data);
+        setShowPrivacyControls(false);
+        // Show success message
+        console.log(`Recipe is now ${response.data.isPublic ? 'public' : 'private'}`);
+      } else {
+        throw new Error(response.error || 'Failed to update privacy settings');
+      }
+    } catch (error) {
+      console.error('Failed to update privacy:', error);
+      alert('Failed to update privacy settings. Please try again.');
+    } finally {
+      setIsUpdatingPrivacy(false);
+    }
   };
 
   // Share functionality is now handled by ShareButton component
@@ -379,6 +408,110 @@ export default function RecipeDetailPage() {
             </Link>
             
             <div className="flex items-center space-x-3">
+              {/* Privacy indicator and controls - only show to recipe author */}
+              {session?.user?.id === recipe.authorId && (
+                <div className="relative">
+                  <div className="flex items-center space-x-2">
+                    {/* Privacy status indicator */}
+                    <div className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm ${
+                      recipe.isPublic 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {recipe.isPublic ? (
+                        <>
+                          <Globe className="w-4 h-4" />
+                          <span>Public</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          <span>Private</span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Privacy controls toggle */}
+                    <button
+                      onClick={() => setShowPrivacyControls(!showPrivacyControls)}
+                      className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                      title="Privacy settings"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  {/* Privacy controls dropdown */}
+                  {showPrivacyControls && (
+                    <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border p-4 min-w-72 z-10">
+                      <h3 className="font-semibold text-gray-900 mb-3">Privacy Settings</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <div className="flex-1">
+                            <label className="flex items-center space-x-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="privacy"
+                                checked={recipe.isPublic}
+                                onChange={() => !isUpdatingPrivacy && recipe.isPublic !== true && handlePrivacyToggle()}
+                                disabled={isUpdatingPrivacy}
+                                className="text-green-700 focus:ring-green-600"
+                              />
+                              <div>
+                                <div className="flex items-center space-x-1">
+                                  <Globe className="w-4 h-4 text-green-700" />
+                                  <span className="font-medium">Public</span>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Recipe is visible to everyone and appears in public feeds
+                                </p>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3">
+                          <div className="flex-1">
+                            <label className="flex items-center space-x-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="privacy"
+                                checked={!recipe.isPublic}
+                                onChange={() => !isUpdatingPrivacy && recipe.isPublic !== false && handlePrivacyToggle()}
+                                disabled={isUpdatingPrivacy}
+                                className="text-green-700 focus:ring-green-600"
+                              />
+                              <div>
+                                <div className="flex items-center space-x-1">
+                                  <Lock className="w-4 h-4 text-gray-700" />
+                                  <span className="font-medium">Private</span>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Only you can see this recipe
+                                </p>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                        
+                        {isUpdatingPrivacy && (
+                          <div className="text-sm text-gray-600 italic">
+                            Updating privacy settings...
+                          </div>
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowPrivacyControls(false)}
+                        className="mt-3 w-full bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-200 transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {/* Compliment Chef button - only show if user is not the recipe author */}
               {session?.user?.id && session.user.id !== recipe.authorId && (
                 <button
@@ -500,17 +633,9 @@ export default function RecipeDetailPage() {
                       </div>
                     </div>
                     
-                    <button
-                      onClick={handleFavorite}
-                      className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors backdrop-blur-sm ${
-                        isFavorited(recipeId) 
-                          ? 'bg-red-600/80 text-white hover:bg-red-600/90' 
-                          : 'bg-white/20 text-white hover:bg-white/30'
-                      }`}
-                    >
-                      <Heart className={`w-5 h-5 ${isFavorited(recipeId) ? 'fill-white' : ''}`} />
-                      <span>{isFavorited(recipeId) ? 'Favorited' : 'Add to Favorites'}</span>
-                    </button>
+                    <div className="flex items-center space-x-3">
+                      <RecipeBookButton recipeId={recipeId} />
+                    </div>
                   </div>
                 </div>
               </div>

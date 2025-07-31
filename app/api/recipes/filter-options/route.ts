@@ -9,6 +9,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 /**
@@ -48,12 +50,20 @@ function parseCookTimeToMinutes(cookTime?: string): number | null {
  */
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
     const { searchParams } = new URL(request.url);
     const ingredientLimit = parseInt(searchParams.get('ingredientLimit') || '20');
     const tagLimit = parseInt(searchParams.get('tagLimit') || '15');
     
-    // Get all recipes with their data
+    // Build privacy filter for recipes - only public recipes for public feeds
+    // Private recipes should not influence filter options, even for their authors
+    const whereClause = {
+      isPublic: true
+    };
+    
+    // Get recipes with their data, filtered by visibility
     const recipes = await prisma.recipe.findMany({
+      where: whereClause,
       include: {
         ingredients: true,
         _count: {

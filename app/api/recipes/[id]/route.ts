@@ -37,6 +37,9 @@ export async function GET(
       );
     }
 
+    // Get current user to check access permissions
+    const currentUserId = await getCurrentUserId();
+
     // Fetch recipe with all related data
     const recipe = await prisma.recipe.findUnique({
       where: { id },
@@ -55,8 +58,17 @@ export async function GET(
         },
         _count: {
           select: { 
+            // Count legacy favorites temporarily for backwards compatibility
             favorites: true, 
-            ratings: true 
+            ratings: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
           },
         },
         ratings: {
@@ -72,13 +84,28 @@ export async function GET(
       );
     }
 
+    // Check access permissions for private recipes
+    if (!recipe.isPublic && recipe.authorId !== currentUserId) {
+      return NextResponse.json(
+        { success: false, error: 'Recipe not found' }, // Don't reveal it exists but is private
+        { status: 404 }
+      );
+    }
+
     // PostgreSQL native arrays need no transformation
+    const recipeBookFavoritesCount = recipe._count.recipeBookEntries;
+    const updatedCount = {
+      ...recipe._count,
+      favorites: recipeBookFavoritesCount // Replace legacy count with Recipe Book count
+    };
+    
     const transformedRecipe = {
       ...recipe,
       // Calculate actual average rating from ratings
       avgRating: recipe.ratings.length > 0 
         ? recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length
         : 0,
+      _count: updatedCount,
       // Remove ratings array from response
       ratings: undefined,
     };
@@ -165,7 +192,8 @@ export async function PUT(
       servings, 
       difficulty, 
       tags,
-      images
+      images,
+      isPublic
     } = body;
 
     // Prepare update data (only include provided fields)
@@ -247,6 +275,10 @@ export async function PUT(
       updateData.tags = Array.isArray(tags) ? tags : [];
     }
 
+    if (isPublic !== undefined) {
+      updateData.isPublic = Boolean(isPublic);
+    }
+
 
     // Handle multiple images updates (handled separately like ingredients)
     let shouldUpdateImages = false;
@@ -298,8 +330,17 @@ export async function PUT(
         },
         _count: {
           select: { 
+            // Count legacy favorites temporarily for backwards compatibility
             favorites: true, 
-            ratings: true 
+            ratings: true,
+            // Count Recipe Book entries in "Favorites" category
+            recipeBookEntries: {
+              where: {
+                category: {
+                  name: "Favorites"
+                }
+              }
+            }
           },
         },
         ratings: {
@@ -444,12 +485,19 @@ export async function PUT(
     }
 
     // PostgreSQL native arrays need no transformation
+    const recipeBookFavoritesCount = updatedRecipe._count.recipeBookEntries;
+    const updatedCount = {
+      ...updatedRecipe._count,
+      favorites: recipeBookFavoritesCount // Replace legacy count with Recipe Book count
+    };
+    
     const transformedRecipe = {
       ...updatedRecipe,
       // Calculate actual average rating from ratings
       avgRating: updatedRecipe.ratings?.length > 0 
         ? updatedRecipe.ratings.reduce((sum, r) => sum + r.rating, 0) / updatedRecipe.ratings.length
         : 0,
+      _count: updatedCount,
       // Remove ratings array from response
       ratings: undefined,
     };

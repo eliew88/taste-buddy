@@ -111,12 +111,12 @@ export default function Navigation() {
             {session ? (
               <>
                 <Link 
-                  href="/profile/favorites" 
-                  className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/favorites')}`}
-                  aria-current={isActiveLink('/profile/favorites') ? 'page' : undefined}
+                  href="/profile/recipe-book" 
+                  className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/recipe-book')}`}
+                  aria-current={isActiveLink('/profile/recipe-book') ? 'page' : undefined}
                 >
-                  <Heart className="w-4 h-4 mr-1" />
-                  Favorites
+                  <BookOpen className="w-4 h-4 mr-1" />
+                  My Recipe Book
                 </Link>
                 
                 {/* Add Meal Memory Button */}
@@ -225,13 +225,13 @@ export default function Navigation() {
               {session ? (
                 <>
                   <Link
-                    href="/profile/favorites"
-                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/favorites')}`}
+                    href="/profile/recipe-book"
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/recipe-book')}`}
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
-                    <Heart className="w-4 h-4 mr-2" />
-                    Favorites
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    My Recipe Book
                   </Link>
                   
                   <Link

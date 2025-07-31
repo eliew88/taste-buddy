@@ -8,7 +8,6 @@ import ComplimentForm from '@/components/compliment-form';
 import Navigation from '@/components/ui/Navigation';
 import RecipeCard from '@/components/ui/recipe-card';
 import MealCard from '@/components/ui/meal-card';
-import { useFavorites } from '@/hooks/use-favorites';
 import { useUserAchievements } from '@/hooks/use-achievements';
 import { AchievementGrid } from '@/components/achievement-badge';
 import { Recipe } from '@/types/recipe';
@@ -37,7 +36,6 @@ interface FollowStatus {
 export default function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession();
   const { getFollowStatus, getFollowing, getFollowers } = useFollowing();
-  const { isFavorited, toggleFavorite } = useFavorites();
   const [user, setUser] = useState<User | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
   const [following, setFollowing] = useState<User[]>([]);
@@ -67,9 +65,6 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
   const [updateLoading, setUpdateLoading] = useState(false);
 
   // Handle favorite toggle for recipe cards
-  const handleFavoriteToggle = async (recipeId: string): Promise<void> => {
-    await toggleFavorite(recipeId);
-  };
 
   useEffect(() => {
     const resolveParams = async () => {
@@ -461,9 +456,8 @@ export default function UserProfilePage({ params }: { params: Promise<{ id: stri
                 <RecipeCard 
                   key={recipe.id} 
                   recipe={recipe}
-                  showFavoriteButton={!isOwnProfile}
-                  isFavorited={isFavorited(recipe.id)}
-                  onFavoriteToggle={handleFavoriteToggle}
+                  showFavoriteButton={false}
+                  showRecipeBookButton={!isOwnProfile}
                 />
               ))}
             </div>

@@ -30,7 +30,6 @@ import Navigation from '@/components/ui/Navigation';
 import AdvancedSearchFilters from '@/components/ui/advanced-search-filters';
 import RecipeCard from '@/components/ui/recipe-card';
 import MealCard from '@/components/ui/meal-card';
-import { useFavorites } from '@/hooks/use-favorites';
 import { Meal } from '@/types/meal';
 import apiClient from '@/lib/api-client';
 
@@ -170,13 +169,6 @@ function FoodFeedPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Favorites hook
-  const { isFavorited, toggleFavorite } = useFavorites();
-  
-  // Handle favorite toggle - same pattern as recipe details page
-  const handleFavoriteToggle = async (recipeId: string) => {
-    await toggleFavorite(recipeId);
-  };
 
   // State management  
   const [contentType, setContentType] = useState<ContentType>(() => {
@@ -884,8 +876,8 @@ function FoodFeedPageContent() {
                           key={recipe.id} 
                           recipe={recipe}
                           className={viewMode === 'list' ? 'flex' : ''}
-                          isFavorited={isFavorited(recipe.id)}
-                          onFavoriteToggle={handleFavoriteToggle}
+                          showFavoriteButton={false}
+                          showRecipeBookButton={true}
                         />
                       ))
                     : meals.map((meal: Meal) => (

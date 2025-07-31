@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { Users, Heart, Star, Clock, Crown, Flame, BarChart3, Utensils } from 'lucide-react';
 import { useRecipeStats } from '@/hooks/use-recipe-stats';
 import { LoadingSpinner } from '@/components/ui/loading';
-import RecipeCard from '@/components/ui/recipe-card';
-import { useFavorites } from '@/hooks/use-favorites';
 
 interface RecipeStatsProps {
   className?: string;
@@ -43,11 +41,6 @@ const StatCard = ({
 
 export default function RecipeStatsSection({ className = '' }: RecipeStatsProps) {
   const { stats, loading, error } = useRecipeStats();
-  const { isFavorited, toggleFavorite } = useFavorites();
-
-  const handleFavoriteToggle = async (recipeId: string) => {
-    await toggleFavorite(recipeId);
-  };
 
   if (loading) {
     return (

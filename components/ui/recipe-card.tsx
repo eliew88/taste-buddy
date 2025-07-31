@@ -10,9 +10,10 @@
  import Link from 'next/link';
  import { useState, useEffect } from 'react';
  import { useSession } from 'next-auth/react';
- import { Heart, Clock, Users, ChefHat, Eye, Loader2 } from 'lucide-react';
+ import { Heart, Clock, Users, ChefHat, Eye, Loader2, Lock } from 'lucide-react';
  import StarRating from './star-rating';
  import { FollowButton } from './follow-button';
+import RecipeBookButton from './recipe-book-button';
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
  import { useRatings } from '@/hooks/use-ratings';
@@ -37,6 +38,22 @@ import Avatar from '@/components/ui/avatar';
   
   /** Callback when favorite status changes */
   onFavoriteToggle?: (recipeId: string) => Promise<void>;
+  
+  /** Whether to show recipe book status badge */
+  showRecipeBookStatus?: boolean;
+  
+  /** Recipe book status (categories this recipe is in) */
+  recipeBookCategories?: Array<{
+    id: string;
+    name: string;
+    color?: string;
+  }>;
+  
+  /** Whether to show the follow button */
+  showFollowButton?: boolean;
+  
+  /** Whether to show the recipe book button */
+  showRecipeBookButton?: boolean;
 }
  
  /**
@@ -59,7 +76,11 @@ import Avatar from '@/components/ui/avatar';
    showFullDescription = false,
   showFavoriteButton = true,
   isFavorited = false,
-  onFavoriteToggle 
+  onFavoriteToggle,
+  showRecipeBookStatus = false,
+  recipeBookCategories = [],
+  showFollowButton = true,
+  showRecipeBookButton = false
  }: RecipeCardProps) {
    const { data: session } = useSession();
   
@@ -186,9 +207,49 @@ import Avatar from '@/components/ui/avatar';
          {/* Header with title and favorite button */}
          <header className="flex justify-between items-start mb-4">
            <Link href={`/recipes/${recipe.id}`} className="flex-1 group">
-             <h3 className="text-xl font-semibold text-gray-800 group-hover:text-green-700 transition-colors line-clamp-2">
-               {recipe.title}
-             </h3>
+             <div className="flex items-center space-x-2">
+               <h3 className="text-xl font-semibold text-gray-800 group-hover:text-green-700 transition-colors line-clamp-2">
+                 {recipe.title}
+               </h3>
+               {/* Privacy indicator - only show to recipe author */}
+               {!recipe.isPublic && session?.user?.id === recipe.author.id && (
+                 <div className="flex-shrink-0">
+                   <div 
+                     className="flex items-center bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs"
+                     title="This recipe is private and only visible to you"
+                   >
+                     <Lock className="w-3 h-3 mr-1" />
+                     Private
+                   </div>
+                 </div>
+               )}
+               
+               {/* Recipe Book Status - show categories this recipe is in */}
+               {showRecipeBookStatus && recipeBookCategories.length > 0 && (
+                 <div className="flex-shrink-0">
+                   <div className="flex flex-wrap gap-1">
+                     {recipeBookCategories.slice(0, 2).map((category) => (
+                       <div 
+                         key={category.id}
+                         className="flex items-center px-2 py-1 rounded-full text-xs text-white"
+                         style={{ backgroundColor: category.color || '#3B82F6' }}
+                         title={`In category: ${category.name}`}
+                       >
+                         {category.name}
+                       </div>
+                     ))}
+                     {recipeBookCategories.length > 2 && (
+                       <div 
+                         className="flex items-center px-2 py-1 rounded-full text-xs bg-gray-500 text-white"
+                         title={`And ${recipeBookCategories.length - 2} more categories`}
+                       >
+                         +{recipeBookCategories.length - 2}
+                       </div>
+                     )}
+                   </div>
+                 </div>
+               )}
+             </div>
            </Link>
            
            {showFavoriteButton && (
@@ -210,6 +271,13 @@ import Avatar from '@/components/ui/avatar';
              )}
            </button>
           )}
+          {showRecipeBookButton && (
+            <RecipeBookButton 
+              recipeId={recipe.id}
+              variant="compact"
+              showLabel={false}
+            />
+          )}
         </header>
          
          {/* Author with follow button */}
@@ -226,7 +294,9 @@ import Avatar from '@/components/ui/avatar';
                </Link>
              </p>
            </div>
-           <FollowButton userId={recipe.author.id} variant="compact" />
+           {showFollowButton && (
+             <FollowButton userId={recipe.author.id} variant="compact" />
+           )}
          </div>
          
          {/* Description */}

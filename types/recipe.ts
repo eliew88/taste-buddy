@@ -138,6 +138,9 @@ export interface UpdateRecipeImageData {
     /** Array of tags for categorization (e.g., ["dessert", "chocolate"]) */
     tags: string[];
     
+    /** Whether the recipe is public or private (public by default) */
+    isPublic: boolean;
+    
     /** Array of recipe images */
     images?: RecipeImage[];
     
@@ -182,6 +185,7 @@ export interface UpdateRecipeImageData {
     servings?: number;
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
+    isPublic?: boolean; // Whether the recipe is public (defaults to true)
     images?: CreateRecipeImageData[]; // Multiple images field
   }
 
@@ -198,6 +202,7 @@ export interface UpdateRecipeImageData {
     servings?: number;
     difficulty?: 'easy' | 'medium' | 'hard';
     tags?: string[];
+    isPublic?: boolean; // Whether the recipe is public
     images?: CreateRecipeImageData[]; // Multiple images field
   }
   
