@@ -66,6 +66,7 @@ interface RecipeBookRecipe {
     favorites: number;
     ratings: number;
     comments: number;
+    recipeBookEntries: number;
   };
   avgRating?: number;
 }
