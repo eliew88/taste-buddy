@@ -166,6 +166,7 @@ export interface UpdateRecipeImageData {
       favorites: number;
       ratings: number;
       comments: number;
+      recipeBookEntries: number;
     };
     
     /** Calculated average rating (computed from ratings) */

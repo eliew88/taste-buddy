@@ -40,7 +40,8 @@ export async function GET(
           select: {
             favorites: true,
             ratings: true,
-            comments: true
+            comments: true,
+            recipeBookEntries: true
           }
         }
       },

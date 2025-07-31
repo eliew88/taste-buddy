@@ -35,7 +35,7 @@ export async function GET() {
               orderBy: { displayOrder: 'asc' }
             },
             _count: {
-              select: { favorites: true, ratings: true, comments: true }
+              select: { favorites: true, ratings: true, comments: true, recipeBookEntries: true }
             },
             ratings: {
               select: { rating: true }

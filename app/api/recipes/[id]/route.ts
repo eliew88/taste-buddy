@@ -397,7 +397,8 @@ export async function PUT(
           _count: {
             select: { 
               favorites: true, 
-              ratings: true 
+              ratings: true,
+              recipeBookEntries: true
             },
           },
           ratings: {
@@ -466,7 +467,8 @@ export async function PUT(
           _count: {
             select: { 
               favorites: true, 
-              ratings: true 
+              ratings: true,
+              recipeBookEntries: true
             },
           },
           ratings: {

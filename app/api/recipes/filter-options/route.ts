@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       include: {
         ingredients: true,
         _count: {
-          select: { favorites: true, ratings: true },
+          select: { favorites: true, ratings: true, recipeBookEntries: true },
         },
       },
     });
