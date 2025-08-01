@@ -331,6 +331,67 @@ class ApiClient {
   }
 
   /**
+   * Fetches public meals from all users (no authentication required)
+   * 
+   * @param params - Search and filter parameters
+   * @param params.search - Text to search for in meal names and descriptions
+   * @param params.tastebuddiesOnly - Only show meals from TasteBuddies (requires auth)
+   * @param params.page - Page number (default: 1)
+   * @param params.limit - Results per page (default: 12, max: 50)
+   * @returns Promise resolving to meal list with pagination metadata
+   * 
+   * @example
+   * ```typescript
+   * // Get all public meals
+   * const publicMeals = await client.getPublicMeals();
+   * 
+   * // Search public meals
+   * const searchResults = await client.getPublicMeals({ search: 'pizza' });
+   * 
+   * // Get TasteBuddies' meals only (requires authentication)
+   * const buddyMeals = await client.getPublicMeals({ tastebuddiesOnly: true });
+   * ```
+   */
+  async getPublicMeals(params: {
+    search?: string;
+    tastebuddiesOnly?: boolean;
+    page?: number;
+    limit?: number;
+  } = {}): Promise<MealListResponse> {
+    const searchParams = new URLSearchParams();
+    
+    if (params.search) searchParams.append('search', params.search);
+    if (params.tastebuddiesOnly) searchParams.append('tastebuddiesOnly', 'true');
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+
+    const queryString = searchParams.toString();
+    const endpoint = `/meals/public${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await this.request<{
+      success: boolean;
+      data: Meal[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPrevPage: boolean;
+      };
+    }>(endpoint);
+    
+    // Transform API response to match MealListResponse interface
+    return {
+      meals: response.data || [],
+      total: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 12,
+      hasMore: response.pagination?.hasNextPage || false,
+    };
+  }
+
+  /**
    * Fetches a single meal by its ID
    * 
    * @param id - The unique meal identifier

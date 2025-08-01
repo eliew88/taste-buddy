@@ -454,21 +454,15 @@ function FoodFeedPageContent() {
       setLoading(true);
       setError(null);
       
-      const response = await apiClient.getMeals({
+      // Use public meals endpoint that doesn't require authentication
+      const response = await apiClient.getPublicMeals({
         search: searchQuery || undefined,
+        tastebuddiesOnly: mealFilters.tastebuddiesOnly,
         page: currentPage,
         limit: resultsPerPage,
       });
       
       let filteredMeals = response.meals || [];
-      
-      // Apply TasteBuddies filter client-side for now
-      // TODO: Move this filtering to the API level for better performance
-      if (mealFilters.tastebuddiesOnly) {
-        // For now, we'll show all meals since we don't have following data
-        // In a real implementation, this should filter by users that the current user follows
-        filteredMeals = response.meals || []; // Placeholder - would need following user IDs to filter properly
-      }
       
       // Apply client-side sorting based on sortBy option
       const sortedMeals = [...filteredMeals].sort((a, b) => {
@@ -486,9 +480,9 @@ function FoodFeedPageContent() {
       
       setMeals(sortedMeals);
       setSearchMeta({
-        total: sortedMeals.length,
-        pages: Math.ceil(sortedMeals.length / (response.limit || resultsPerPage)),
-        currentPage: response.page || 1,
+        total: response.total,
+        pages: Math.ceil(response.total / response.limit),
+        currentPage: response.page,
       });
       
     } catch (err) {
