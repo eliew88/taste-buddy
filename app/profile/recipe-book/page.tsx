@@ -94,6 +94,7 @@ export default function RecipeBookPage() {
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalUniqueRecipes, setTotalUniqueRecipes] = useState(0);
   
   // UI state
   const [searchTerm, setSearchTerm] = useState('');
@@ -108,11 +109,27 @@ export default function RecipeBookPage() {
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
 
-  // Compute unique recipe count for "All Recipes"
-  const uniqueRecipeCount = React.useMemo(() => {
-    const uniqueRecipeIds = new Set(recipes.map(recipe => recipe.id));
-    return uniqueRecipeIds.size;
-  }, [recipes]);
+  // Fetch recipe book stats for accurate "All Recipes" count
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch('/api/recipe-book/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+          setTotalUniqueRecipes(data.data.totalUniqueRecipes);
+        } else {
+          console.error('Error fetching recipe book stats:', data.error);
+        }
+      } catch (err) {
+        console.error('Error fetching recipe book stats:', err);
+      }
+    };
+
+    fetchStats();
+  }, [session]);
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -368,7 +385,7 @@ export default function RecipeBookPage() {
                       <span>All Recipes</span>
                     </div>
                     <span className="text-sm text-gray-500">
-                      {uniqueRecipeCount}
+                      {totalUniqueRecipes}
                     </span>
                   </button>
 
