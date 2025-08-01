@@ -28,13 +28,15 @@ interface RecipeBookButtonProps {
   className?: string;
   variant?: 'default' | 'compact';
   showLabel?: boolean;
+  onStatusChange?: (wasInBook: boolean, isInBook: boolean) => void;
 }
 
 export default function RecipeBookButton({ 
   recipeId, 
   className = '',
   variant = 'default',
-  showLabel = true
+  showLabel = true,
+  onStatusChange
 }: RecipeBookButtonProps) {
   const { data: session } = useSession();
   const {
@@ -90,6 +92,7 @@ export default function RecipeBookButton({
 
     try {
       setActionLoading(true);
+      const wasInBook = recipeBookStatus.inBook;
 
       let newStatus;
       if (recipeBookStatus.inBook) {
@@ -102,6 +105,12 @@ export default function RecipeBookButton({
 
       // Update local status with the returned status
       setRecipeBookStatus(newStatus);
+      
+      // Notify parent component of status change
+      if (onStatusChange) {
+        onStatusChange(wasInBook, newStatus.inBook);
+      }
+      
       setShowModal(false);
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to save recipe');
@@ -115,12 +124,20 @@ export default function RecipeBookButton({
 
     try {
       setActionLoading(true);
+      const wasInBook = recipeBookStatus.inBook;
+      
       await removeFromRecipeBook(recipeId);
       
       // Reset status
       setRecipeBookStatus({ inBook: false, categories: [] });
       setSelectedCategoryIds([]);
       setNotes('');
+      
+      // Notify parent component of status change
+      if (onStatusChange) {
+        onStatusChange(wasInBook, false);
+      }
+      
       setShowModal(false);
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to remove recipe');
