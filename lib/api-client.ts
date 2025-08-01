@@ -140,7 +140,8 @@ class ApiClient {
       return data;
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
-      console.error('Request config:', config);
+      console.error('Request method:', options.method || 'GET');
+      console.error('Request URL:', url);
       throw error;
     }
   }
