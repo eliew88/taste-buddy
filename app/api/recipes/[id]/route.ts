@@ -61,14 +61,8 @@ export async function GET(
             // Count legacy favorites temporarily for backwards compatibility
             favorites: true, 
             ratings: true,
-            // Count Recipe Book entries in "Favorites" category
-            recipeBookEntries: {
-              where: {
-                category: {
-                  name: "Favorites"
-                }
-              }
-            }
+            // Count all Recipe Book entries across all categories
+            recipeBookEntries: true
           },
         },
         ratings: {
@@ -333,14 +327,8 @@ export async function PUT(
             // Count legacy favorites temporarily for backwards compatibility
             favorites: true, 
             ratings: true,
-            // Count Recipe Book entries in "Favorites" category
-            recipeBookEntries: {
-              where: {
-                category: {
-                  name: "Favorites"
-                }
-              }
-            }
+            // Count all Recipe Book entries across all categories
+            recipeBookEntries: true
           },
         },
         ratings: {

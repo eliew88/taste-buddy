@@ -314,14 +314,8 @@ export async function GET(request: NextRequest) {
               favorites: true, 
               ratings: true, 
               comments: true,
-              // Count Recipe Book entries in "Favorites" category
-              recipeBookEntries: {
-                where: {
-                  category: {
-                    name: "Favorites"
-                  }
-                }
-              }
+              // Count all Recipe Book entries across all categories
+              recipeBookEntries: true
             },
           },
           ratings: {

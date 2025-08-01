@@ -368,10 +368,10 @@ import Avatar from '@/components/ui/avatar';
            </div>
            
            <div className="flex items-center space-x-3">
-             {/* View count (if available) */}
+             {/* Recipe Book saves count */}
              <div className="flex items-center text-sm text-gray-500">
-               <Eye className="w-3 h-3 mr-1" />
-               <span>{recipe._count?.favorites || 0} favorites</span>
+               <Heart className="w-3 h-3 mr-1" />
+               <span>{recipe._count?.recipeBookEntries || 0} saves</span>
              </div>
            </div>
          </footer>

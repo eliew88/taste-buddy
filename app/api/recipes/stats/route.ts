@@ -58,14 +58,8 @@ export async function GET(req: NextRequest) {
             favorites: true,
             ratings: true,
             comments: true,
-            // Count Recipe Book entries in "Favorites" category
-            recipeBookEntries: {
-              where: {
-                category: {
-                  name: "Favorites"
-                }
-              }
-            }
+            // Count all Recipe Book entries across all categories
+            recipeBookEntries: true
           }
         }
       },
@@ -118,14 +112,8 @@ export async function GET(req: NextRequest) {
             favorites: true,
             ratings: true,
             comments: true,
-            // Count Recipe Book entries in "Favorites" category
-            recipeBookEntries: {
-              where: {
-                category: {
-                  name: "Favorites"
-                }
-              }
-            }
+            // Count all Recipe Book entries across all categories
+            recipeBookEntries: true
           }
         }
       },
@@ -181,14 +169,8 @@ export async function GET(req: NextRequest) {
             favorites: true,
             ratings: true,
             comments: true,
-            // Count Recipe Book entries in "Favorites" category
-            recipeBookEntries: {
-              where: {
-                category: {
-                  name: "Favorites"
-                }
-              }
-            }
+            // Count all Recipe Book entries across all categories
+            recipeBookEntries: true
           }
         }
       },
@@ -219,14 +201,8 @@ export async function GET(req: NextRequest) {
       prisma.recipe.count(),
       prisma.meal.count(),
       prisma.user.count(),
-      // Count Recipe Book entries in "Favorites" category instead of legacy favorites
-      prisma.recipeBookEntry.count({
-        where: {
-          category: {
-            name: "Favorites"
-          }
-        }
-      }),
+      // Count all Recipe Book entries across all categories
+      prisma.recipeBookEntry.count(),
       prisma.rating.count()
     ]);
 
