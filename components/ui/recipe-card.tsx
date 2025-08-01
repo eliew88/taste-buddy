@@ -91,17 +91,11 @@ import Avatar from '@/components/ui/avatar';
    const [isFavorite, setIsFavorite] = useState(isFavorited);
    const [isLoading, setIsLoading] = useState(false);
    const [imageError, setImageError] = useState(false);
-   const [localSaveCount, setLocalSaveCount] = useState(recipe._count?.recipeBookEntries || 0);
   
   // Update local state when props change
   useEffect(() => {
     setIsFavorite(isFavorited);
   }, [isFavorited]);
-
-  // Update local save count when recipe changes
-  useEffect(() => {
-    setLocalSaveCount(recipe._count?.recipeBookEntries || 0);
-  }, [recipe._count?.recipeBookEntries]);
 
   // Reset image error when recipe changes
   useEffect(() => {
@@ -156,19 +150,6 @@ import Avatar from '@/components/ui/avatar';
        }
      } catch (error) {
        console.error('Error submitting rating:', error);
-     }
-   };
-
-   /**
-    * Handles recipe book status changes and updates save count
-    * 
-    * @param wasInBook - Previous status (was recipe in book?)
-    * @param isInBook - New status (is recipe in book?)
-    */
-   const handleRecipeBookChange = (wasInBook: boolean, isInBook: boolean) => {
-     if (wasInBook !== isInBook) {
-       // Recipe was added or removed from book
-       setLocalSaveCount(prev => isInBook ? prev + 1 : Math.max(0, prev - 1));
      }
    };
  
@@ -295,7 +276,6 @@ import Avatar from '@/components/ui/avatar';
               recipeId={recipe.id}
               variant="compact"
               showLabel={false}
-              onStatusChange={handleRecipeBookChange}
             />
           )}
         </header>
@@ -391,7 +371,7 @@ import Avatar from '@/components/ui/avatar';
              {/* Recipe Book saves count */}
              <div className="flex items-center text-sm text-gray-500">
                <Heart className="w-3 h-3 mr-1" />
-               <span>{localSaveCount} saves</span>
+               <span>{recipe._count?.recipeBookEntries || 0} saves</span>
              </div>
            </div>
          </footer>
