@@ -29,6 +29,7 @@ interface RecipeBookButtonProps {
   variant?: 'default' | 'compact';
   showLabel?: boolean;
   refreshTrigger?: number; // Used to force refresh when external changes occur
+  onStatusChange?: () => void; // Callback to notify parent when status changes
 }
 
 export default function RecipeBookButton({ 
@@ -36,7 +37,8 @@ export default function RecipeBookButton({
   className = '',
   variant = 'default',
   showLabel = true,
-  refreshTrigger
+  refreshTrigger,
+  onStatusChange
 }: RecipeBookButtonProps) {
   const { data: session } = useSession();
   const {
@@ -47,7 +49,8 @@ export default function RecipeBookButton({
     updateRecipeCategories,
     removeFromRecipeBook,
     createCategory,
-    isInRecipeBook
+    isInRecipeBook,
+    invalidateRecipeStatus
   } = useRecipeBook();
 
   const [recipeBookStatus, setRecipeBookStatus] = useState<RecipeBookStatus>({
@@ -66,6 +69,11 @@ export default function RecipeBookButton({
   useEffect(() => {
     const loadStatus = async () => {
       if (session?.user?.id) {
+        // If refreshTrigger changed, invalidate cache first to ensure fresh data
+        if (refreshTrigger && refreshTrigger > 0) {
+          invalidateRecipeStatus(recipeId);
+        }
+        
         const status = await getRecipeBookStatus(recipeId);
         setRecipeBookStatus(status);
         setSelectedCategoryIds(status.categories.map(cat => cat.id));
@@ -74,7 +82,7 @@ export default function RecipeBookButton({
     };
 
     loadStatus();
-  }, [session?.user?.id, recipeId, getRecipeBookStatus, refreshTrigger]); // Added refreshTrigger as dependency
+  }, [session?.user?.id, recipeId, refreshTrigger]); // Removed problematic dependencies
 
   const handleToggleCategory = (categoryId: string) => {
     setSelectedCategoryIds(prev => 
@@ -105,6 +113,9 @@ export default function RecipeBookButton({
       // Update local status with the returned status
       setRecipeBookStatus(newStatus);
       setShowModal(false);
+      
+      // Notify parent of status change
+      onStatusChange?.();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to save recipe');
     } finally {
@@ -124,6 +135,9 @@ export default function RecipeBookButton({
       setSelectedCategoryIds([]);
       setNotes('');
       setShowModal(false);
+      
+      // Notify parent of status change
+      onStatusChange?.();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to remove recipe');
     } finally {

@@ -639,11 +639,13 @@ export default function RecipeDetailPage() {
                       <RecipeFavoritesShortcut 
                         recipeId={recipeId} 
                         size="lg"
+                        refreshTrigger={recipeBookRefresh}
                         onStatusChange={() => setRecipeBookRefresh(prev => prev + 1)}
                       />
                       <RecipeBookButton 
                         recipeId={recipeId} 
                         refreshTrigger={recipeBookRefresh}
+                        onStatusChange={() => setRecipeBookRefresh(prev => prev + 1)}
                       />
                     </div>
                   </div>

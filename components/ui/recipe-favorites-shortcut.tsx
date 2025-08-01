@@ -19,6 +19,7 @@ interface RecipeFavoritesShortcutProps {
   size?: 'sm' | 'md' | 'lg';
   showTooltip?: boolean;
   onStatusChange?: () => void; // Callback to notify parent when status changes
+  refreshTrigger?: number; // Used to force refresh when external changes occur
 }
 
 export default function RecipeFavoritesShortcut({ 
@@ -26,7 +27,8 @@ export default function RecipeFavoritesShortcut({
   className = '',
   size = 'md',
   showTooltip = true,
-  onStatusChange
+  onStatusChange,
+  refreshTrigger
 }: RecipeFavoritesShortcutProps) {
   const { data: session } = useSession();
   const {
@@ -34,6 +36,7 @@ export default function RecipeFavoritesShortcut({
     loading: recipeBooksLoading,
     getRecipeBookStatus,
     addToRecipeBook,
+    updateRecipeCategories,
     removeFromRecipeBook
   } = useRecipeBook();
 
@@ -72,7 +75,7 @@ export default function RecipeFavoritesShortcut({
     };
 
     checkFavoritesStatus();
-  }, [session?.user?.id, recipeBooksLoading, categories, recipeId, getRecipeBookStatus]);
+  }, [session?.user?.id, recipeBooksLoading, categories, recipeId, getRecipeBookStatus, refreshTrigger]);
 
   const handleToggleFavorites = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -97,7 +100,7 @@ export default function RecipeFavoritesShortcut({
 
         if (otherCategoryIds.length > 0) {
           // Recipe is in other categories, just remove from favorites
-          await addToRecipeBook(recipeId, otherCategoryIds, currentStatus.notes);
+          await updateRecipeCategories(recipeId, otherCategoryIds, currentStatus.notes);
         } else {
           // Recipe is only in favorites, remove completely
           await removeFromRecipeBook(recipeId);
@@ -109,7 +112,13 @@ export default function RecipeFavoritesShortcut({
         const currentCategoryIds = currentStatus.categories.map(cat => cat.id);
         const newCategoryIds = [...currentCategoryIds, favoritesCategory.id];
 
-        await addToRecipeBook(recipeId, newCategoryIds, currentStatus.notes);
+        if (currentStatus.inBook) {
+          // Recipe is already in book, update categories
+          await updateRecipeCategories(recipeId, newCategoryIds, currentStatus.notes);
+        } else {
+          // Recipe is not in book, add it
+          await addToRecipeBook(recipeId, newCategoryIds, currentStatus.notes);
+        }
         setIsInFavorites(true);
       }
       

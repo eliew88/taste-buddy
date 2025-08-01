@@ -55,6 +55,15 @@ export function useRecipeBook() {
     fetchCategories();
   }, [fetchCategories]);
 
+  // Invalidate cache for a specific recipe
+  const invalidateRecipeStatus = useCallback((recipeId: string) => {
+    setRecipeBookStatus(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(recipeId);
+      return newMap;
+    });
+  }, []);
+
   // Check if recipe is in recipe book
   const getRecipeBookStatus = useCallback(async (recipeId: string): Promise<RecipeBookStatus> => {
     if (!session?.user?.id) {
@@ -83,7 +92,7 @@ export function useRecipeBook() {
     const defaultStatus = { inBook: false, categories: [] };
     setRecipeBookStatus(prev => new Map(prev).set(recipeId, defaultStatus));
     return defaultStatus;
-  }, [session?.user?.id, recipeBookStatus]);
+  }, [session?.user?.id]);
 
   // Add recipe to recipe book with categories
   const addToRecipeBook = useCallback(async (
@@ -113,22 +122,13 @@ export function useRecipeBook() {
       const data = await response.json();
       
       if (data.success) {
-        // Update cache
-        const newStatus: RecipeBookStatus = {
-          inBook: true,
-          categories: categories.filter(cat => categoryIds.includes(cat.id)).map(cat => ({
-            id: cat.id,
-            name: cat.name,
-            color: cat.color
-          })),
-          notes
-        };
-        setRecipeBookStatus(prev => new Map(prev).set(recipeId, newStatus));
-        
-        // Refresh categories to update counts
+        // Invalidate cache and refresh categories
+        invalidateRecipeStatus(recipeId);
         await fetchCategories();
         
-        return newStatus;
+        // Return a basic status indicating success - the cache invalidation
+        // will ensure fresh data is fetched on next getRecipeBookStatus call
+        return { inBook: true, categories: [] };
       } else {
         throw new Error(data.error || 'Failed to add recipe to book');
       }
@@ -138,7 +138,7 @@ export function useRecipeBook() {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id, categories, fetchCategories]);
+  }, [session?.user?.id, categories, fetchCategories, invalidateRecipeStatus]);
 
   // Update recipe's categories in recipe book
   const updateRecipeCategories = useCallback(async (
@@ -167,22 +167,13 @@ export function useRecipeBook() {
       const data = await response.json();
       
       if (data.success) {
-        // Update cache
-        const newStatus: RecipeBookStatus = {
-          inBook: true,
-          categories: categories.filter(cat => categoryIds.includes(cat.id)).map(cat => ({
-            id: cat.id,
-            name: cat.name,
-            color: cat.color
-          })),
-          notes
-        };
-        setRecipeBookStatus(prev => new Map(prev).set(recipeId, newStatus));
-        
-        // Refresh categories to update counts
+        // Invalidate cache and refresh categories
+        invalidateRecipeStatus(recipeId);
         await fetchCategories();
         
-        return newStatus;
+        // Return a basic status indicating success - the cache invalidation
+        // will ensure fresh data is fetched on next getRecipeBookStatus call
+        return { inBook: true, categories: [] };
       } else {
         throw new Error(data.error || 'Failed to update recipe categories');
       }
@@ -192,7 +183,7 @@ export function useRecipeBook() {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id, categories, fetchCategories]);
+  }, [session?.user?.id, categories, fetchCategories, invalidateRecipeStatus]);
 
   // Remove recipe from recipe book
   const removeFromRecipeBook = useCallback(async (recipeId: string): Promise<boolean> => {
@@ -207,17 +198,18 @@ export function useRecipeBook() {
         method: 'DELETE',
       });
 
+      // Check if the response is ok before trying to parse JSON
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Delete recipe failed:', response.status, text);
+        throw new Error(`Failed to remove recipe: ${response.statusText}`);
+      }
+
       const data = await response.json();
       
       if (data.success) {
-        // Update cache
-        const newStatus: RecipeBookStatus = {
-          inBook: false,
-          categories: []
-        };
-        setRecipeBookStatus(prev => new Map(prev).set(recipeId, newStatus));
-        
-        // Refresh categories to update counts
+        // Invalidate cache and refresh categories
+        invalidateRecipeStatus(recipeId);
         await fetchCategories();
         
         return true;
@@ -230,7 +222,7 @@ export function useRecipeBook() {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id, fetchCategories]);
+  }, [session?.user?.id, fetchCategories, invalidateRecipeStatus]);
 
   // Create new category
   const createCategory = useCallback(async (
@@ -286,5 +278,6 @@ export function useRecipeBook() {
     createCategory,
     isInRecipeBook,
     refreshCategories: fetchCategories,
+    invalidateRecipeStatus,
   };
 }

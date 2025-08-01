@@ -278,6 +278,7 @@ import Avatar from '@/components/ui/avatar';
             <RecipeFavoritesShortcut 
               recipeId={recipe.id}
               size="md"
+              refreshTrigger={recipeBookRefresh}
               onStatusChange={() => setRecipeBookRefresh(prev => prev + 1)}
             />
             
@@ -287,6 +288,7 @@ import Avatar from '@/components/ui/avatar';
                 variant="compact"
                 showLabel={false}
                 refreshTrigger={recipeBookRefresh}
+                onStatusChange={() => setRecipeBookRefresh(prev => prev + 1)}
               />
             )}
           </div>
