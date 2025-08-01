@@ -89,10 +89,10 @@ export default function Navigation() {
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-4">
             <Link 
               href="/" 
-              className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/')}`}
+              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkClasses('/')}`}
               aria-current={isActiveLink('/') ? 'page' : undefined}
             >
               <Home className="w-4 h-4 mr-1" />
@@ -101,7 +101,7 @@ export default function Navigation() {
             
             <Link 
               href="/food-feed" 
-              className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/food-feed')}`}
+              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkClasses('/food-feed')}`}
               aria-current={isActiveLink('/food-feed') ? 'page' : undefined}
             >
               <Sparkles className="w-4 h-4 mr-1" />
@@ -112,26 +112,26 @@ export default function Navigation() {
               <>
                 <Link 
                   href="/profile/recipe-book" 
-                  className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/recipe-book')}`}
+                  className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkClasses('/profile/recipe-book')}`}
                   aria-current={isActiveLink('/profile/recipe-book') ? 'page' : undefined}
                 >
                   <BookOpen className="w-4 h-4 mr-1" />
-                  My Recipe Book
+                  Recipe Book
                 </Link>
                 
                 {/* Add Meal Memory Button */}
                 <Link 
                   href="/meals/new" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium whitespace-nowrap"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Add Meal Memory
+                  Add Meal
                 </Link>
                 
                 {/* Primary CTA Button */}
                 <Link 
                   href="/recipes/new" 
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium"
+                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium whitespace-nowrap"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Recipe
@@ -170,7 +170,7 @@ export default function Navigation() {
                 {/* Sign In/Up Buttons for non-authenticated users */}
                 <Link 
                   href="/auth/signin" 
-                  className="px-3 py-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center"
+                  className="px-3 py-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center whitespace-nowrap"
                 >
                   <LogIn className="w-4 h-4 mr-1" />
                   Sign In
@@ -178,7 +178,7 @@ export default function Navigation() {
                 
                 <Link 
                   href="/auth/signup" 
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium"
+                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium whitespace-nowrap"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Sign Up
@@ -231,7 +231,7 @@ export default function Navigation() {
                     role="menuitem"
                   >
                     <BookOpen className="w-4 h-4 mr-2" />
-                    My Recipe Book
+                    Recipe Book
                   </Link>
                   
                   <Link
@@ -257,7 +257,7 @@ export default function Navigation() {
                     role="menuitem"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Meal Memory
+                    Add Meal
                   </Link>
                   
                   {/* Mobile CTA Button */}
