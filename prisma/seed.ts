@@ -331,11 +331,39 @@ async function main() {
       
       if (!existingUser) {
         await prisma.user.create({
-          data: user,
+          data: {
+            ...user,
+            // Create default "Favorites" category for each user
+            recipeBookCategories: {
+              create: {
+                name: 'Favorites',
+                description: 'My favorite recipes',
+                color: '#EF4444', // Red heart color
+              }
+            }
+          },
         });
-        console.log(`   ✓ Created user: ${user.name} (${user.email})`);
+        console.log(`   ✓ Created user: ${user.name} (${user.email}) with default Favorites category`);
       } else {
         console.log(`   ⚠️  User already exists: ${user.name} (${user.email})`);
+        // Check if user has Favorites category, create if missing
+        const hasDefaultCategory = await prisma.recipeBookCategory.findFirst({
+          where: {
+            userId: existingUser.id,
+            name: 'Favorites'
+          }
+        });
+        if (!hasDefaultCategory) {
+          await prisma.recipeBookCategory.create({
+            data: {
+              userId: existingUser.id,
+              name: 'Favorites',
+              description: 'My favorite recipes',
+              color: '#EF4444', // Red heart color
+            }
+          });
+          console.log(`   ✓ Added default Favorites category for existing user: ${existingUser.name}`);
+        }
       }
     }
 

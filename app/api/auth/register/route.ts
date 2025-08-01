@@ -61,22 +61,34 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
     console.log('[Registration] Password hashed successfully');
 
-    // Create user
-    console.log('[Registration] Creating user in database');
+    // Create user with default "Favorites" category
+    console.log('[Registration] Creating user in database with default Favorites category');
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
         email: email.toLowerCase(),
         password: hashedPassword,
+        // Create default "Favorites" category for the user
+        recipeBookCategories: {
+          create: {
+            name: 'Favorites',
+            description: 'My favorite recipes',
+            color: '#EF4444', // Red heart color
+          }
+        }
       },
       select: {
         id: true,
         name: true,
         email: true,
         createdAt: true,
+        recipeBookCategories: {
+          where: { name: 'Favorites' },
+          select: { id: true, name: true }
+        }
       }
     });
-    console.log('[Registration] User created successfully:', { id: user.id, email: user.email });
+    console.log('[Registration] User created successfully with default category:', { id: user.id, email: user.email, hasDefaultCategory: user.recipeBookCategories.length > 0 });
 
     return NextResponse.json(
       {
