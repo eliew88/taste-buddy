@@ -192,6 +192,7 @@ export default function RecipeDetailPage() {
   
   // Comments state
   const [newComment, setNewComment] = useState<any>(null);
+  const [recipeBookRefresh, setRecipeBookRefresh] = useState(0); // Trigger for refreshing recipe book status
   
   // Compliment modal state
   const [showComplimentModal, setShowComplimentModal] = useState(false);
@@ -638,8 +639,12 @@ export default function RecipeDetailPage() {
                       <RecipeFavoritesShortcut 
                         recipeId={recipeId} 
                         size="lg"
+                        onStatusChange={() => setRecipeBookRefresh(prev => prev + 1)}
                       />
-                      <RecipeBookButton recipeId={recipeId} />
+                      <RecipeBookButton 
+                        recipeId={recipeId} 
+                        refreshTrigger={recipeBookRefresh}
+                      />
                     </div>
                   </div>
                 </div>

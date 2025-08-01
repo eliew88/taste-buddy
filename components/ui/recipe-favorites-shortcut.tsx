@@ -18,13 +18,15 @@ interface RecipeFavoritesShortcutProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   showTooltip?: boolean;
+  onStatusChange?: () => void; // Callback to notify parent when status changes
 }
 
 export default function RecipeFavoritesShortcut({ 
   recipeId, 
   className = '',
   size = 'md',
-  showTooltip = true
+  showTooltip = true,
+  onStatusChange
 }: RecipeFavoritesShortcutProps) {
   const { data: session } = useSession();
   const {
@@ -109,6 +111,11 @@ export default function RecipeFavoritesShortcut({
 
         await addToRecipeBook(recipeId, newCategoryIds, currentStatus.notes);
         setIsInFavorites(true);
+      }
+      
+      // Notify parent component that recipe book status has changed
+      if (onStatusChange) {
+        onStatusChange();
       }
     } catch (error) {
       console.error('Error toggling favorites:', error);

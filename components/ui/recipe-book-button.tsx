@@ -28,13 +28,15 @@ interface RecipeBookButtonProps {
   className?: string;
   variant?: 'default' | 'compact';
   showLabel?: boolean;
+  refreshTrigger?: number; // Used to force refresh when external changes occur
 }
 
 export default function RecipeBookButton({ 
   recipeId, 
   className = '',
   variant = 'default',
-  showLabel = true
+  showLabel = true,
+  refreshTrigger
 }: RecipeBookButtonProps) {
   const { data: session } = useSession();
   const {
@@ -72,7 +74,7 @@ export default function RecipeBookButton({
     };
 
     loadStatus();
-  }, [session?.user?.id, recipeId, getRecipeBookStatus]);
+  }, [session?.user?.id, recipeId, getRecipeBookStatus, refreshTrigger]); // Added refreshTrigger as dependency
 
   const handleToggleCategory = (categoryId: string) => {
     setSelectedCategoryIds(prev => 

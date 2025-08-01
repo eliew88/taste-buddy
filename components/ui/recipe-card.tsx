@@ -92,6 +92,7 @@ import Avatar from '@/components/ui/avatar';
    const [isFavorite, setIsFavorite] = useState(isFavorited);
    const [isLoading, setIsLoading] = useState(false);
    const [imageError, setImageError] = useState(false);
+   const [recipeBookRefresh, setRecipeBookRefresh] = useState(0); // Trigger for refreshing recipe book status
   
   // Update local state when props change
   useEffect(() => {
@@ -277,6 +278,7 @@ import Avatar from '@/components/ui/avatar';
             <RecipeFavoritesShortcut 
               recipeId={recipe.id}
               size="md"
+              onStatusChange={() => setRecipeBookRefresh(prev => prev + 1)}
             />
             
             {showRecipeBookButton && (
@@ -284,6 +286,7 @@ import Avatar from '@/components/ui/avatar';
                 recipeId={recipe.id}
                 variant="compact"
                 showLabel={false}
+                refreshTrigger={recipeBookRefresh}
               />
             )}
           </div>
