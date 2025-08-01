@@ -43,6 +43,7 @@ import apiClient from '@/lib/api-client';
 import { Recipe } from '@/types/recipe';
 import { getOptimizedImageUrl } from '@/lib/image-client-utils';
 import RecipeBookButton from '@/components/ui/recipe-book-button';
+import RecipeFavoritesShortcut from '@/components/ui/recipe-favorites-shortcut';
 import CommentForm from '@/components/comment-form';
 import CommentsSection from '@/components/comments-section';
 import ComplimentForm from '@/components/compliment-form';
@@ -634,6 +635,10 @@ export default function RecipeDetailPage() {
                     </div>
                     
                     <div className="flex items-center space-x-3">
+                      <RecipeFavoritesShortcut 
+                        recipeId={recipeId} 
+                        size="lg"
+                      />
                       <RecipeBookButton recipeId={recipeId} />
                     </div>
                   </div>

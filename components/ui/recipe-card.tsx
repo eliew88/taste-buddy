@@ -14,6 +14,7 @@
  import StarRating from './star-rating';
  import { FollowButton } from './follow-button';
 import RecipeBookButton from './recipe-book-button';
+import RecipeFavoritesShortcut from './recipe-favorites-shortcut';
  import { Recipe } from '@/types/recipe';
  import { truncateText } from '@/lib/utils';
  import { useRatings } from '@/hooks/use-ratings';
@@ -271,13 +272,21 @@ import Avatar from '@/components/ui/avatar';
              )}
            </button>
           )}
-          {showRecipeBookButton && (
-            <RecipeBookButton 
+          <div className="flex items-center space-x-2">
+            {/* Favorites shortcut */}
+            <RecipeFavoritesShortcut 
               recipeId={recipe.id}
-              variant="compact"
-              showLabel={false}
+              size="md"
             />
-          )}
+            
+            {showRecipeBookButton && (
+              <RecipeBookButton 
+                recipeId={recipe.id}
+                variant="compact"
+                showLabel={false}
+              />
+            )}
+          </div>
         </header>
          
          {/* Author with follow button */}
