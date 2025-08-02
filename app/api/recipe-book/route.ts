@@ -29,15 +29,112 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')));
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {
-      userId: userId
-    };
+    // When no category is selected, fetch unique recipes
+    if (!categoryId) {
+      // First, get unique recipe IDs with their earliest addedAt date
+      const uniqueRecipeData = await prisma.recipeBookEntry.groupBy({
+        by: ['recipeId'],
+        where: { userId },
+        _min: {
+          addedAt: true
+        },
+        orderBy: {
+          _min: {
+            addedAt: 'desc'
+          }
+        },
+        skip,
+        take: limit
+      });
 
-    // Add category filter if specified
-    if (categoryId) {
-      where.categoryId = categoryId;
+      // Get total count of unique recipes
+      const totalUniqueRecipes = await prisma.recipeBookEntry.groupBy({
+        by: ['recipeId'],
+        where: { userId },
+        _count: true
+      });
+
+      const recipeIds = uniqueRecipeData.map(item => item.recipeId);
+
+      // Fetch full recipe data with all categories for each unique recipe
+      const recipesWithCategories = await prisma.recipe.findMany({
+        where: {
+          id: { in: recipeIds }
+        },
+        include: {
+          author: {
+            select: { id: true, name: true, email: true, image: true }
+          },
+          images: {
+            orderBy: { displayOrder: 'asc' }
+          },
+          ingredients: true,
+          _count: {
+            select: { recipeBookEntries: true, ratings: true, comments: true }
+          },
+          ratings: {
+            select: { rating: true }
+          },
+          recipeBookEntries: {
+            where: { userId },
+            include: {
+              category: {
+                select: { id: true, name: true, color: true }
+              }
+            }
+          }
+        }
+      });
+
+      // Transform the data to match expected format
+      const transformedEntries = recipesWithCategories.map(recipe => {
+        const addedAt = uniqueRecipeData.find(item => item.recipeId === recipe.id)?._min?.addedAt || new Date();
+        const entries = recipe.recipeBookEntries || [];
+        const categories = entries
+          .filter(entry => entry.category)
+          .map(entry => entry.category!);
+        const notes = entries.find(entry => entry.notes)?.notes || null;
+
+        // Calculate average rating
+        const totalRating = recipe.ratings.reduce((sum, r) => sum + r.rating, 0);
+        const avgRating = recipe.ratings.length > 0 ? totalRating / recipe.ratings.length : 0;
+
+        const { recipeBookEntries, ...recipeWithoutEntries } = recipe;
+
+        return {
+          ...recipeWithoutEntries,
+          addedAt,
+          notes,
+          categories, // Array of all categories this recipe is in
+          avgRating: Math.round(avgRating * 10) / 10,
+          ratings: undefined // Remove ratings array from response
+        };
+      });
+
+      // Sort by addedAt to maintain order
+      transformedEntries.sort((a, b) => 
+        new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
+      );
+
+      return NextResponse.json({
+        success: true,
+        data: transformedEntries,
+        pagination: {
+          page,
+          limit,
+          total: totalUniqueRecipes.length,
+          totalPages: Math.ceil(totalUniqueRecipes.length / limit),
+          hasNextPage: page < Math.ceil(totalUniqueRecipes.length / limit),
+          hasPrevPage: page > 1,
+        },
+      });
     }
+
+    // Original logic for when a category is selected
+    const where: any = {
+      userId: userId,
+      categoryId: categoryId
+    };
 
     // Fetch recipe book entries with recipes
     const [entries, totalCount] = await Promise.all([

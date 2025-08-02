@@ -108,6 +108,14 @@ export default function RecipeBookPage() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [totalRecipeCount, setTotalRecipeCount] = useState(0);
+  const itemsPerPage = 12;
 
   // Fetch recipe book stats for accurate "All Recipes" count
   useEffect(() => {
@@ -175,14 +183,22 @@ export default function RecipeBookPage() {
         setError(null);
         
         const url = selectedCategory 
-          ? `/api/recipe-book?categoryId=${selectedCategory}`
-          : '/api/recipe-book';
+          ? `/api/recipe-book?categoryId=${selectedCategory}&page=${currentPage}&limit=${itemsPerPage}`
+          : `/api/recipe-book?page=${currentPage}&limit=${itemsPerPage}`;
           
         const response = await fetch(url);
         const data = await response.json();
         
         if (data.success) {
           setRecipes(data.data || []);
+          
+          // Update pagination state
+          if (data.pagination) {
+            setTotalPages(data.pagination.totalPages);
+            setHasNextPage(data.pagination.hasNextPage);
+            setHasPrevPage(data.pagination.hasPrevPage);
+            setTotalRecipeCount(data.pagination.total);
+          }
         } else {
           throw new Error(data.error || 'Failed to fetch recipe book');
         }
@@ -195,37 +211,18 @@ export default function RecipeBookPage() {
     };
 
     fetchRecipeBook();
-  }, [session, selectedCategory]);
+  }, [session, selectedCategory, currentPage]);
+
+  // Reset page when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
 
   // Filter and sort recipes
   useEffect(() => {
     let filtered = [...recipes];
 
-    // Deduplicate recipes when viewing "All Recipes" (no category selected)
-    if (!selectedCategory) {
-      const recipeMap = new Map<string, RecipeBookRecipe>();
-      
-      filtered.forEach(recipe => {
-        if (recipeMap.has(recipe.id)) {
-          // Recipe already exists, aggregate categories
-          const existingRecipe = recipeMap.get(recipe.id)!;
-          if (recipe.category && !existingRecipe.categories?.some(cat => cat.id === recipe.category!.id)) {
-            existingRecipe.categories = existingRecipe.categories || [];
-            existingRecipe.categories.push(recipe.category);
-          }
-        } else {
-          // First time seeing this recipe, add it with its category (if any)
-          const recipeWithCategories = {
-            ...recipe,
-            categories: recipe.category ? [recipe.category] : []
-          };
-          delete recipeWithCategories.category; // Remove single category property
-          recipeMap.set(recipe.id, recipeWithCategories);
-        }
-      });
-      
-      filtered = Array.from(recipeMap.values());
-    }
+    // No need to deduplicate anymore - API returns unique recipes when no category is selected
 
     // Apply search filter
     if (searchTerm) {
@@ -563,11 +560,38 @@ export default function RecipeBookPage() {
             ) : (
               <>
                 {/* Results Summary */}
-                <div className="mb-6">
+                <div className="mb-6 flex justify-between items-center">
                   <p className="text-gray-600">
-                    Showing {filteredRecipes.length} of {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
-                    {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
+                    {selectedCategory ? (
+                      <>
+                        Showing {filteredRecipes.length} of {totalRecipeCount} recipe{totalRecipeCount !== 1 ? 's' : ''}
+                        {` in ${categories.find(c => c.id === selectedCategory)?.name}`}
+                      </>
+                    ) : (
+                      <>
+                        Showing {Math.min(itemsPerPage * currentPage, totalRecipeCount)} of {totalRecipeCount} recipe{totalRecipeCount !== 1 ? 's' : ''}
+                        {currentPage > 1 && ` (Page ${currentPage})`}
+                      </>
+                    )}
                   </p>
+                  
+                  {/* View mode toggle */}
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 rounded ${viewMode === 'grid' ? 'bg-green-100 text-green-700' : 'text-gray-400'}`}
+                      title="Grid view"
+                    >
+                      <Grid3X3 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 rounded ${viewMode === 'list' ? 'bg-green-100 text-green-700' : 'text-gray-400'}`}
+                      title="List view"
+                    >
+                      <List className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Recipe Grid/List */}
@@ -619,6 +643,65 @@ export default function RecipeBookPage() {
                     </div>
                   ))}
                 </div>
+                
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center items-center space-x-4">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={!hasPrevPage}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        hasPrevPage
+                          ? 'bg-green-700 text-white hover:bg-green-800'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Previous
+                    </button>
+                    
+                    <div className="flex items-center space-x-2">
+                      {/* Show page numbers */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                              currentPage === pageNum
+                                ? 'bg-green-700 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={!hasNextPage}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        hasNextPage
+                          ? 'bg-green-700 text-white hover:bg-green-800'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
