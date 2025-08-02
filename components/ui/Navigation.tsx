@@ -157,13 +157,21 @@ export default function Navigation() {
                 </div>
                 
                 {/* Sign Out Button */}
-                <button
-                  onClick={handleSignOut}
-                  className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-                  aria-label="Sign Out"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
+                <div className="relative group">
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    aria-label="Sign Out"
+                    title="Sign out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                  {/* Tooltip */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 text-xs font-medium text-white bg-black rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-[9999]">
+                    Sign out
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-black"></div>
+                  </div>
+                </div>
               </>
             ) : (
               <>

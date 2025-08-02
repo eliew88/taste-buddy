@@ -143,3 +143,78 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+/**
+ * DELETE - Delete a category for the authenticated user (only if empty)
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const categoryId = url.searchParams.get('categoryId');
+
+    if (!categoryId) {
+      return NextResponse.json(
+        { success: false, error: 'Category ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Check if category exists and belongs to user
+    const category = await prisma.recipeBookCategory.findFirst({
+      where: {
+        id: categoryId,
+        userId: userId
+      },
+      include: {
+        _count: {
+          select: {
+            recipeBookEntries: true
+          }
+        }
+      }
+    });
+
+    if (!category) {
+      return NextResponse.json(
+        { success: false, error: 'Category not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if category is empty
+    if (category._count.recipeBookEntries > 0) {
+      return NextResponse.json(
+        { success: false, error: 'Cannot delete category that contains recipes' },
+        { status: 400 }
+      );
+    }
+
+    // Delete the category
+    await prisma.recipeBookCategory.delete({
+      where: {
+        id: categoryId
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Category deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting recipe book category:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete category' },
+      { status: 500 }
+    );
+  }
+}

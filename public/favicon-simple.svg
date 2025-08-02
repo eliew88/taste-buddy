@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- Simple cooking pot icon optimized for favicon -->
+  <rect x="3" y="6" width="10" height="7" rx="1" fill="#8B4513" stroke="#654321" stroke-width="0.5"/>
+  <rect x="2" y="5" width="12" height="1.5" rx="0.75" fill="#654321"/>
+  <path d="M1 7 Q0 7 0 8.5 Q0 10 1 10" stroke="#654321" stroke-width="1" fill="none"/>
+  <path d="M15 7 Q16 7 16 8.5 Q16 10 15 10" stroke="#654321" stroke-width="1" fill="none"/>
+  <circle cx="8" cy="3" r="0.8" fill="#654321"/>
+  <ellipse cx="8" cy="4" rx="3" ry="0.8" fill="#654321"/>
+  <g stroke="#FFF" stroke-width="0.3" fill="none" opacity="0.6">
+    <path d="M6 2 Q6 1 6.5 1 Q7 1 7 2"/>
+    <path d="M8 1.5 Q8 0.5 8.5 0.5 Q9 0.5 9 1.5"/>
+    <path d="M10 2 Q10 1 10.5 1 Q11 1 11 2"/>
+  </g>
+</svg>

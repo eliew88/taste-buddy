@@ -78,8 +78,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
         
         {/* Favicon and app icons */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/cooking-pot-icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/cooking-pot-icon.svg" />
         
         {/* Theme color for mobile browsers */}
         <meta name="theme-color" content="#2563eb" />

@@ -308,6 +308,35 @@ export default function RecipeBookPage() {
     }
   };
 
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    if (!confirm(`Are you sure you want to delete the "${categoryName}" category? This action cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/recipe-book/categories?categoryId=${categoryId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Remove category from state
+        setCategories(prev => prev.filter(cat => cat.id !== categoryId));
+        
+        // If deleted category was selected, reset to "All Recipes"
+        if (selectedCategory === categoryId) {
+          setSelectedCategory(null);
+        }
+      } else {
+        alert(data.error || 'Failed to delete category');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Failed to delete category');
+    }
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedDifficulty('');
@@ -388,26 +417,45 @@ export default function RecipeBookPage() {
 
                   {/* Categories */}
                   {categories.map((category) => (
-                    <button
+                    <div
                       key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between group ${
                         selectedCategory === category.id
                           ? 'bg-green-100 text-green-700'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
-                      <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setSelectedCategory(category.id)}
+                        className="flex items-center space-x-2 flex-1"
+                      >
                         <div 
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: category.color || '#3B82F6' }}
                         />
                         <span>{category.name}</span>
+                      </button>
+                      
+                      <div className="flex items-center space-x-1">
+                        <span className="text-sm text-gray-500">
+                          {category.recipeCount}
+                        </span>
+                        
+                        {/* Show trash icon only for empty categories */}
+                        {category.recipeCount === 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCategory(category.id, category.name);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-all"
+                            title="Delete empty category"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
-                      <span className="text-sm text-gray-500">
-                        {category.recipeCount}
-                      </span>
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}

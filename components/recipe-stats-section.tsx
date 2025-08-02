@@ -142,12 +142,6 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
                 </div>
               ))}
             </div>
-            <Link 
-              href="/food-feed?sort=popular" 
-              className="inline-block mt-4 text-red-600 hover:text-red-700 text-sm font-medium"
-            >
-              View all popular recipes →
-            </Link>
           </div>
 
           {/* Newest */}
@@ -176,12 +170,6 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
                 </div>
               ))}
             </div>
-            <Link 
-              href="/food-feed?sort=newest" 
-              className="inline-block mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              View all new recipes →
-            </Link>
           </div>
 
           {/* Highest Rated */}
@@ -211,12 +199,6 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
                 </div>
               ))}
             </div>
-            <Link 
-              href="/food-feed?sort=rating" 
-              className="inline-block mt-4 text-yellow-600 hover:text-yellow-700 text-sm font-medium"
-            >
-              View all top rated →
-            </Link>
           </div>
         </div>
 

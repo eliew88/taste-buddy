@@ -32,6 +32,10 @@ export function NotificationBell() {
         // Navigate to the compliment sender's profile
         return notification.fromUserId ? `/profile/${notification.fromUserId}` : null;
       
+      case 'MEAL_TAG':
+        // Navigate to the meal detail page
+        return notification.relatedMealId ? `/meals/${notification.relatedMealId}` : null;
+      
       default:
         return null;
     }

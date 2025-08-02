@@ -64,6 +64,7 @@ export default function RecipeBookButton({
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#3B82F6');
+  const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
 
   // Load recipe book status
   useEffect(() => {
@@ -123,11 +124,16 @@ export default function RecipeBookButton({
     }
   };
 
-  const handleRemove = async () => {
+  const handleRemove = () => {
+    setShowRemoveConfirmation(true);
+  };
+
+  const handleConfirmRemove = async () => {
     if (!session?.user?.id) return;
 
     try {
       setActionLoading(true);
+      setShowRemoveConfirmation(false);
       await removeFromRecipeBook(recipeId);
       
       // Reset status
@@ -388,6 +394,75 @@ export default function RecipeBookButton({
                     <Check className="w-4 h-4" />
                   )}
                   <span>{isInBook ? 'Update' : 'Add to Book'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Remove Confirmation Dialog */}
+      {showRemoveConfirmation && typeof window !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" 
+          style={{ 
+            zIndex: 2147483648, // Higher than main modal
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowRemoveConfirmation(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg max-w-sm w-full shadow-2xl relative" 
+            style={{ 
+              zIndex: 2147483648,
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex-shrink-0">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Remove Recipe
+                  </h3>
+                </div>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to remove this recipe? Continuing will remove the recipe from all categories it currently belongs to.
+              </p>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowRemoveConfirmation(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  disabled={actionLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmRemove}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  <span>Remove Recipe</span>
                 </button>
               </div>
             </div>
