@@ -70,16 +70,27 @@ export default function MealCard({
    * Format date for display
    */
   const formatDate = (date: Date | string): string => {
+    if (!date) return '';
+    
+    // Parse the date to get local date components
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
     
+    // Get today's date at midnight in local time
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - d.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Get the meal date at midnight in local time
+    const mealDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    
+    // Calculate difference in days
+    const diffTime = today.getTime() - mealDate.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
-    if (diffDays <= 7) return `${diffDays} days ago`;
+    if (diffDays > 0 && diffDays <= 7) return `${diffDays} days ago`;
+    if (diffDays < 0) return 'Future date'; // Handle future dates
     
     return d.toLocaleDateString('en-US', { 
       month: 'short', 

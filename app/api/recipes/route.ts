@@ -359,6 +359,25 @@ export async function POST(request: NextRequest) {
       // Don't fail the recipe creation if achievement evaluation fails
     }
 
+    // Automatically add the recipe to the author's recipe book (without category)
+    try {
+      console.log('Adding recipe to author\'s recipe book...');
+      
+      await prisma.recipeBookEntry.create({
+        data: {
+          userId: recipe.authorId,
+          recipeId: recipe.id,
+          categoryId: null, // No specific category - just add to general recipe book
+          notes: null
+        }
+      });
+      
+      console.log(`Recipe ${recipe.id} automatically added to author's recipe book`);
+    } catch (error) {
+      console.error('Failed to add recipe to recipe book:', error);
+      // Don't fail the recipe creation if adding to recipe book fails
+    }
+
     // Notify followers about the new recipe
     try {
       console.log('Creating notifications for new recipe...');

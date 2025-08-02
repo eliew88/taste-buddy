@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn, BookOpen, Calendar } from 'lucide-react';
+import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn, BookOpen, Calendar, Images } from 'lucide-react';
 import { NotificationBell } from './notification-bell';
 import Avatar from '@/components/ui/avatar';
 
@@ -129,7 +129,7 @@ export default function Navigation() {
                   style={getLinkProps('/profile/meals').style}
                   aria-current={isActiveLink('/profile/meals') ? 'page' : undefined}
                 >
-                  <Calendar className="w-4 h-4 mr-1" />
+                  <Images className="w-4 h-4 mr-1" />
                   Memory Journal
                 </Link>
                 
@@ -266,7 +266,7 @@ export default function Navigation() {
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <Images className="w-4 h-4 mr-2" />
                     Memory Journal
                   </Link>
                   

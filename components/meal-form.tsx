@@ -288,7 +288,12 @@ export default function MealForm({
     if (!date) return '';
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
-    return d.toISOString().split('T')[0];
+    
+    // Format as YYYY-MM-DD in local time, not UTC
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
   
   /**
@@ -391,9 +396,16 @@ export default function MealForm({
             <input
               type="date"
               value={formatDateForInput(formData.date)}
-              onChange={(e) => updateFormData({ 
-                date: e.target.value ? new Date(e.target.value) : undefined 
-              })}
+              onChange={(e) => {
+                if (e.target.value) {
+                  // Parse the date string to create a local date (not UTC)
+                  const [year, month, day] = e.target.value.split('-').map(Number);
+                  const localDate = new Date(year, month - 1, day); // month is 0-indexed
+                  updateFormData({ date: localDate });
+                } else {
+                  updateFormData({ date: undefined });
+                }
+              }}
               max={new Date().toISOString().split('T')[0]}
               className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                 errors.date ? 'border-red-300 bg-red-50' : 'border-gray-300'

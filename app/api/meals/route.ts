@@ -274,10 +274,22 @@ export async function POST(request: NextRequest) {
       };
     }
     
+    // Handle date properly - if date string is provided, parse it as local date
+    let mealDate = null;
+    if (date) {
+      const dateStr = typeof date === 'string' ? date : date.toString();
+      // If it's an ISO string, extract just the date part to avoid timezone issues
+      const datePart = dateStr.split('T')[0];
+      if (datePart) {
+        const [year, month, day] = datePart.split('-').map(Number);
+        mealDate = new Date(year, month - 1, day, 12, 0, 0); // Set to noon to avoid timezone issues
+      }
+    }
+    
     const mealData = {
       name: name.trim(),
       description: description?.trim() || null,
-      date: date ? new Date(date) : null,
+      date: mealDate,
       isPublic: isPublic,
       authorId: userId,
       ...(imagesData && { images: imagesData }),

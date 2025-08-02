@@ -21,7 +21,8 @@ import {
   AlertCircle, 
   Plus,
   Calendar,
-  Clock
+  Clock,
+  Images
 } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
 import MealCard from '@/components/ui/meal-card';
@@ -129,7 +130,7 @@ export default function MealJournalPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <Utensils className="w-8 h-8 text-blue-600" />
+              <Images className="w-8 h-8" style={{ color: '#1768AC' }} />
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Memory Journal</h1>
                 <p className="text-gray-600">
