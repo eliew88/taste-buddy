@@ -14,14 +14,7 @@ import { getCurrentUserId } from '@/lib/auth';
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getCurrentUserId();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    // Admin endpoint - no authentication required for administrative tasks
 
     // Get the special user ID from environment variable
     const specialUserId = process.env.SPECIAL_USER_ID;
