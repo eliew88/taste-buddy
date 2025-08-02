@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getUserWithPrivacy } from '@/lib/privacy-utils';
 
 /**
  * GET /api/users/tastebuddies
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const followingIds = following.map(f => f.followingId);
 
     // Get users that follow the current user AND whom the current user follows (mutual follows)
-    const tastebuddies = await prisma.user.findMany({
+    const tasteBuddyUsers = await prisma.user.findMany({
       where: {
         id: { in: followingIds },
         following: {
@@ -39,7 +40,6 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
-        email: true,
         image: true,
         bio: true
       },
@@ -47,6 +47,13 @@ export async function GET(request: NextRequest) {
         name: 'asc'
       }
     });
+
+    // Apply privacy settings to each TasteBuddy
+    const tastebuddies = await Promise.all(
+      tasteBuddyUsers.map(async (user) => {
+        return await getUserWithPrivacy(user.id, session.user.id);
+      })
+    );
 
     return NextResponse.json({
       success: true,

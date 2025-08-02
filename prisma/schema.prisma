@@ -43,6 +43,7 @@ model User {
   notifyOnRecipeComment Boolean @default(true) // Notify when someone comments on your recipe
   notifyOnCompliment Boolean @default(true) // Notify when someone sends you a compliment/tip
   notifyOnNewRecipeFromFollowing Boolean @default(true) // Notify when someone you follow posts a new recipe
+  notifyOnMealTag Boolean @default(true) // Notify when someone tags you in a meal memory
   
   // === EMAIL NOTIFICATION PREFERENCES ===
   emailNotifications Boolean @default(false) // Whether to send email notifications
@@ -354,6 +355,7 @@ enum NotificationType {
   RECIPE_COMMENT      // Someone commented on your recipe
   COMPLIMENT_RECEIVED // Someone sent you a compliment/tip
   NEW_RECIPE_FROM_FOLLOWING // Someone you follow posted a new recipe
+  MEAL_TAG            // Someone tagged you in a meal memory
 }
 
 /**
@@ -378,6 +380,7 @@ model Notification {
   relatedCommentId String? // For comment notifications
   relatedComplimentId String? // For compliment notifications
   relatedUserId String? // For user-related notifications (like new followers)
+  relatedMealId String? // For meal-related notifications
   
   // === STATUS ===
   read Boolean @default(false)
@@ -392,6 +395,7 @@ model Notification {
   relatedRecipe Recipe? @relation("NotificationRecipes", fields: [relatedRecipeId], references: [id], onDelete: SetNull)
   relatedComment Comment? @relation("NotificationComments", fields: [relatedCommentId], references: [id], onDelete: SetNull)
   relatedCompliment Compliment? @relation("NotificationCompliments", fields: [relatedComplimentId], references: [id], onDelete: SetNull)
+  relatedMeal Meal? @relation("NotificationMeals", fields: [relatedMealId], references: [id], onDelete: SetNull)
   
   // === INDEXES ===
   @@index([userId])
@@ -402,6 +406,7 @@ model Notification {
   @@index([relatedRecipeId])
   @@index([relatedCommentId])
   @@index([relatedComplimentId])
+  @@index([relatedMealId])
   @@map("notifications")
 }
 
@@ -495,6 +500,7 @@ model Meal {
   author User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   images MealImage[]
   taggedUsers MealTag[] // Users tagged in this meal
+  notifications Notification[] @relation("NotificationMeals")
 
   @@index([authorId])
   @@index([date])

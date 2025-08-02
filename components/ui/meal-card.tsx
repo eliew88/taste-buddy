@@ -221,7 +221,7 @@ export default function MealCard({
           <Link href={`/profile/${meal.author.id}`}>
             <Avatar 
               imageUrl={meal.author.image} 
-              name={meal.author.name || meal.author.email}
+              name={meal.author.name || 'Anonymous User'}
               size="sm"
             />
           </Link>
@@ -230,7 +230,7 @@ export default function MealCard({
               href={`/profile/${meal.author.id}`}
               className="text-sm font-medium text-gray-900 hover:text-orange-600 transition-colors truncate block"
             >
-              {meal.author.name || meal.author.email}
+              {meal.author.name || 'Anonymous User'}
             </Link>
             <div className="text-xs text-gray-500">
               Chef

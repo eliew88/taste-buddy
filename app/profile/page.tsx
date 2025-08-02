@@ -782,21 +782,23 @@ export default function ProfilePage() {
                       {follower.image ? (
                         <img
                           src={follower.image}
-                          alt={follower.name || follower.email}
+                          alt={follower.name || 'User'}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <span className="text-sm font-bold text-gray-600">
-                            {(follower.name || follower.email)[0].toUpperCase()}
+                            {(follower.name || 'U')[0].toUpperCase()}
                           </span>
                         </div>
                       )}
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">
-                          {follower.name || follower.email}
+                          {follower.name || 'Anonymous User'}
                         </p>
-                        <p className="text-xs text-gray-500">{follower.email}</p>
+                        {follower.email && (
+                          <p className="text-xs text-gray-500">{follower.email}</p>
+                        )}
                       </div>
                     </Link>
                   ))}
@@ -836,21 +838,23 @@ export default function ProfilePage() {
                       {followedUser.image ? (
                         <img
                           src={followedUser.image}
-                          alt={followedUser.name || followedUser.email}
+                          alt={followedUser.name || 'User'}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <span className="text-sm font-bold text-gray-600">
-                            {(followedUser.name || followedUser.email)[0].toUpperCase()}
+                            {(followedUser.name || 'U')[0].toUpperCase()}
                           </span>
                         </div>
                       )}
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900">
-                          {followedUser.name || followedUser.email}
+                          {followedUser.name || 'Anonymous User'}
                         </p>
-                        <p className="text-xs text-gray-500">{followedUser.email}</p>
+                        {followedUser.email && (
+                          <p className="text-xs text-gray-500">{followedUser.email}</p>
+                        )}
                       </div>
                     </Link>
                   ))}

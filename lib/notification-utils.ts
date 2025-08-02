@@ -14,6 +14,7 @@ export async function createNotification({
   relatedCommentId,
   relatedComplimentId,
   relatedUserId,
+  relatedMealId,
 }: {
   type: NotificationType;
   title: string;
@@ -24,6 +25,7 @@ export async function createNotification({
   relatedCommentId?: string;
   relatedComplimentId?: string;
   relatedUserId?: string;
+  relatedMealId?: string;
 }) {
   try {
     const response = await fetch(`${process.env.NEXTAUTH_URL}/api/notifications`, {
@@ -41,6 +43,7 @@ export async function createNotification({
         relatedCommentId,
         relatedComplimentId,
         relatedUserId,
+        relatedMealId,
       }),
     });
 
@@ -166,4 +169,26 @@ export async function createNewRecipeNotification(
   console.log(`Created ${successful}/${followerIds.length} new recipe notifications`);
   
   return { success: true, notificationsSent: successful };
+}
+
+export async function createMealTagNotification(
+  taggerId: string,
+  taggedUserId: string,
+  mealId: string,
+  mealName: string,
+  taggerName: string
+) {
+  // Don't notify if tagging yourself
+  if (taggerId === taggedUserId) {
+    return { success: true, message: 'No notification needed for self-tag' };
+  }
+
+  return createNotification({
+    type: NotificationType.MEAL_TAG,
+    title: 'Tagged in Meal Memory',
+    message: `${taggerName} tagged you in "${mealName}"`,
+    userId: taggedUserId,
+    fromUserId: taggerId,
+    relatedMealId: mealId,
+  });
 }

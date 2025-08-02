@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUserId } from '@/lib/auth';
 import { evaluateMealAchievements, evaluatePhotoAchievements } from '@/lib/achievement-service';
+import { createMealTagNotification } from '@/lib/notification-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -318,6 +319,35 @@ export async function POST(request: NextRequest) {
       imagesCount: meal.images?.length || 0,
       authorId: meal.authorId
     });
+
+    // Send notifications to tagged users
+    if (validTaggedUserIds.length > 0) {
+      try {
+        console.log('Sending meal tag notifications...');
+        const authorName = meal.author.name || 'Someone';
+        
+        // Create notifications for all tagged users in parallel
+        const notificationPromises = validTaggedUserIds.map(taggedUserId =>
+          createMealTagNotification(
+            userId, // taggerId (meal author)
+            taggedUserId, // taggedUserId
+            meal.id, // mealId
+            meal.name, // mealName
+            authorName // taggerName
+          )
+        );
+        
+        const notificationResults = await Promise.allSettled(notificationPromises);
+        const successfulNotifications = notificationResults.filter(
+          result => result.status === 'fulfilled' && result.value.success
+        ).length;
+        
+        console.log(`Sent ${successfulNotifications}/${validTaggedUserIds.length} meal tag notifications`);
+      } catch (error) {
+        console.error('Error sending meal tag notifications:', error);
+        // Don't fail the meal creation if notifications fail
+      }
+    }
 
     // Evaluate achievements for the meal author
     let allNewAchievements: any[] = [];

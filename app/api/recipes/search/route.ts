@@ -265,6 +265,9 @@ export async function GET(request: NextRequest) {
     // Build orderBy clause
     const orderBy: Prisma.RecipeOrderByWithRelationInput = {};
     
+    // Flag to indicate if we need to sort by average rating in post-processing
+    const sortByAverageRating = params.sortBy === 'rating';
+    
     switch (params.sortBy) {
       case 'newest':
         orderBy.createdAt = 'desc';
@@ -276,7 +279,8 @@ export async function GET(request: NextRequest) {
         orderBy.recipeBookEntries = { _count: 'desc' };
         break;
       case 'rating':
-        orderBy.ratings = { _count: 'desc' };
+        // Don't sort in database - we'll sort by calculated average rating after transformation
+        orderBy.createdAt = 'desc'; // Default fallback for consistent ordering
         break;
       case 'title':
         orderBy.title = 'asc';
@@ -356,7 +360,7 @@ export async function GET(request: NextRequest) {
     });
     
     // Apply rating filter after calculating averages
-    const filteredRecipes = isUsingRatingFilter
+    let filteredRecipes = isUsingRatingFilter
       ? transformedRecipes.filter(recipe => {
           // Exclude recipes with no ratings when minimum rating is required
           if (recipe.avgRating === 0) {
@@ -366,6 +370,18 @@ export async function GET(request: NextRequest) {
           return recipe.avgRating >= params.minRating!;
         })
       : transformedRecipes;
+    
+    // Sort by average rating if requested (post-processing since we can't do this in Prisma orderBy)
+    if (sortByAverageRating) {
+      filteredRecipes = filteredRecipes.sort((a, b) => {
+        // Sort by average rating descending (highest first)
+        if (b.avgRating !== a.avgRating) {
+          return b.avgRating - a.avgRating;
+        }
+        // If ratings are equal, sort by rating count descending (more ratings first)
+        return b._count.ratings - a._count.ratings;
+      });
+    }
     
     // Calculate metadata based on filtered results
     // When rating filter is applied, total count is based on filtered results

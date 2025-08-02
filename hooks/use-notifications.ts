@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 
 export interface Notification {
   id: string;
-  type: 'NEW_FOLLOWER' | 'RECIPE_COMMENT' | 'COMPLIMENT_RECEIVED' | 'NEW_RECIPE_FROM_FOLLOWING';
+  type: 'NEW_FOLLOWER' | 'RECIPE_COMMENT' | 'COMPLIMENT_RECEIVED' | 'NEW_RECIPE_FROM_FOLLOWING' | 'MEAL_TAG';
   title: string;
   message: string;
   userId: string;
@@ -12,6 +12,7 @@ export interface Notification {
   relatedCommentId?: string;
   relatedComplimentId?: string;
   relatedUserId?: string;
+  relatedMealId?: string;
   read: boolean;
   createdAt: Date;
   fromUser?: {
@@ -34,6 +35,10 @@ export interface Notification {
     message: string;
     tipAmount: number | null;
     type: string;
+  };
+  relatedMeal?: {
+    id: string;
+    name: string;
   };
 }
 
@@ -136,6 +141,7 @@ export const createNotification = async (
     relatedCommentId?: string;
     relatedComplimentId?: string;
     relatedUserId?: string;
+    relatedMealId?: string;
   }
 ) => {
   // This function is primarily used by the notification-utils.ts file

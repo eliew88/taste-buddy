@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getUserWithPrivacy } from '@/lib/privacy-utils';
 
 export async function GET(
   req: NextRequest,
@@ -29,7 +30,6 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            email: true,
             image: true,
             createdAt: true
           }
@@ -40,10 +40,16 @@ export async function GET(
       }
     });
 
-    const followingUsers = following.map(follow => ({
-      ...follow.following,
-      followedAt: follow.createdAt
-    }));
+    // Apply privacy settings to each followed user
+    const followingUsers = await Promise.all(
+      following.map(async (follow) => {
+        const userWithPrivacy = await getUserWithPrivacy(follow.following.id, session.user.id);
+        return {
+          ...userWithPrivacy,
+          followedAt: follow.createdAt
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,

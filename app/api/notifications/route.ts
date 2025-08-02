@@ -70,6 +70,12 @@ export async function GET(request: NextRequest) {
               tipAmount: true,
               type: true,
             }
+          },
+          relatedMeal: {
+            select: {
+              id: true,
+              name: true,
+            }
           }
         }
       }),
@@ -128,7 +134,8 @@ export async function POST(request: NextRequest) {
       relatedRecipeId,
       relatedCommentId,
       relatedComplimentId,
-      relatedUserId
+      relatedUserId,
+      relatedMealId
     } = body;
 
     // Validate required fields
@@ -156,6 +163,7 @@ export async function POST(request: NextRequest) {
         notifyOnRecipeComment: true,
         notifyOnCompliment: true,
         notifyOnNewRecipeFromFollowing: true,
+        notifyOnMealTag: true,
       }
     });
 
@@ -187,6 +195,7 @@ export async function POST(request: NextRequest) {
         relatedCommentId,
         relatedComplimentId,
         relatedUserId,
+        relatedMealId,
       },
       include: {
         fromUser: {
@@ -224,6 +233,7 @@ function getNotificationEnabledStatus(
     notifyOnRecipeComment: boolean;
     notifyOnCompliment: boolean;
     notifyOnNewRecipeFromFollowing: boolean;
+    notifyOnMealTag: boolean;
   }
 ): boolean {
   switch (type) {
@@ -235,6 +245,8 @@ function getNotificationEnabledStatus(
       return user.notifyOnCompliment;
     case NotificationType.NEW_RECIPE_FROM_FOLLOWING:
       return user.notifyOnNewRecipeFromFollowing;
+    case NotificationType.MEAL_TAG:
+      return user.notifyOnMealTag;
     default:
       return false;
   }

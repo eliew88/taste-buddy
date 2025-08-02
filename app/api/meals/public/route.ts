@@ -1,10 +1,14 @@
 // app/api/meals/public/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getUserWithPrivacy } from '@/lib/privacy-utils';
 import { getCurrentUserId } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const tastebuddiesOnly = searchParams.get('tastebuddiesOnly') === 'true';
@@ -68,7 +72,7 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         author: {
-          select: { id: true, name: true, email: true, image: true },
+          select: { id: true, name: true, image: true },
         },
         images: {
           orderBy: { displayOrder: 'asc' }
@@ -76,7 +80,7 @@ export async function GET(request: NextRequest) {
         taggedUsers: {
           include: {
             user: {
-              select: { id: true, name: true, email: true, image: true }
+              select: { id: true, name: true, image: true }
             }
           }
         }
@@ -88,9 +92,31 @@ export async function GET(request: NextRequest) {
 
     const total = await prisma.meal.count({ where });
 
+    // Apply privacy filtering to meal authors and tagged users
+    const mealsWithPrivacy = await Promise.all(
+      meals.map(async (meal) => {
+        // Apply privacy to meal author
+        const authorWithPrivacy = await getUserWithPrivacy(meal.author.id, session?.user?.id);
+        
+        // Apply privacy to tagged users
+        const taggedUsersWithPrivacy = await Promise.all(
+          meal.taggedUsers.map(async (tag) => ({
+            ...tag,
+            user: await getUserWithPrivacy(tag.user.id, session?.user?.id)
+          }))
+        );
+
+        return {
+          ...meal,
+          author: authorWithPrivacy,
+          taggedUsers: taggedUsersWithPrivacy
+        };
+      })
+    );
+
     return NextResponse.json({
       success: true,
-      data: meals,
+      data: mealsWithPrivacy,
       pagination: {
         page,
         limit,
