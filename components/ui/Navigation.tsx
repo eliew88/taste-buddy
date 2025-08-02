@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn, BookOpen } from 'lucide-react';
+import { Heart, Plus, Menu, X, User, Home, Sparkles, LogOut, LogIn, BookOpen, Calendar } from 'lucide-react';
 import { NotificationBell } from './notification-bell';
 import Avatar from '@/components/ui/avatar';
 
@@ -44,7 +44,7 @@ export default function Navigation() {
     }
     if (href === '/profile') {
       return pathname === '/profile' || pathname === '/profile/' || 
-             (pathname.startsWith('/profile/') && !pathname.startsWith('/profile/recipe-book'));
+             (pathname.startsWith('/profile/') && !pathname.startsWith('/profile/recipe-book') && !pathname.startsWith('/profile/meals'));
     }
     return pathname.startsWith(href);
   };
@@ -99,37 +99,17 @@ export default function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             <Link 
-              href="/" 
-              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/').className}`}
-              style={getLinkProps('/').style}
-              aria-current={isActiveLink('/') ? 'page' : undefined}
-            >
-              <Home className="w-4 h-4 mr-1" />
-              Home
-            </Link>
-            
-            <Link 
               href="/food-feed" 
               className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/food-feed').className}`}
               style={getLinkProps('/food-feed').style}
               aria-current={isActiveLink('/food-feed') ? 'page' : undefined}
             >
               <Sparkles className="w-4 h-4 mr-1" />
-              FoodFeed
+              Food Feed
             </Link>
             
             {session ? (
               <>
-                <Link 
-                  href="/profile/recipe-book" 
-                  className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/profile/recipe-book').className}`}
-                  style={getLinkProps('/profile/recipe-book').style}
-                  aria-current={isActiveLink('/profile/recipe-book') ? 'page' : undefined}
-                >
-                  <BookOpen className="w-4 h-4 mr-1" />
-                  Recipe Book
-                </Link>
-                
                 {/* Add Meal Memory Button */}
                 <Link 
                   href="/meals/new" 
@@ -142,6 +122,17 @@ export default function Navigation() {
                   Add Memory
                 </Link>
                 
+                {/* Memories Link */}
+                <Link 
+                  href="/profile/meals" 
+                  className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/profile/meals').className}`}
+                  style={getLinkProps('/profile/meals').style}
+                  aria-current={isActiveLink('/profile/meals') ? 'page' : undefined}
+                >
+                  <Calendar className="w-4 h-4 mr-1" />
+                  Memory Journal
+                </Link>
+                
                 {/* Primary CTA Button */}
                 <Link 
                   href="/recipes/new" 
@@ -152,6 +143,16 @@ export default function Navigation() {
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Recipe
+                </Link>
+                
+                <Link 
+                  href="/profile/recipe-book" 
+                  className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/profile/recipe-book').className}`}
+                  style={getLinkProps('/profile/recipe-book').style}
+                  aria-current={isActiveLink('/profile/recipe-book') ? 'page' : undefined}
+                >
+                  <BookOpen className="w-4 h-4 mr-1" />
+                  Recipe Book
                 </Link>
                 
                 {/* Notification Bell */}
@@ -232,17 +233,6 @@ export default function Navigation() {
           <div className="md:hidden border-t py-4" style={{ backgroundColor: '#CFE8EF' }} role="menu">
             <div className="flex flex-col space-y-2">
               <Link
-                href="/"
-                className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/').className}`}
-                style={getLinkProps('/').style}
-                onClick={closeMobileMenu}
-                role="menuitem"
-              >
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </Link>
-              
-              <Link
                 href="/food-feed"
                 className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/food-feed').className}`}
                 style={getLinkProps('/food-feed').style}
@@ -250,11 +240,50 @@ export default function Navigation() {
                 role="menuitem"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                FoodFeed
+                Food Feed
               </Link>
               
               {session ? (
                 <>
+                  {/* Mobile Add Meal Button */}
+                  <Link
+                    href="/meals/new"
+                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
+                    style={{ backgroundColor: '#1768AC' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#135285'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1768AC'}
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Memory
+                  </Link>
+                  
+                  <Link
+                    href="/profile/meals"
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/profile/meals').className}`}
+                    style={getLinkProps('/profile/meals').style}
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Memory Journal
+                  </Link>
+                  
+                  {/* Mobile CTA Button */}
+                  <Link
+                    href="/recipes/new"
+                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
+                    style={{ backgroundColor: '#1B998B' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
+                    onClick={closeMobileMenu}
+                    role="menuitem"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Recipe
+                  </Link>
+                  
                   <Link
                     href="/profile/recipe-book"
                     className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/profile/recipe-book').className}`}
@@ -280,34 +309,6 @@ export default function Navigation() {
                       className="mr-2"
                     />
                     Profile ({session.user?.name})
-                  </Link>
-                  
-                  {/* Mobile Add Meal Button */}
-                  <Link
-                    href="/meals/new"
-                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
-                    style={{ backgroundColor: '#1768AC' }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#135285'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1768AC'}
-                    onClick={closeMobileMenu}
-                    role="menuitem"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Memory
-                  </Link>
-                  
-                  {/* Mobile CTA Button */}
-                  <Link
-                    href="/recipes/new"
-                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
-                    style={{ backgroundColor: '#1B998B' }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
-                    onClick={closeMobileMenu}
-                    role="menuitem"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Recipe
                   </Link>
                   
                   {/* Mobile Sign Out Button */}

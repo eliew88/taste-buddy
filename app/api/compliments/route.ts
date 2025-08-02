@@ -271,7 +271,8 @@ export async function POST(request: NextRequest) {
         compliment.id,
         senderName,
         tipAmount,
-        recipeTitle
+        recipeTitle,
+        validatedData.isAnonymous
       );
     } catch (error) {
       console.error('Failed to create compliment notification:', error);

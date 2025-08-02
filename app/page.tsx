@@ -18,9 +18,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Search, Plus, AlertCircle, LogIn } from 'lucide-react';
-import { useRecipeSearch } from '@/hooks/use-recipes';
 import { 
-  LoadingSpinner, 
   LoadingButton, 
   RecipeGridSkeleton
 } from '@/components/ui/loading';
@@ -45,18 +43,8 @@ const FALLBACK_HERO_IMAGES = [
  * Hero Section Component with 4-Panel Background
  */
 const HeroSection = ({ 
-  searchTerm, 
-  difficulty, 
-  onSearch, 
-  onDifficultyChange, 
-  searchLoading,
   heroImages = FALLBACK_HERO_IMAGES
 }: {
-  searchTerm: string;
-  difficulty: string;
-  onSearch: (value: string) => void;
-  onDifficultyChange: (value: string) => void;
-  searchLoading: boolean;
   heroImages?: string[];
 }) => {
   // Ensure we always have fallback images available
@@ -147,36 +135,16 @@ const HeroSection = ({
           )}
         </div>
         
-        {/* Search Section */}
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search recipes, ingredients, or tags..."
-              value={searchTerm}
-              onChange={(e) => onSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-purple-600 text-gray-900 placeholder-gray-500 shadow-lg backdrop-blur-sm bg-purple-200/90 text-lg"
-            />
-            {searchLoading && (
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                <LoadingSpinner size="sm" />
-              </div>
-            )}
-          </div>
-          
-          <div className="flex justify-center">
-            <select
-              value={difficulty}
-              onChange={(e) => onDifficultyChange(e.target.value)}
-              className="px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-purple-200/90 shadow-lg backdrop-blur-sm text-lg"
-            >
-              <option value="">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
+        {/* Call to Action */}
+        <div className="max-w-2xl mx-auto text-center">
+          <Link
+            href="/food-feed"
+            className="inline-flex items-center space-x-2 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:opacity-90 transition-all transform hover:scale-105"
+            style={{ backgroundColor: 'rgba(179, 112, 176, 0.9)' }}
+          >
+            <Search className="w-6 h-6" />
+            <span>Discover Amazing Recipes</span>
+          </Link>
         </div>
       </div>
     </section>
@@ -274,7 +242,8 @@ const EmptyState = ({
           <div className="flex space-x-4">
             <Link 
               href="/auth/signin"
-              className="border border-purple-700 text-purple-700 px-6 py-3 rounded-lg font-semibold hover:bg-purple-100 transition-colors inline-flex items-center"
+              className="border px-6 py-3 rounded-lg font-semibold hover:opacity-80 transition-colors inline-flex items-center"
+              style={{ borderColor: '#B370B0', color: '#B370B0' }}
             >
               <LogIn className="w-5 h-5 mr-2" />
               Sign In
@@ -297,11 +266,8 @@ const EmptyState = ({
  * Main Homepage Component with Enhanced Loading
  */
 export default function HomePage() {
-  const [searchLoading, setSearchLoading] = useState(false);
   const [heroImages, setHeroImages] = useState<string[]>(FALLBACK_HERO_IMAGES);
   const { data: session } = useSession();
-  
-  // Use the custom hooks for state management
 
   // Fetch recipes with images for hero background
   const fetchHeroImages = async () => {
@@ -336,19 +302,6 @@ export default function HomePage() {
   useEffect(() => {
     fetchHeroImages();
   }, []);
-  const {
-    recipes,
-    loading,
-    error,
-    pagination,
-    searchTerm,
-    difficulty,
-    handleSearch,
-    handleDifficultyChange,
-    handlePageChange,
-    clearFilters,
-    refetch,
-  } = useRecipeSearch();
 
   // For featured recipes (no filters), we want top 6 without pagination
   const [featuredRecipes, setFeaturedRecipes] = useState<any[]>([]);
@@ -408,30 +361,11 @@ export default function HomePage() {
     }
   }, []);
 
-  // Check if any filters are active
-  const hasActiveFilters = !!(searchTerm || difficulty);
-
-  // Fetch featured recipes and recent meals when component mounts and when filters are cleared
+  // Fetch featured recipes and recent meals when component mounts
   useEffect(() => {
-    if (!hasActiveFilters) {
-      fetchFeaturedRecipes();
-      fetchRecentMeals();
-    }
-  }, [hasActiveFilters, fetchFeaturedRecipes, fetchRecentMeals]);
-
-  /**
-   * Enhanced search handler with loading state
-   */
-  const handleSearchWithLoading = async (value: string) => {
-    setSearchLoading(true);
-    try {
-      handleSearch(value);
-      // Small delay to show loading state
-      await new Promise(resolve => setTimeout(resolve, 200));
-    } finally {
-      setSearchLoading(false);
-    }
-  };
+    fetchFeaturedRecipes();
+    fetchRecentMeals();
+  }, [fetchFeaturedRecipes, fetchRecentMeals]);
 
   return (
     <ErrorBoundary>
@@ -441,137 +375,50 @@ export default function HomePage() {
 
         {/* Hero Section with 4-Panel Background */}
         <HeroSection 
-          searchTerm={searchTerm}
-          difficulty={difficulty}
-          onSearch={handleSearchWithLoading}
-          onDifficultyChange={handleDifficultyChange}
-          searchLoading={searchLoading}
           heroImages={heroImages}
         />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
-          {/* Results Section */}
+          {/* Featured Recipes Section */}
           <section>
             <header className="mb-8">
               <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  {hasActiveFilters ? 'Search Results' : 'Featured Recipes'}
-                </h2>
-                {hasActiveFilters ? (
-                  !loading && (
-                    <p className="text-gray-600">
-                      {pagination.total} recipe{pagination.total !== 1 ? 's' : ''} found
-                    </p>
-                  )
-                ) : null}
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Recipes</h2>
+                <p className="text-gray-600">Discover the most loved recipes from our community</p>
               </div>
-              
-              {hasActiveFilters && (
-                <div className="text-center">
-                  <LoadingButton
-                    loading={false}
-                    onClick={clearFilters}
-                    variant="outline"
-                  >
-                    Clear Filters
-                  </LoadingButton>
-                </div>
-              )}
             </header>
             
-            {/* Content */}
-            {hasActiveFilters ? (
-              // Search Results with Pagination
-              <>
-                {loading ? (
-                  <RecipeGridSkeleton count={6} />
-                ) : error ? (
-                  <ErrorMessage message={error} onRetry={refetch} />
-                ) : recipes.length > 0 ? (
-                  <>
-                    {/* Recipe Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                      {recipes.map(recipe => (
-                        <RecipeCard 
-                          key={recipe.id} 
-                          recipe={recipe}
-                          showFavoriteButton={false}
-                          showRecipeBookButton={true}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Pagination for Search Results */}
-                    {pagination.totalPages > 1 && (
-                      <nav className="flex justify-center items-center space-x-2" aria-label="Pagination">
-                        <LoadingButton
-                          loading={false}
-                          onClick={() => handlePageChange(pagination.page - 1)}
-                          disabled={!pagination.hasPrevPage}
-                          variant="outline"
-                        >
-                          Previous
-                        </LoadingButton>
-                        
-                        <span className="px-4 py-2 text-gray-600 font-medium">
-                          Page {pagination.page} of {pagination.totalPages}
-                        </span>
-                        
-                        <LoadingButton
-                          loading={false}
-                          onClick={() => handlePageChange(pagination.page + 1)}
-                          disabled={!pagination.hasNextPage}
-                          variant="outline"
-                        >
-                          Next
-                        </LoadingButton>
-                      </nav>
-                    )}
-                  </>
-                ) : (
-                  <EmptyState 
-                    hasFilters={hasActiveFilters} 
-                    onClearFilters={clearFilters}
-                    isAuthenticated={!!session}
+            {/* Featured Recipes */}
+            {featuredLoading ? (
+              <RecipeGridSkeleton count={6} />
+            ) : featuredError ? (
+              <ErrorMessage message={featuredError} onRetry={() => fetchFeaturedRecipes()} />
+            ) : featuredRecipes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                {featuredRecipes.map(recipe => (
+                  <RecipeCard 
+                    key={recipe.id} 
+                    recipe={recipe}
+                    showFavoriteButton={false}
+                    showRecipeBookButton={true}
                   />
-                )}
-              </>
+                ))}
+              </div>
             ) : (
-              // Featured Recipes without Pagination
-              <>
-                {featuredLoading ? (
-                  <RecipeGridSkeleton count={6} />
-                ) : featuredError ? (
-                  <ErrorMessage message={featuredError} onRetry={() => fetchFeaturedRecipes()} />
-                ) : featuredRecipes.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                    {featuredRecipes.map(recipe => (
-                      <RecipeCard 
-                        key={recipe.id} 
-                        recipe={recipe}
-                        showFavoriteButton={false}
-                        showRecipeBookButton={true}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState 
-                    hasFilters={false} 
-                    onClearFilters={clearFilters}
-                    isAuthenticated={!!session}
-                  />
-                )}
-              </>
+              <EmptyState 
+                hasFilters={false} 
+                onClearFilters={() => {}}
+                isAuthenticated={!!session}
+              />
             )}
           </section>
         </main>
 
-        {/* Recently Cooked Meals Section - only show when no active filters */}
-        {!hasActiveFilters && (
-          <section className="max-w-7xl mx-auto px-4 py-12">
+        {/* Recent Meal Memories Section */}
+        <section className="max-w-7xl mx-auto px-4 py-12">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Recently Cooked Meals</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Recent Meal Memories</h2>
               <p className="text-gray-600">Fresh meal memories from the TasteBuddy community</p>
             </div>
 
@@ -623,17 +470,17 @@ export default function HomePage() {
               <div className="text-center">
                 <Link
                   href="/food-feed?type=meals"
-                  className="inline-flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                  className="inline-flex items-center space-x-2 text-white px-6 py-3 rounded-lg hover:opacity-90 transition-colors"
+                  style={{ backgroundColor: '#B370B0' }}
                 >
-                  <span>View All Meals</span>
+                  <span>View All Memories</span>
                 </Link>
               </div>
             )}
-          </section>
-        )}
+        </section>
 
-        {/* Recipe Statistics Section - only show when no active filters */}
-        {!hasActiveFilters && !featuredLoading && (
+        {/* Recipe Statistics Section */}
+        {!featuredLoading && (
           <RecipeStatsSection />
         )}
       </div>

@@ -29,8 +29,8 @@ export function NotificationBell() {
         return notification.relatedRecipeId ? `/recipes/${notification.relatedRecipeId}` : null;
       
       case 'COMPLIMENT_RECEIVED':
-        // Navigate to the compliment sender's profile
-        return notification.fromUserId ? `/profile/${notification.fromUserId}` : null;
+        // Navigate to the recipient's own profile where they can view their compliments
+        return '/profile';
       
       case 'MEAL_TAG':
         // Navigate to the meal detail page

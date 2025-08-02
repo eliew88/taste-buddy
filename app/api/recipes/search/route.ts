@@ -30,7 +30,7 @@ const enhancedSearchSchema = z.object({
   servingsMax: z.number().min(1).optional(),
   minRating: z.number().min(0).max(5).optional(),
   authorId: z.string().optional(),
-  tastebuddiesOnly: z.boolean().optional(),
+  recipePoster: z.enum(['everyone', 'following', 'my-own']).optional(),
   createdAfter: z.string().datetime().optional(),
   createdBefore: z.string().datetime().optional(),
   sortBy: z.enum(['newest', 'oldest', 'popular', 'rating', 'title', 'cookTime', 'difficulty']).default('newest'),
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       servingsMax: searchParams.get('servingsMax') ? parseInt(searchParams.get('servingsMax')!) : undefined,
       minRating: searchParams.get('minRating') ? parseFloat(searchParams.get('minRating')!) : undefined,
       authorId: searchParams.get('authorId') || undefined,
-      tastebuddiesOnly: searchParams.get('tastebuddiesOnly') === 'true',
+      recipePoster: searchParams.get('recipePoster') || 'everyone',
       createdAfter: searchParams.get('createdAfter') || undefined,
       createdBefore: searchParams.get('createdBefore') || undefined,
       sortBy: searchParams.get('sortBy') || 'newest',
@@ -229,17 +229,33 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // TasteBuddies filter - only show recipes from users that the current user follows
-    if (params.tastebuddiesOnly && session?.user?.id) {
-      andConditions.push({
-        author: {
-          followers: {
-            some: {
-              followerId: session.user.id,
+    // Recipe poster filter - filter based on user relationships
+    if (params.recipePoster && params.recipePoster !== 'everyone' && session?.user?.id) {
+      switch (params.recipePoster) {
+        case 'following':
+          // Only show recipes from users that the current user follows
+          andConditions.push({
+            author: {
+              followers: {
+                some: {
+                  followerId: session.user.id,
+                },
+              },
             },
-          },
-        },
-      });
+          });
+          break;
+          
+        case 'my-own':
+          // Only show recipes by the current user
+          andConditions.push({
+            authorId: session.user.id,
+          });
+          break;
+          
+        default:
+          // 'everyone' or unknown value - no additional filtering
+          break;
+      }
     }
     
     // Date range filter

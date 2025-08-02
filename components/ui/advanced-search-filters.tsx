@@ -30,6 +30,8 @@ import {
 /**
  * Enhanced search filter interfaces
  */
+type RecipePosterFilter = 'everyone' | 'following' | 'my-own';
+
 interface SearchFilters {
   difficulty: string[];
   ingredients: string[];
@@ -38,7 +40,7 @@ interface SearchFilters {
   cookTimeRange: [number, number];
   servingsRange: [number, number];
   minRating: number;
-  tastebuddiesOnly: boolean;
+  recipePoster: RecipePosterFilter;
   dateRange: {
     start: string | null;
     end: string | null;
@@ -103,7 +105,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         <div className="text-gray-500">{icon}</div>
         <span className="font-medium text-gray-900">{title}</span>
         {badgeCount !== undefined && badgeCount > 0 && (
-          <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+          <span className="text-white text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: '#B370B0' }}>
             {badgeCount}
           </span>
         )}
@@ -161,7 +163,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 type="checkbox"
                 checked={selectedValues.includes(option.value)}
                 onChange={() => handleToggle(option.value)}
-                className="rounded border-gray-300 text-purple-700 focus:ring-purple-600"
+                className="rounded border-gray-300"
+                style={{ accentColor: '#B370B0' }}
               />
               <span className="text-sm text-gray-700 capitalize">{option.label}</span>
             </div>
@@ -220,8 +223,9 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
         
         {/* Active range */}
         <div 
-          className="absolute top-3 h-1 bg-purple-600 rounded"
+          className="absolute top-3 h-1 rounded"
           style={{
+            backgroundColor: '#B370B0',
             left: `${((value[0] - min) / (max - min)) * 100}%`,
             width: `${((value[1] - value[0]) / (max - min)) * 100}%`
           }}
@@ -251,14 +255,14 @@ const RangeSlider: React.FC<RangeSliderProps> = ({
         
         {/* Min handle */}
         <div
-          className="absolute top-2 w-3 h-3 bg-purple-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
-          style={{ left: `${((value[0] - min) / (max - min)) * 100}%` }}
+          className="absolute top-2 w-3 h-3 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
+          style={{ backgroundColor: '#B370B0', left: `${((value[0] - min) / (max - min)) * 100}%` }}
         ></div>
         
         {/* Max handle */}
         <div
-          className="absolute top-2 w-3 h-3 bg-purple-600 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
-          style={{ left: `${((value[1] - min) / (max - min)) * 100}%` }}
+          className="absolute top-2 w-3 h-3 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2"
+          style={{ backgroundColor: '#B370B0', left: `${((value[1] - min) / (max - min)) * 100}%` }}
         ></div>
       </div>
       
@@ -321,7 +325,7 @@ export default function AdvancedSearchFilters({
 }: AdvancedSearchFiltersProps) {
   // Collapsible section states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    tastebuddies: true,
+    recipePoster: true,
     difficulty: true,
     rating: false,
     ingredients: false,
@@ -373,7 +377,7 @@ export default function AdvancedSearchFilters({
             <Filter className="w-5 h-5 text-gray-500" />
             <h3 className="font-semibold text-gray-900">Filters</h3>
             {activeFilterCount > 0 && (
-              <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+              <span className="text-white text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: '#B370B0' }}>
                 {activeFilterCount}
               </span>
             )}
@@ -382,7 +386,8 @@ export default function AdvancedSearchFilters({
           {activeFilterCount > 0 && (
             <button
               onClick={onResetFilters}
-              className="text-sm text-purple-700 hover:text-purple-900 font-medium flex items-center space-x-1"
+              className="text-sm hover:opacity-80 font-medium flex items-center space-x-1"
+              style={{ color: '#B370B0' }}
             >
               <X className="w-3 h-3" />
               <span>Clear all</span>
@@ -393,30 +398,47 @@ export default function AdvancedSearchFilters({
 
       {/* Filter Sections */}
       <div className="divide-y divide-gray-200">
-        {/* TasteBuddies Filter - Moved to top */}
+        {/* Recipe Poster Filter - Moved to top */}
         <FilterSection
-          title="TasteBuddies"
-          icon={<Heart className="w-4 h-4" />}
-          isOpen={openSections.tastebuddies}
-          onToggle={() => toggleSection('tastebuddies')}
-          badgeCount={filters.tastebuddiesOnly ? 1 : 0}
+          title="See Recipes From..."
+          icon={<Users className="w-4 h-4" />}
+          isOpen={openSections.recipePoster}
+          onToggle={() => toggleSection('recipePoster')}
+          badgeCount={filters.recipePoster !== 'everyone' ? 1 : 0}
         >
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
-                type="checkbox"
-                checked={filters.tastebuddiesOnly}
-                onChange={(e) => updateFilters({ tastebuddiesOnly: e.target.checked })}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                type="radio"
+                name="recipePoster"
+                checked={filters.recipePoster === 'everyone'}
+                onChange={() => updateFilters({ recipePoster: 'everyone' })}
+                className="w-4 h-4 border-gray-300"
+                style={{ accentColor: '#B370B0' }}
               />
-              <div>
-                <span className="text-sm font-medium text-gray-700">
-                  Only show recipes from people I follow
-                </span>
-                <p className="text-xs text-gray-500 mt-1">
-                  Filter to see recipes only from your TasteBuddies
-                </p>
-              </div>
+              <span className="text-sm text-gray-700">Everyone</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                name="recipePoster"
+                checked={filters.recipePoster === 'following'}
+                onChange={() => updateFilters({ recipePoster: 'following' })}
+                className="w-4 h-4 border-gray-300"
+                style={{ accentColor: '#B370B0' }}
+              />
+              <span className="text-sm text-gray-700">People I Follow</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="radio"
+                name="recipePoster"
+                checked={filters.recipePoster === 'my-own'}
+                onChange={() => updateFilters({ recipePoster: 'my-own' })}
+                className="w-4 h-4 border-gray-300"
+                style={{ accentColor: '#B370B0' }}
+              />
+              <span className="text-sm text-gray-700">Only My Own</span>
             </label>
           </div>
         </FilterSection>
@@ -532,7 +554,8 @@ export default function AdvancedSearchFilters({
             {filters.difficulty.map(diff => (
               <span
                 key={diff}
-                className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full"
+                className="inline-flex items-center space-x-1 text-white text-xs font-medium px-2 py-1 rounded-full"
+                style={{ backgroundColor: '#B370B0' }}
               >
                 <span className="capitalize">{diff}</span>
                 <button
@@ -550,7 +573,8 @@ export default function AdvancedSearchFilters({
             {filters.ingredients.map(ingredient => (
               <span
                 key={ingredient}
-                className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full"
+                className="inline-flex items-center space-x-1 text-white text-xs font-medium px-2 py-1 rounded-full"
+                style={{ backgroundColor: '#B370B0' }}
               >
                 <span>{ingredient}</span>
                 <button
@@ -587,7 +611,8 @@ export default function AdvancedSearchFilters({
             {filters.tags.map(tag => (
               <span
                 key={tag}
-                className="inline-flex items-center space-x-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full"
+                className="inline-flex items-center space-x-1 text-white text-xs font-medium px-2 py-1 rounded-full"
+                style={{ backgroundColor: '#B370B0' }}
               >
                 <span>{tag}</span>
                 <button
@@ -615,14 +640,16 @@ export default function AdvancedSearchFilters({
               </span>
             )}
             
-            {filters.tastebuddiesOnly && (
+            {filters.recipePoster !== 'everyone' && (
               <span className="inline-flex items-center space-x-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                <Heart className="w-3 h-3" />
-                <span>TasteBuddies only</span>
+                <Users className="w-3 h-3" />
+                <span>
+                  {filters.recipePoster === 'following' ? 'People I Follow' : 'Only My Own'}
+                </span>
                 <button
-                  onClick={() => updateFilters({ tastebuddiesOnly: false })}
+                  onClick={() => updateFilters({ recipePoster: 'everyone' })}
                   className="hover:text-blue-900 transition-colors"
-                  aria-label="Remove TasteBuddies filter"
+                  aria-label="Remove recipe poster filter"
                 >
                   <X className="w-3 h-3" />
                 </button>

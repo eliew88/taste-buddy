@@ -109,7 +109,8 @@ export async function createComplimentNotification(
   complimentId: string,
   fromUserName: string,
   tipAmount?: number,
-  recipeTitle?: string
+  recipeTitle?: string,
+  isAnonymous?: boolean
 ) {
   // Don't notify if sending compliment to self
   if (fromUserId === toUserId) {
@@ -118,16 +119,25 @@ export async function createComplimentNotification(
 
   const isTip = tipAmount && tipAmount > 0;
   const title = isTip ? 'New Tip Received!' : 'New Compliment!';
+  const senderName = isAnonymous ? 'Someone' : fromUserName;
   
   let message = '';
   if (isTip && recipeTitle) {
-    message = `${fromUserName} sent you a $${tipAmount} tip for your recipe "${recipeTitle}"`;
+    message = isAnonymous 
+      ? `Someone sent you an anonymous $${tipAmount} tip for your recipe "${recipeTitle}"`
+      : `${fromUserName} sent you a $${tipAmount} tip for your recipe "${recipeTitle}"`;
   } else if (isTip) {
-    message = `${fromUserName} sent you a $${tipAmount} tip`;
+    message = isAnonymous
+      ? `Someone sent you an anonymous $${tipAmount} tip`
+      : `${fromUserName} sent you a $${tipAmount} tip`;
   } else if (recipeTitle) {
-    message = `${fromUserName} sent you a compliment for your recipe "${recipeTitle}"`;
+    message = isAnonymous
+      ? `Someone sent you an anonymous compliment for your recipe "${recipeTitle}"`
+      : `${fromUserName} sent you a compliment for your recipe "${recipeTitle}"`;
   } else {
-    message = `${fromUserName} sent you a compliment`;
+    message = isAnonymous
+      ? `Someone sent you an anonymous compliment`
+      : `${fromUserName} sent you a compliment`;
   }
 
   return createNotification({

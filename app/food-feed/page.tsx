@@ -40,6 +40,8 @@ type SortOption = 'newest' | 'oldest' | 'popular' | 'rating' | 'title' | 'cookTi
 type ViewMode = 'grid' | 'list';
 type ContentType = 'recipes' | 'meals';
 
+type RecipePosterFilter = 'everyone' | 'following' | 'my-own';
+
 interface SearchFilters {
   difficulty: string[];
   ingredients: string[];
@@ -48,7 +50,7 @@ interface SearchFilters {
   cookTimeRange: [number, number];
   servingsRange: [number, number];
   minRating: number;
-  tastebuddiesOnly: boolean;
+  recipePoster: RecipePosterFilter;
   dateRange: {
     start: string | null;
     end: string | null;
@@ -56,7 +58,7 @@ interface SearchFilters {
 }
 
 interface MealFilters {
-  tastebuddiesOnly: boolean;
+  recipePoster: RecipePosterFilter;
 }
 
 /**
@@ -70,7 +72,7 @@ const defaultFilters: SearchFilters = {
   cookTimeRange: [0, 300],
   servingsRange: [1, 12],
   minRating: 0,
-  tastebuddiesOnly: false,
+  recipePoster: 'everyone',
   dateRange: {
     start: null,
     end: null,
@@ -78,7 +80,7 @@ const defaultFilters: SearchFilters = {
 };
 
 const defaultMealFilters: MealFilters = {
-  tastebuddiesOnly: false,
+  recipePoster: 'everyone',
 };
 
 /**
@@ -203,9 +205,9 @@ function FoodFeedPageContent() {
       if (filters.excludedIngredients.length > 0) count++;
       if (filters.tags.length > 0) count++;
       if (filters.minRating > 0) count++;
-      if (filters.tastebuddiesOnly) count++;
+      if (filters.recipePoster !== 'everyone') count++;
     } else {
-      if (mealFilters.tastebuddiesOnly) count++;
+      if (mealFilters.recipePoster !== 'everyone') count++;
     }
     return count;
   }, [contentType, filters, mealFilters]);
@@ -280,8 +282,8 @@ function FoodFeedPageContent() {
       params.append('minRating', filters.minRating.toString());
     }
     
-    if (filters.tastebuddiesOnly) {
-      params.append('tastebuddiesOnly', 'true');
+    if (filters.recipePoster !== 'everyone') {
+      params.append('recipePoster', filters.recipePoster);
     }
     
     
@@ -392,8 +394,8 @@ function FoodFeedPageContent() {
       params.append('minRating', filters.minRating.toString());
     }
     
-    if (filters.tastebuddiesOnly) {
-      params.append('tastebuddiesOnly', 'true');
+    if (filters.recipePoster !== 'everyone') {
+      params.append('recipePoster', filters.recipePoster);
     }
     
     
@@ -457,7 +459,7 @@ function FoodFeedPageContent() {
       // Use public meals endpoint that doesn't require authentication
       const response = await apiClient.getPublicMeals({
         search: searchQuery || undefined,
-        tastebuddiesOnly: mealFilters.tastebuddiesOnly,
+        recipePoster: mealFilters.recipePoster,
         page: currentPage,
         limit: resultsPerPage,
       });
@@ -487,7 +489,7 @@ function FoodFeedPageContent() {
       
     } catch (err) {
       console.error('Meal search error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch meals');
+      setError(err instanceof Error ? err.message : 'Failed to fetch memories');
       setMeals([]);
       setSearchMeta(null);
     } finally {
@@ -542,12 +544,12 @@ function FoodFeedPageContent() {
       <Navigation />
       
       {/* Page Header */}
-      <div className="bg-blue-100 border-b border-gray-200">
+      <div className="border-b border-gray-200" style={{ backgroundColor: '#CFE8EF' }}>
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="space-y-6">
             {/* Page Title */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">FoodFeed</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Food Feed</h1>
             </div>
 
             {/* Content Type Toggle */}
@@ -556,9 +558,10 @@ function FoodFeedPageContent() {
                 onClick={() => handleContentTypeChange('recipes')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   contentType === 'recipes'
-                    ? 'bg-purple-600 text-white'
+                    ? 'text-white'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
+                style={contentType === 'recipes' ? { backgroundColor: '#B370B0' } : {}}
               >
                 Recipes
               </button>
@@ -566,11 +569,12 @@ function FoodFeedPageContent() {
                 onClick={() => handleContentTypeChange('meals')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   contentType === 'meals'
-                    ? 'bg-purple-600 text-white'
+                    ? 'text-white'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
+                style={contentType === 'meals' ? { backgroundColor: '#B370B0' } : {}}
               >
-                Meals
+                Memories
               </button>
             </div>
             
@@ -582,14 +586,15 @@ function FoodFeedPageContent() {
                   type="text"
                   value={localQuery}
                   onChange={(e) => setLocalQuery(e.target.value)}
-                  placeholder={contentType === 'recipes' ? "Search recipes, ingredients, or tags..." : "Search meals..."}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                  placeholder={contentType === 'recipes' ? "Search recipes, ingredients, or tags..." : "Search memories..."}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:border-[#B370B0]"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-600 disabled:opacity-50 transition-colors"
+                className="px-6 py-3 text-white rounded-lg hover:opacity-90 focus:ring-2 disabled:opacity-50 transition-colors"
+                style={{ backgroundColor: '#B370B0' }}
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -625,7 +630,8 @@ function FoodFeedPageContent() {
                     {activeFilterCount > 0 && (
                       <button
                         onClick={() => setMealFilters(defaultMealFilters)}
-                        className="text-sm text-purple-600 hover:text-purple-700"
+                        className="text-sm hover:opacity-80"
+                        style={{ color: '#B370B0' }}
                       >
                         Clear ({activeFilterCount})
                       </button>
@@ -634,21 +640,54 @@ function FoodFeedPageContent() {
                   
                   <div className="space-y-4">
                     <div>
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={mealFilters.tastebuddiesOnly}
-                          onChange={(e) => handleMealFiltersChange({
-                            ...mealFilters,
-                            tastebuddiesOnly: e.target.checked
-                          })}
-                          className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                        />
-                        <span className="text-sm text-gray-700">TasteBuddies Only</span>
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Show meals from people you follow
-                      </p>
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                        <UsersIcon className="w-4 h-4 mr-2" />
+                        See Recipes From...
+                      </h4>
+                      <div className="space-y-2">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="recipePosterDesktop"
+                            checked={mealFilters.recipePoster === 'everyone'}
+                            onChange={() => handleMealFiltersChange({
+                              ...mealFilters,
+                              recipePoster: 'everyone'
+                            })}
+                            className="w-4 h-4 border-gray-300"
+                            style={{ accentColor: '#B370B0' }}
+                          />
+                          <span className="text-sm text-gray-700">Everyone</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="recipePosterDesktop"
+                            checked={mealFilters.recipePoster === 'following'}
+                            onChange={() => handleMealFiltersChange({
+                              ...mealFilters,
+                              recipePoster: 'following'
+                            })}
+                            className="w-4 h-4 border-gray-300"
+                            style={{ accentColor: '#B370B0' }}
+                          />
+                          <span className="text-sm text-gray-700">People I Follow</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="recipePosterDesktop"
+                            checked={mealFilters.recipePoster === 'my-own'}
+                            onChange={() => handleMealFiltersChange({
+                              ...mealFilters,
+                              recipePoster: 'my-own'
+                            })}
+                            className="w-4 h-4 border-gray-300"
+                            style={{ accentColor: '#B370B0' }}
+                          />
+                          <span className="text-sm text-gray-700">Only My Own</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -665,16 +704,16 @@ function FoodFeedPageContent() {
                 <h2 className="text-lg font-semibold text-gray-900">
                   {searchMeta && searchMeta.total !== undefined ? (
                     <>
-                      {searchMeta.total.toLocaleString()} {contentType === 'recipes' ? 'Recipe' : 'Meal'}{searchMeta.total !== 1 ? 's' : ''}
+                      {searchMeta.total.toLocaleString()} {contentType === 'recipes' ? (searchMeta.total !== 1 ? 'Recipes' : 'Recipe') : (searchMeta.total !== 1 ? 'Memories' : 'Memory')}
                       {searchQuery && ` for "${searchQuery}"`}
                     </>
                   ) : (
-                    contentType === 'recipes' ? 'Recipes' : 'Meals'
+                    contentType === 'recipes' ? 'Recipes' : 'Memories'
                   )}
                 </h2>
                 
                 {activeFilterCount > 0 && (
-                  <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                  <span className="text-white text-xs px-2 py-1 rounded-full" style={{ backgroundColor: '#B370B0' }}>
                     {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
                   </span>
                 )}
@@ -690,7 +729,7 @@ function FoodFeedPageContent() {
                   <Filter className="w-4 h-4 mr-2" />
                   Filters
                   {activeFilterCount > 0 && (
-                    <span className="ml-2 bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded-full">
+                    <span className="ml-2 text-white text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#B370B0' }}>
                       {activeFilterCount}
                     </span>
                   )}
@@ -700,7 +739,7 @@ function FoodFeedPageContent() {
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-[#B370B0]"
                 >
                   {contentType === 'meals' ? (
                     // Meal-specific sort options
@@ -723,13 +762,15 @@ function FoodFeedPageContent() {
                 <div className="flex border border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleViewModeChange('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-purple-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                    className={`p-2 ${viewMode === 'grid' ? 'text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                    style={viewMode === 'grid' ? { backgroundColor: '#B370B0' } : {}}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleViewModeChange('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-purple-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                    className={`p-2 ${viewMode === 'list' ? 'text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                    style={viewMode === 'list' ? { backgroundColor: '#B370B0' } : {}}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -756,7 +797,8 @@ function FoodFeedPageContent() {
                       {activeFilterCount > 0 && (
                         <button
                           onClick={() => setMealFilters(defaultMealFilters)}
-                          className="text-sm text-purple-600 hover:text-purple-700"
+                          className="text-sm hover:opacity-80"
+                          style={{ color: '#B370B0' }}
                         >
                           Clear ({activeFilterCount})
                         </button>
@@ -765,21 +807,54 @@ function FoodFeedPageContent() {
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={mealFilters.tastebuddiesOnly}
-                            onChange={(e) => handleMealFiltersChange({
-                              ...mealFilters,
-                              tastebuddiesOnly: e.target.checked
-                            })}
-                            className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                          />
-                          <span className="text-sm text-gray-700">TasteBuddies Only</span>
-                        </label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Show meals from people you follow
-                        </p>
+                        <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                          <UsersIcon className="w-4 h-4 mr-2" />
+                          See Recipes From...
+                        </h4>
+                        <div className="space-y-2">
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="recipePoster"
+                              checked={mealFilters.recipePoster === 'everyone'}
+                              onChange={() => handleMealFiltersChange({
+                                ...mealFilters,
+                                recipePoster: 'everyone'
+                              })}
+                              className="w-4 h-4 border-gray-300"
+                              style={{ accentColor: '#B370B0' }}
+                            />
+                            <span className="text-sm text-gray-700">Everyone</span>
+                          </label>
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="recipePoster"
+                              checked={mealFilters.recipePoster === 'following'}
+                              onChange={() => handleMealFiltersChange({
+                                ...mealFilters,
+                                recipePoster: 'following'
+                              })}
+                              className="w-4 h-4 border-gray-300"
+                              style={{ accentColor: '#B370B0' }}
+                            />
+                            <span className="text-sm text-gray-700">People I Follow</span>
+                          </label>
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="recipePoster"
+                              checked={mealFilters.recipePoster === 'my-own'}
+                              onChange={() => handleMealFiltersChange({
+                                ...mealFilters,
+                                recipePoster: 'my-own'
+                              })}
+                              className="w-4 h-4 border-gray-300"
+                              style={{ accentColor: '#B370B0' }}
+                            />
+                            <span className="text-sm text-gray-700">Only My Own</span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -791,7 +866,7 @@ function FoodFeedPageContent() {
             {loading && (
               <div className="text-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
-                <p className="text-gray-600">Searching for {contentType === 'recipes' ? 'delicious recipes' : 'amazing meals'}...</p>
+                <p className="text-gray-600">Searching for {contentType === 'recipes' ? 'delicious recipes' : 'amazing memories'}...</p>
               </div>
             )}
 
@@ -819,12 +894,12 @@ function FoodFeedPageContent() {
                   <Search className="w-16 h-16 mx-auto" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                  No {contentType} found
+                  No {contentType === 'recipes' ? 'recipes' : 'memories'} found
                 </h3>
                 <p className="text-gray-500 mb-6">
                   {searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search criteria or filters."
-                    : `Search for ${contentType} using the search bar above${contentType === 'recipes' ? ', or try the advanced filters' : ''}.`}
+                    : `Search for ${contentType === 'recipes' ? 'recipes' : 'memories'} using the search bar above${contentType === 'recipes' ? ', or try the advanced filters' : ''}.`}
                 </p>
                 
                 {/* Search Suggestions */}
@@ -930,7 +1005,7 @@ export default function FoodFeedPage() {
       <div className="min-h-screen">
         <Navigation />
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#B370B0' }} />
         </div>
       </div>
     }>

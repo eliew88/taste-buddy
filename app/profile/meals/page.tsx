@@ -131,9 +131,9 @@ export default function MealJournalPage() {
             <div className="flex items-center space-x-3">
               <Utensils className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Meal Journal</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Memory Journal</h1>
                 <p className="text-gray-600">
-                  {pagination.total} meal memor{pagination.total !== 1 ? 'ies' : 'y'} in your journal
+                  {pagination.total} meal memor{pagination.total !== 1 ? 'ies' : 'y'} in your collection
                 </p>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function MealJournalPage() {
                     placeholder="Search your meal memories..."
                     value={searchTerm}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-[#B370B0]"
                   />
                 </div>
               </div>
@@ -166,9 +166,10 @@ export default function MealJournalPage() {
                     onClick={() => handleMealTypeChange('all')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       mealType === 'all'
-                        ? 'bg-white text-purple-600 shadow-sm'
+                        ? 'bg-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
+                    style={mealType === 'all' ? { color: '#B370B0' } : {}}
                   >
                     All Meals
                   </button>
@@ -176,9 +177,10 @@ export default function MealJournalPage() {
                     onClick={() => handleMealTypeChange('created')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       mealType === 'created'
-                        ? 'bg-white text-purple-600 shadow-sm'
+                        ? 'bg-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
+                    style={mealType === 'created' ? { color: '#B370B0' } : {}}
                   >
                     My Meals
                   </button>
@@ -186,9 +188,10 @@ export default function MealJournalPage() {
                     onClick={() => handleMealTypeChange('tagged')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       mealType === 'tagged'
-                        ? 'bg-white text-purple-600 shadow-sm'
+                        ? 'bg-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-800'
                     }`}
+                    style={mealType === 'tagged' ? { color: '#B370B0' } : {}}
                   >
                     Tagged In
                   </button>
@@ -203,7 +206,7 @@ export default function MealJournalPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 bg-white"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-[#B370B0] bg-white"
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
@@ -215,13 +218,15 @@ export default function MealJournalPage() {
               <div className="flex border border-gray-300 rounded-lg">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                  className={`p-2 ${viewMode === 'grid' ? 'text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                  style={viewMode === 'grid' ? { backgroundColor: '#B370B0' } : {}}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                  className={`p-2 ${viewMode === 'list' ? 'text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                  style={viewMode === 'list' ? { backgroundColor: '#B370B0' } : {}}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -241,7 +246,7 @@ export default function MealJournalPage() {
                   </span>
                 )}
                 {mealType !== 'all' && (
-                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                  <span className="px-2 py-1 rounded text-white" style={{ backgroundColor: '#B370B0' }}>
                     Type: {mealType === 'created' ? 'My Meals' : 'Tagged In'}
                   </span>
                 )}

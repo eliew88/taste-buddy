@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
-    const tastebuddiesOnly = searchParams.get('tastebuddiesOnly') === 'true';
+    const recipePoster = searchParams.get('recipePoster') || 'everyone';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')));
     const skip = (page - 1) * limit;
@@ -24,36 +24,37 @@ export async function GET(request: NextRequest) {
       isPublic: true
     };
 
-    // If user is authenticated and wants TasteBuddies only
-    if (userId && tastebuddiesOnly) {
-      // Get the list of users that the current user follows
-      const following = await prisma.follow.findMany({
-        where: { followerId: userId },
-        select: { followingId: true }
-      });
-      
-      const followingIds = following.map(f => f.followingId);
-      
-      // Get TasteBuddies (mutual follows)
-      const tastebuddies = await prisma.user.findMany({
-        where: {
-          id: { in: followingIds },
-          followers: {
-            some: {
-              followerId: userId
-            }
-          }
-        },
-        select: { id: true }
-      });
-      
-      const tastebuddyIds = tastebuddies.map(tb => tb.id);
-      
-      // Filter to only show meals from TasteBuddies
-      where = {
-        ...where,
-        authorId: { in: tastebuddyIds }
-      };
+    // Apply recipe poster filtering
+    if (userId && recipePoster !== 'everyone') {
+      switch (recipePoster) {
+        case 'following':
+          // Get the list of users that the current user follows
+          const following = await prisma.follow.findMany({
+            where: { followerId: userId },
+            select: { followingId: true }
+          });
+          
+          const followingIds = following.map(f => f.followingId);
+          
+          // Filter to only show meals from users you follow
+          where = {
+            ...where,
+            authorId: { in: followingIds }
+          };
+          break;
+          
+        case 'my-own':
+          // Filter to only show your own meals
+          where = {
+            ...where,
+            authorId: userId
+          };
+          break;
+          
+        default:
+          // 'everyone' or unknown value - no additional filtering
+          break;
+      }
     }
 
     // Search functionality

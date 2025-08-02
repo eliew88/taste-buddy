@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { CreateIngredientEntryData } from '@/types/recipe';
+import { parseNumber } from '@/lib/recipe-scaling';
 
 interface IngredientInputProps {
   ingredients: CreateIngredientEntryData[];
@@ -121,10 +122,20 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
   };
 
   const handleAmountChange = (id: string, value: string) => {
-    // Allow empty string or valid numbers (including decimals)
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      // Update both the raw input string and numeric amount in one state update
-      const numericValue = value === '' ? undefined : (isNaN(parseFloat(value)) ? undefined : parseFloat(value));
+    // Allow typing: numbers, decimals, fractions, Unicode fractions, spaces, and mixed numbers
+    // More permissive regex that allows partial input while typing
+    const allowedPattern = /^[\d\s\./\u00BC-\u00BE\u2150-\u215E]*$/;
+    
+    if (value === '' || allowedPattern.test(value)) {
+      // Parse the value using our enhanced parseNumber function
+      let numericValue: number | undefined;
+      if (value === '') {
+        numericValue = undefined;
+      } else {
+        const parsed = parseNumber(value);
+        numericValue = parsed > 0 ? parsed : undefined;
+      }
+      
       updateEntryMultiple(id, {
         amountInput: value,
         amount: numericValue
@@ -141,11 +152,20 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
         amount: undefined
       });
     } else {
-      const numericValue = parseFloat(value);
-      if (!isNaN(numericValue)) {
+      // Parse using our enhanced parseNumber function that handles fractions
+      const numericValue = parseNumber(value);
+      if (numericValue > 0) {
+        // Keep the original input if it's a recognizable fraction format
+        // This preserves user intent (e.g., they typed "3/4" so we keep "3/4")
         updateEntryMultiple(id, {
-          amountInput: numericValue.toString(),
+          amountInput: value,
           amount: numericValue
+        });
+      } else {
+        // Invalid input, clear it
+        updateEntryMultiple(id, {
+          amountInput: '',
+          amount: undefined
         });
       }
     }
@@ -172,7 +192,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
                 ref={el => { amountRefs.current[index] = el; }}
                 type="text"
                 inputMode="decimal"
-                placeholder="1.5 (optional)"
+                placeholder="1.5, ¾, 2½ (optional)"
                 value={entry.amountInput || ''}
                 onChange={(e) => handleAmountChange(entry.id, e.target.value)}
                 onBlur={(e) => handleAmountBlur(entry.id, e.target.value)}
@@ -238,7 +258,7 @@ const IngredientInput: React.FC<IngredientInputProps> = ({
       </button>
 
       <div className="text-xs text-gray-500 mt-2">
-        Tip: Amounts are optional - leave empty for ingredients like "pinch of salt" or "to taste". Use decimals for amounts (e.g., 1.5, 0.25). Press Tab to move to next ingredient or Space to move between amount/unit fields. Press Enter to insert a new ingredient at the current position.
+        Tip: Amounts are optional - leave empty for ingredients like "pinch of salt" or "to taste". Use decimals (1.5), fractions (3/4), or Unicode fractions (¾, ½, ⅓). Press Tab to move to next ingredient or Space to move between amount/unit fields. Press Enter to insert a new ingredient at the current position.
       </div>
     </div>
   );

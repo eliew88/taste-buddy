@@ -90,7 +90,7 @@ export default function RecipeStatsSection({ className = '' }: RecipeStatsProps)
           />
           <StatCard 
             icon={Utensils} 
-            label="Total Meals" 
+            label="Total Memories" 
             value={stats.platformStats.totalMeals.toLocaleString()} 
             color="blue" 
           />

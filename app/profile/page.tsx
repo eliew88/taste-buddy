@@ -12,46 +12,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Mail, Calendar, ChefHat, Heart, Settings, Plus, Loader2, Camera, CreditCard, Instagram, Globe, ExternalLink, Edit2, Shield, Trophy, X, Eye, EyeOff, Users, BookOpen } from 'lucide-react';
 import Navigation from '@/components/ui/Navigation';
-import RecipeCard from '@/components/ui/recipe-card';
 import { useFollowing } from '@/hooks/use-following';
 import { useUserAchievements, useAchievementEvaluation } from '@/hooks/use-achievements';
 import { AchievementGrid } from '@/components/achievement-badge';
 import { AchievementNotification, useAchievementNotifications } from '@/components/achievement-notification';
 import ComplimentsDisplay from '@/components/compliments-display';
-import { IngredientEntry } from '@/types/recipe';
 import Avatar from '@/components/ui/avatar';
 import ProfilePhotoUpload from '@/components/ui/profile-photo-upload';
 import { EmailVisibility } from '@/types/privacy';
-
-interface UserRecipe {
-  id: string;
-  title: string;
-  description?: string;
-  ingredients: IngredientEntry[];
-  instructions: string;
-  cookTime?: string;
-  servings?: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  tags: string[];
-  isPublic: boolean;
-  images?: any[];
-  image?: string;
-  authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  author: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  _count: {
-    favorites: number;
-    ratings: number;
-    comments: number;
-    recipeBookEntries: number;
-  };
-  avgRating?: number;
-}
 
 interface User {
   id: string;
@@ -64,8 +32,12 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { getFollowing, getFollowers } = useFollowing();
-  const [userRecipes, setUserRecipes] = useState<UserRecipe[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [recipeStats, setRecipeStats] = useState({
+    totalRecipes: 0,
+    totalFavorites: 0,
+    totalRatings: 0,
+    totalMemories: 0
+  });
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [currentProfilePhoto, setCurrentProfilePhoto] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -203,28 +175,48 @@ export default function ProfilePage() {
     }
   }, [session, status, router]);
 
-  // Fetch user's recipes
+  // Fetch recipe and meal stats
   useEffect(() => {
-    const fetchUserRecipes = async () => {
+    const fetchStats = async () => {
       if (!session?.user?.id) return;
       
       try {
-        setLoading(true);
-        // Use the user-specific recipes endpoint to get all user's recipes (public and private)
-        const response = await fetch(`/api/users/${session.user.id}/recipes`);
-        const data = await response.json();
+        // Fetch recipe stats
+        const recipeResponse = await fetch(`/api/users/${session.user.id}/recipes`);
+        const recipeData = await recipeResponse.json();
         
-        if (data.success) {
-          setUserRecipes(data.data);
+        // Fetch meal stats
+        const mealResponse = await fetch(`/api/users/${session.user.id}/meals`);
+        const mealData = await mealResponse.json();
+        
+        let stats = {
+          totalRecipes: 0,
+          totalFavorites: 0,
+          totalRatings: 0,
+          totalMemories: 0
+        };
+        
+        if (recipeData.success && recipeData.data) {
+          const recipes = recipeData.data;
+          const totalFavorites = recipes.reduce((sum: number, recipe: any) => sum + recipe._count.favorites, 0);
+          const totalRatings = recipes.reduce((sum: number, recipe: any) => sum + recipe._count.ratings, 0);
+          
+          stats.totalRecipes = recipes.length;
+          stats.totalFavorites = totalFavorites;
+          stats.totalRatings = totalRatings;
         }
+        
+        if (mealData.success && mealData.data) {
+          stats.totalMemories = mealData.data.length;
+        }
+        
+        setRecipeStats(stats);
       } catch (error) {
-        console.error('Error fetching user recipes:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching stats:', error);
       }
     };
 
-    fetchUserRecipes();
+    fetchStats();
   }, [session]);
 
   // Social links functions
@@ -468,21 +460,21 @@ export default function ProfilePage() {
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-5 gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-6 gap-4 mt-6 pt-6 border-t border-gray-200">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-700">{userRecipes.length}</div>
+              <div className="text-2xl font-bold text-green-700">{recipeStats.totalRecipes}</div>
               <div className="text-sm text-gray-600">Recipes</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {userRecipes.reduce((sum, recipe) => sum + recipe._count.favorites, 0)}
-              </div>
+              <div className="text-2xl font-bold text-blue-600">{recipeStats.totalMemories}</div>
+              <div className="text-sm text-gray-600">Memories</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{recipeStats.totalFavorites}</div>
               <div className="text-sm text-gray-600">Favorites</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {userRecipes.reduce((sum, recipe) => sum + recipe._count.ratings, 0)}
-              </div>
+              <div className="text-2xl font-bold text-yellow-600">{recipeStats.totalRatings}</div>
               <div className="text-sm text-gray-600">Ratings</div>
             </div>
             <button
@@ -523,14 +515,14 @@ export default function ProfilePage() {
             className="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-3"
           >
             <Plus className="w-5 h-5" />
-            <span className="font-medium">Add Meal</span>
+            <span className="font-medium">Add Memory</span>
           </Link>
           <Link
             href="/profile/meals"
             className="bg-white border border-gray-200 text-gray-700 p-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-3"
           >
             <BookOpen className="w-5 h-5" />
-            <span className="font-medium">Meal Journal</span>
+            <span className="font-medium">Memory Journal</span>
           </Link>
           <Link
             href="/profile/payment-setup"
@@ -541,51 +533,6 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        {/* User's Recipes */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">My Recipes</h2>
-            {userRecipes.length > 0 && (
-              <span className="text-sm text-gray-600">
-                {userRecipes.length} recipe{userRecipes.length !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
-              <p className="text-gray-600">Loading your recipes...</p>
-            </div>
-          ) : userRecipes.length === 0 ? (
-            <div className="text-center py-12">
-              <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No recipes yet</h3>
-              <p className="text-gray-600 mb-6">
-                Start sharing your culinary creations with the TasteBuddy community!
-              </p>
-              <Link
-                href="/recipes/new"
-                className="inline-flex items-center space-x-2 bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Your First Recipe</span>
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userRecipes.map((recipe) => (
-                <RecipeCard 
-                  key={recipe.id} 
-                  recipe={recipe}
-                  showFavoriteButton={false}
-                  showRecipeBookButton={true}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-        
         {/* Compliments Section */}
         <div className="mb-8">
           <ComplimentsDisplay 

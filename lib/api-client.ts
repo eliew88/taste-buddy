@@ -336,7 +336,7 @@ class ApiClient {
    * 
    * @param params - Search and filter parameters
    * @param params.search - Text to search for in meal names and descriptions
-   * @param params.tastebuddiesOnly - Only show meals from TasteBuddies (requires auth)
+   * @param params.recipePoster - Filter by recipe poster ('everyone', 'following', 'my-own')
    * @param params.page - Page number (default: 1)
    * @param params.limit - Results per page (default: 12, max: 50)
    * @returns Promise resolving to meal list with pagination metadata
@@ -349,20 +349,25 @@ class ApiClient {
    * // Search public meals
    * const searchResults = await client.getPublicMeals({ search: 'pizza' });
    * 
-   * // Get TasteBuddies' meals only (requires authentication)
-   * const buddyMeals = await client.getPublicMeals({ tastebuddiesOnly: true });
+   * // Get meals from people you follow only (requires authentication)
+   * const followingMeals = await client.getPublicMeals({ recipePoster: 'following' });
+   * 
+   * // Get only your own meals (requires authentication)
+   * const ownMeals = await client.getPublicMeals({ recipePoster: 'my-own' });
    * ```
    */
   async getPublicMeals(params: {
     search?: string;
-    tastebuddiesOnly?: boolean;
+    recipePoster?: 'everyone' | 'following' | 'my-own';
     page?: number;
     limit?: number;
   } = {}): Promise<MealListResponse> {
     const searchParams = new URLSearchParams();
     
     if (params.search) searchParams.append('search', params.search);
-    if (params.tastebuddiesOnly) searchParams.append('tastebuddiesOnly', 'true');
+    if (params.recipePoster && params.recipePoster !== 'everyone') {
+      searchParams.append('recipePoster', params.recipePoster);
+    }
     if (params.page) searchParams.append('page', params.page.toString());
     if (params.limit) searchParams.append('limit', params.limit.toString());
 

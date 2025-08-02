@@ -177,9 +177,9 @@ export default function MealDetailPage() {
   })) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#CFE8EF' }}>
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+      <nav className="shadow-sm border-b sticky top-0 z-10" style={{ backgroundColor: '#CFE8EF' }}>
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link 

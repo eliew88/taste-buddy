@@ -91,13 +91,8 @@ export function AchievementGrid({
   maxDisplay,
   onAchievementClick 
 }: AchievementGridProps) {
-  const displayAchievements = maxDisplay 
-    ? achievements.slice(0, maxDisplay) 
-    : achievements;
-  
-  const remainingCount = maxDisplay && achievements.length > maxDisplay 
-    ? achievements.length - maxDisplay 
-    : 0;
+  const shouldScroll = maxDisplay && achievements.length > maxDisplay;
+  const displayAchievements = shouldScroll ? achievements : achievements;
 
   if (achievements.length === 0) {
     return (
@@ -113,33 +108,53 @@ export function AchievementGrid({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 justify-center">
-        {displayAchievements.map((achievement) => (
-          <AchievementBadge
-            key={achievement.id}
-            achievement={achievement}
-            size={size}
-            showDate={showDates}
-            onClick={() => onAchievementClick?.(achievement)}
-          />
-        ))}
-        
-        {remainingCount > 0 && (
+      {shouldScroll ? (
+        <div className="relative">
+          {/* Gradient fade on edges for visual indication of scroll */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+          
+          {/* Scrollable container */}
           <div 
-            className={`
-              ${size === 'sm' ? 'w-12 h-12' : size === 'md' ? 'w-16 h-16' : 'w-20 h-20'}
-              bg-gray-200 
-              rounded-full 
-              flex items-center justify-center 
-              text-gray-600 
-              font-semibold
-              ${size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base'}
-            `}
+            className="overflow-x-auto pb-2"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#e5e7eb #f3f4f6'
+            }}
           >
-            +{remainingCount}
+            <div className="flex gap-3 px-4">
+              {displayAchievements.map((achievement) => (
+                <div key={achievement.id} className="flex-shrink-0">
+                  <AchievementBadge
+                    achievement={achievement}
+                    size={size}
+                    showDate={showDates}
+                    onClick={() => onAchievementClick?.(achievement)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+          
+          {/* Scroll hint */}
+          <p className="text-center text-gray-400 text-xs mt-2">
+            Scroll to see all achievements →
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-3 justify-center">
+          {displayAchievements.map((achievement) => (
+            <AchievementBadge
+              key={achievement.id}
+              achievement={achievement}
+              size={size}
+              showDate={showDates}
+              onClick={() => onAchievementClick?.(achievement)}
+            />
+          ))}
+        </div>
+      )}
       
       {achievements.length > 0 && (
         <p className="text-center text-gray-600 text-sm">
