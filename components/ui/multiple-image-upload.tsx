@@ -31,6 +31,8 @@ interface MultipleImageUploadProps {
   maxImages?: number;
   /** Optional CSS class */
   className?: string;
+  /** Color theme for buttons - 'recipe' for green, 'meal' for blue */
+  theme?: 'recipe' | 'meal';
 }
 
 interface ImageWithPreview extends CreateRecipeImageData {
@@ -42,7 +44,8 @@ export default function MultipleImageUpload({
   images,
   onImagesChange,
   maxImages = 5,
-  className = ''
+  className = '',
+  theme = 'recipe'
 }: MultipleImageUploadProps) {
   const [dragOver, setDragOver] = useState(false);
   const [imagesWithPreview, setImagesWithPreview] = useState<ImageWithPreview[]>(() => 
@@ -216,7 +219,10 @@ export default function MultipleImageUpload({
     <div className={`space-y-4 ${className}`}>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <ImageIcon className="w-5 h-5 mr-2 text-green-700" />
+          <ImageIcon 
+            className="w-5 h-5 mr-2" 
+            style={{ color: theme === 'recipe' ? '#1B998B' : '#1768AC' }}
+          />
           Images ({imagesWithPreview.length}/{maxImages})
         </h3>
         {imagesWithPreview.length > 0 && (
@@ -232,7 +238,7 @@ export default function MultipleImageUpload({
         <div
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             dragOver 
-              ? 'border-green-500 bg-green-50' 
+              ? (theme === 'recipe' ? 'border-green-500 bg-green-50' : 'border-blue-500 bg-blue-50')
               : 'border-gray-300 hover:border-gray-400'
           }`}
           onDrop={handleDrop}
@@ -256,7 +262,16 @@ export default function MultipleImageUpload({
           />
           <label
             htmlFor="image-upload"
-            className="inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 cursor-pointer transition-colors"
+            className="inline-flex items-center px-4 py-2 text-white rounded-lg cursor-pointer transition-colors"
+            style={{
+              backgroundColor: theme === 'recipe' ? '#1B998B' : '#1768AC'
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = theme === 'recipe' ? '#177A6E' : '#135285';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = theme === 'recipe' ? '#1B998B' : '#1768AC';
+            }}
           >
             <Plus className="w-4 h-4 mr-2" />
             Select Images
@@ -327,7 +342,18 @@ export default function MultipleImageUpload({
                   placeholder="Add a caption (optional)"
                   value={image.caption || ''}
                   onChange={(e) => updateImageCaption(index, e.target.value)}
-                  className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:border-2"
+                  style={{
+                    borderColor: 'rgb(209 213 219)'
+                  } as React.CSSProperties}
+                  onFocus={(e) => {
+                    (e.target as HTMLElement).style.borderColor = theme === 'recipe' ? '#1B998B' : '#1768AC';
+                    (e.target as HTMLElement).style.boxShadow = `0 0 0 2px ${theme === 'recipe' ? 'rgba(27, 153, 139, 0.3)' : 'rgba(23, 104, 172, 0.3)'}`;
+                  }}
+                  onBlur={(e) => {
+                    (e.target as HTMLElement).style.borderColor = 'rgb(209 213 219)';
+                    (e.target as HTMLElement).style.boxShadow = 'none';
+                  }}
                 />
                 
                 {/* Action buttons */}

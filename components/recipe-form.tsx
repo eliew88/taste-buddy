@@ -499,9 +499,13 @@ export default function RecipeForm({
                     onClick={() => updateFormData({ isPublic: true })}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                       formData.isPublic
-                        ? 'border-green-700 bg-green-50 text-green-700'
+                        ? 'border-2 text-white'
                         : 'border-gray-300 text-gray-600 hover:border-gray-400'
                     }`}
+                    style={formData.isPublic ? { 
+                      backgroundColor: '#1B998B',
+                      borderColor: '#1B998B'
+                    } : {}}
                   >
                     <Globe className="w-4 h-4" />
                     <span className="font-medium">Public</span>
@@ -511,9 +515,13 @@ export default function RecipeForm({
                     onClick={() => updateFormData({ isPublic: false })}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                       !formData.isPublic
-                        ? 'border-green-700 bg-green-50 text-green-700'
+                        ? 'border-2 text-white'
                         : 'border-gray-300 text-gray-600 hover:border-gray-400'
                     }`}
+                    style={!formData.isPublic ? { 
+                      backgroundColor: '#1B998B',
+                      borderColor: '#1B998B'
+                    } : {}}
                   >
                     <Lock className="w-4 h-4" />
                     <span className="font-medium">Private</span>
@@ -535,6 +543,7 @@ export default function RecipeForm({
               onImagesChange={handleImagesChange}
               maxImages={5}
               className="w-full"
+              theme="recipe"
             />
           </section>
 
@@ -591,13 +600,15 @@ export default function RecipeForm({
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm flex items-center"
+                      className="px-3 py-1 rounded-full text-sm flex items-center"
+                      style={{ backgroundColor: '#E0F2F1', color: '#1B998B' }}
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="ml-2 text-green-700 hover:text-green-900"
+                        className="ml-2 hover:opacity-70"
+                        style={{ color: '#1B998B' }}
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -621,7 +632,10 @@ export default function RecipeForm({
                 type="button"
                 onClick={addTag}
                 disabled={!currentTag.trim()}
-                className="px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: '#1B998B' }}
+                onMouseEnter={(e) => !e.currentTarget.disabled && ((e.currentTarget as HTMLElement).style.backgroundColor = '#177A6E')}
+                onMouseLeave={(e) => !e.currentTarget.disabled && ((e.currentTarget as HTMLElement).style.backgroundColor = '#1B998B')}
               >
                 Add
               </button>
@@ -669,15 +683,19 @@ export default function RecipeForm({
                 </button>
               )}
               
-              <LoadingButton
+              <button
                 type="submit"
-                loading={isSubmitting}
-                variant="primary"
-                size="lg"
-                className="px-8"
+                disabled={isSubmitting}
+                className="px-8 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center text-base font-medium"
+                style={{ backgroundColor: '#1B998B' }}
+                onMouseEnter={(e) => !isSubmitting && ((e.target as HTMLElement).style.backgroundColor = '#177A6E')}
+                onMouseLeave={(e) => !isSubmitting && ((e.target as HTMLElement).style.backgroundColor = '#1B998B')}
               >
+                {isSubmitting && (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                )}
                 {submitLabel}
-              </LoadingButton>
+              </button>
             </div>
           </div>
           

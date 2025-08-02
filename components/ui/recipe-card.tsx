@@ -303,7 +303,10 @@ import Avatar from '@/components/ui/avatar';
                size="sm"
              />
              <p className="text-gray-600">
-               By <Link href={`/profile/${recipe.author.id}`} className="font-medium text-gray-800 hover:text-blue-600 transition-colors">
+               By <Link 
+                 href={session?.user?.id === recipe.author.id ? '/profile' : `/profile/${recipe.author.id}`} 
+                 className="font-medium text-gray-800 hover:text-blue-600 transition-colors"
+               >
                  {recipe.author.name}
                </Link>
              </p>

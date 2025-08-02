@@ -149,9 +149,23 @@ export default function RecipeFavoritesShortcut({
       disabled={loading}
       className={`${buttonSizeClasses[size]} rounded-full transition-all duration-200 ${
         isInFavorites 
-          ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-          : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+          ? 'bg-red-50 hover:bg-red-100' 
+          : 'text-gray-400 hover:bg-red-50'
       } disabled:opacity-50 ${className}`}
+      style={{
+        color: isInFavorites ? '#CA0266' : undefined,
+        '--hover-color': '#CA0266'
+      } as React.CSSProperties}
+      onMouseEnter={(e) => {
+        if (!isInFavorites) {
+          (e.target as HTMLElement).style.color = '#CA0266';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isInFavorites) {
+          (e.target as HTMLElement).style.color = '';
+        }
+      }}
       aria-label={tooltipText}
       title={showTooltip ? tooltipText : undefined}
     >
@@ -159,9 +173,11 @@ export default function RecipeFavoritesShortcut({
         <Loader2 className={`${sizeClasses[size]} animate-spin`} />
       ) : (
         <Heart 
-          className={`${sizeClasses[size]} ${
-            isInFavorites ? 'fill-red-500' : ''
-          }`} 
+          className={`${sizeClasses[size]}`}
+          style={{
+            fill: isInFavorites ? '#CA0266' : 'none',
+            color: 'inherit'
+          }}
         />
       )}
     </button>

@@ -192,14 +192,39 @@ export default function RecipeBookButton({
           className={`${buttonClasses} ${
             variant === 'compact'
               ? (isInBook
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'border-2 border-green-600 text-green-600 hover:bg-green-50'
+                  ? 'text-white'
+                  : 'border-2 text-green-600 hover:bg-green-50'
                 )
               : (isInBook
-                  ? 'bg-green-600/80 text-white hover:bg-green-600/90'
+                  ? 'text-white'
                   : 'bg-white/20 text-white hover:bg-white/30'
                 )
           }`}
+          style={
+            variant === 'compact'
+              ? (isInBook
+                  ? { backgroundColor: '#1B998B', borderColor: '#1B998B' }
+                  : { borderColor: '#1B998B' }
+                )
+              : (isInBook
+                  ? { backgroundColor: 'rgba(27, 153, 139, 0.8)' }
+                  : {}
+                )
+          }
+          onMouseEnter={(e) => {
+            if (variant === 'compact' && isInBook) {
+              (e.target as HTMLElement).style.backgroundColor = '#177A6E';
+            } else if (variant !== 'compact' && isInBook) {
+              (e.target as HTMLElement).style.backgroundColor = 'rgba(27, 153, 139, 0.9)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (variant === 'compact' && isInBook) {
+              (e.target as HTMLElement).style.backgroundColor = '#1B998B';
+            } else if (variant !== 'compact' && isInBook) {
+              (e.target as HTMLElement).style.backgroundColor = 'rgba(27, 153, 139, 0.8)';
+            }
+          }}
           disabled={loading}
         >
         {loading ? (
@@ -207,9 +232,12 @@ export default function RecipeBookButton({
         ) : (
           <BookOpen className={`w-5 h-5 ${
             variant === 'compact'
-              ? (isInBook ? 'fill-white' : 'stroke-green-600')
+              ? (isInBook ? 'fill-white' : '')
               : (isInBook ? 'fill-white' : '')
-          }`} />
+          }`} 
+          style={{
+            color: variant === 'compact' && !isInBook ? '#1B998B' : undefined
+          }} />
         )}
         {showLabel && variant !== 'compact' && (
           <span>
@@ -273,7 +301,8 @@ export default function RecipeBookButton({
                   </label>
                   <button
                     onClick={() => setShowNewCategoryForm(true)}
-                    className="text-sm text-green-700 hover:text-green-800 flex items-center space-x-1"
+                    className="text-sm hover:opacity-80 flex items-center space-x-1"
+                    style={{ color: '#1B998B' }}
                   >
                     <Plus className="w-3 h-3" />
                     <span>New Category</span>
@@ -307,7 +336,10 @@ export default function RecipeBookButton({
                       </button>
                       <button
                         onClick={handleCreateCategory}
-                        className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                        className="px-3 py-1 text-xs text-white rounded transition-colors"
+                        style={{ backgroundColor: '#1B998B' }}
+                        onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                        onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                         disabled={!newCategoryName.trim()}
                       >
                         Create
@@ -330,7 +362,11 @@ export default function RecipeBookButton({
                           type="checkbox"
                           checked={selectedCategoryIds.includes(category.id)}
                           onChange={() => handleToggleCategory(category.id)}
-                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          className="rounded border-gray-300 focus:ring-2"
+                          style={{ 
+                            accentColor: '#1B998B',
+                            '--tw-ring-color': '#1B998B'
+                          } as React.CSSProperties}
                         />
                         <div className="flex items-center space-x-2 flex-1">
                           <div 
@@ -355,7 +391,19 @@ export default function RecipeBookButton({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add your personal notes about this recipe..."
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:border-2"
+                  style={{
+                    '--tw-ring-color': '#1B998B',
+                    '--tw-border-opacity': '1'
+                  } as React.CSSProperties}
+                  onFocus={(e) => {
+                    (e.target as HTMLElement).style.borderColor = '#1B998B';
+                    (e.target as HTMLElement).style.boxShadow = `0 0 0 2px rgba(27, 153, 139, 0.2)`;
+                  }}
+                  onBlur={(e) => {
+                    (e.target as HTMLElement).style.borderColor = '#d1d5db';
+                    (e.target as HTMLElement).style.boxShadow = 'none';
+                  }}
                   rows={3}
                 />
               </div>
@@ -385,7 +433,10 @@ export default function RecipeBookButton({
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center space-x-2"
+                  className="px-4 py-2 text-white rounded-md transition-colors flex items-center space-x-2"
+                  style={{ backgroundColor: '#1B998B' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                   disabled={actionLoading}
                 >
                   {actionLoading ? (

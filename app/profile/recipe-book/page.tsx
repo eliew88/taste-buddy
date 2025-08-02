@@ -348,7 +348,7 @@ export default function RecipeBookPage() {
       <div className="min-h-screen">
         <Navigation />
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-green-700" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#B370B0' }} />
         </div>
       </div>
     );
@@ -359,14 +359,14 @@ export default function RecipeBookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#CFE8EF' }}>
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <BookOpen className="w-8 h-8 text-green-700" />
+            <BookOpen className="w-8 h-8" style={{ color: '#B370B0' }} />
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Recipe Book</h1>
               <p className="text-gray-600">
@@ -384,7 +384,10 @@ export default function RecipeBookPage() {
                 <h2 className="font-semibold text-gray-900">Categories</h2>
                 <button
                   onClick={() => setShowAddCategoryModal(true)}
-                  className="p-1 text-green-700 hover:bg-green-100 rounded"
+                  className="p-1 rounded transition-colors"
+                  style={{ color: '#B370B0' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = 'rgba(179, 112, 176, 0.1)'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}
                   title="Add Category"
                 >
                   <Plus className="w-4 h-4" />
@@ -402,9 +405,10 @@ export default function RecipeBookPage() {
                     onClick={() => setSelectedCategory(null)}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
                       selectedCategory === null
-                        ? 'bg-green-100 text-green-700'
+                        ? 'text-white'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
+                    style={selectedCategory === null ? { backgroundColor: '#B370B0' } : {}}
                   >
                     <div className="flex items-center space-x-2">
                       <FolderOpen className="w-4 h-4" />
@@ -421,9 +425,10 @@ export default function RecipeBookPage() {
                       key={category.id}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between group ${
                         selectedCategory === category.id
-                          ? 'bg-green-100 text-green-700'
+                          ? 'text-white'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
+                      style={selectedCategory === category.id ? { backgroundColor: '#B370B0' } : {}}
                     >
                       <button
                         onClick={() => setSelectedCategory(category.id)}
@@ -476,7 +481,18 @@ export default function RecipeBookPage() {
                       placeholder="Search your recipe book..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2"
+                      style={{
+                        '--tw-ring-color': '#B370B0'
+                      } as React.CSSProperties}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#B370B0';
+                        e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#d1d5db';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -486,7 +502,18 @@ export default function RecipeBookPage() {
                   <select
                     value={selectedDifficulty}
                     onChange={(e) => setSelectedDifficulty(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 bg-white"
+                    style={{
+                      '--tw-ring-color': '#B370B0'
+                    } as React.CSSProperties}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#B370B0';
+                      e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="">All Difficulties</option>
                     <option value="easy">Easy</option>
@@ -500,7 +527,18 @@ export default function RecipeBookPage() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 bg-white"
+                    style={{
+                      '--tw-ring-color': '#B370B0'
+                    } as React.CSSProperties}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#B370B0';
+                      e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#d1d5db';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     <option value="newest">Recently Added</option>
                     <option value="oldest">Oldest First</option>
@@ -513,13 +551,19 @@ export default function RecipeBookPage() {
                 <div className="flex border border-gray-300 rounded-lg">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 ${viewMode === 'grid' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-l-lg`}
+                    className={`p-2 transition-colors rounded-l-lg ${
+                      viewMode === 'grid' ? 'text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                    style={viewMode === 'grid' ? { backgroundColor: '#B370B0' } : {}}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 ${viewMode === 'list' ? 'bg-green-700 text-white' : 'text-gray-600 hover:bg-gray-50'} transition-colors rounded-r-lg`}
+                    className={`p-2 transition-colors rounded-r-lg ${
+                      viewMode === 'list' ? 'text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                    style={viewMode === 'list' ? { backgroundColor: '#B370B0' } : {}}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -533,24 +577,25 @@ export default function RecipeBookPage() {
                     <Filter className="w-4 h-4" />
                     <span>Filters active:</span>
                     {searchTerm && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                      <span className="text-white px-2 py-1 rounded" style={{ backgroundColor: '#B370B0' }}>
                         Search: "{searchTerm}"
                       </span>
                     )}
                     {selectedDifficulty && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded capitalize">
+                      <span className="text-white px-2 py-1 rounded capitalize" style={{ backgroundColor: '#B370B0' }}>
                         {selectedDifficulty}
                       </span>
                     )}
                     {selectedCategory && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                      <span className="text-white px-2 py-1 rounded" style={{ backgroundColor: '#B370B0' }}>
                         {categories.find(c => c.id === selectedCategory)?.name}
                       </span>
                     )}
                   </div>
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-green-700 hover:text-green-800 font-medium"
+                    className="text-sm font-medium hover:opacity-80"
+                    style={{ color: '#B370B0' }}
                   >
                     Clear filters
                   </button>
@@ -561,7 +606,7 @@ export default function RecipeBookPage() {
             {/* Content */}
             {loading ? (
               <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-green-700 mx-auto mb-4" />
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: '#B370B0' }} />
                 <p className="text-gray-600">Loading your recipe book...</p>
               </div>
             ) : error ? (
@@ -571,7 +616,10 @@ export default function RecipeBookPage() {
                 <p className="text-gray-600 mb-4">{error}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
+                  className="text-white px-4 py-2 rounded-lg transition-colors"
+                  style={{ backgroundColor: '#B370B0' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#A063A0'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#B370B0'}
                 >
                   Try Again
                 </button>
@@ -591,14 +639,23 @@ export default function RecipeBookPage() {
                   {(searchTerm || selectedDifficulty || selectedCategory) && (
                     <button
                       onClick={clearFilters}
-                      className="border border-green-700 text-green-700 px-6 py-3 rounded-lg hover:bg-green-100 transition-colors"
+                      className="border px-6 py-3 rounded-lg transition-colors"
+                    style={{ 
+                      borderColor: '#B370B0', 
+                      color: '#B370B0' 
+                    }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = 'rgba(179, 112, 176, 0.1)'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}
                     >
                       Clear Filters
                     </button>
                   )}
                   <Link
                     href="/food-feed"
-                    className="bg-green-700 text-white px-6 py-3 rounded-lg hover:bg-green-800 transition-colors inline-flex items-center"
+                    className="text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center"
+                    style={{ backgroundColor: '#B370B0' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#A063A0'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#B370B0'}
                   >
                     <Search className="w-5 h-5 mr-2" />
                     Discover Recipes
@@ -627,14 +684,16 @@ export default function RecipeBookPage() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded ${viewMode === 'grid' ? 'bg-green-100 text-green-700' : 'text-gray-400'}`}
+                      className={`p-2 rounded ${viewMode === 'grid' ? 'text-white' : 'text-gray-400'}`}
+                      style={viewMode === 'grid' ? { backgroundColor: '#B370B0' } : {}}
                       title="Grid view"
                     >
                       <Grid3X3 className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`p-2 rounded ${viewMode === 'list' ? 'bg-green-100 text-green-700' : 'text-gray-400'}`}
+                      className={`p-2 rounded ${viewMode === 'list' ? 'text-white' : 'text-gray-400'}`}
+                      style={viewMode === 'list' ? { backgroundColor: '#B370B0' } : {}}
                       title="List view"
                     >
                       <List className="w-5 h-5" />
@@ -700,9 +759,16 @@ export default function RecipeBookPage() {
                       disabled={!hasPrevPage}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                         hasPrevPage
-                          ? 'bg-green-700 text-white hover:bg-green-800'
+                          ? 'text-white'
                           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
+                      style={hasPrevPage ? { backgroundColor: '#B370B0' } : {}}
+                      onMouseEnter={(e) => {
+                        if (hasPrevPage) (e.target as HTMLElement).style.backgroundColor = '#A063A0';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (hasPrevPage) (e.target as HTMLElement).style.backgroundColor = '#B370B0';
+                      }}
                     >
                       Previous
                     </button>
@@ -727,9 +793,10 @@ export default function RecipeBookPage() {
                             onClick={() => setCurrentPage(pageNum)}
                             className={`w-10 h-10 rounded-lg font-medium transition-colors ${
                               currentPage === pageNum
-                                ? 'bg-green-700 text-white'
+                                ? 'text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
+                            style={currentPage === pageNum ? { backgroundColor: '#B370B0' } : {}}
                           >
                             {pageNum}
                           </button>
@@ -742,9 +809,16 @@ export default function RecipeBookPage() {
                       disabled={!hasNextPage}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                         hasNextPage
-                          ? 'bg-green-700 text-white hover:bg-green-800'
+                          ? 'text-white'
                           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
+                      style={hasNextPage ? { backgroundColor: '#B370B0' } : {}}
+                      onMouseEnter={(e) => {
+                        if (hasNextPage) (e.target as HTMLElement).style.backgroundColor = '#A063A0';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (hasNextPage) (e.target as HTMLElement).style.backgroundColor = '#B370B0';
+                      }}
                     >
                       Next
                     </button>
@@ -772,7 +846,18 @@ export default function RecipeBookPage() {
                   id="categoryName"
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                  style={{
+                    '--tw-ring-color': '#B370B0'
+                  } as React.CSSProperties}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#B370B0';
+                    e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                   placeholder="e.g., Desserts, Vegetarian, Quick Meals"
                   required
                 />
@@ -786,7 +871,18 @@ export default function RecipeBookPage() {
                   id="categoryDescription"
                   value={newCategoryDescription}
                   onChange={(e) => setNewCategoryDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                  style={{
+                    '--tw-ring-color': '#B370B0'
+                  } as React.CSSProperties}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#B370B0';
+                    e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                   placeholder="Brief description of this category"
                   rows={2}
                 />
@@ -801,7 +897,18 @@ export default function RecipeBookPage() {
                   id="categoryColor"
                   value={newCategoryColor}
                   onChange={(e) => setNewCategoryColor(e.target.value)}
-                  className="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                  style={{
+                    '--tw-ring-color': '#B370B0'
+                  } as React.CSSProperties}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#B370B0';
+                    e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
 
@@ -815,7 +922,10 @@ export default function RecipeBookPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="px-4 py-2 text-white rounded-md transition-colors"
+                  style={{ backgroundColor: '#B370B0' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#A063A0'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#B370B0'}
                 >
                   Add Category
                 </button>

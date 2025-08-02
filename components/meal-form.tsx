@@ -419,9 +419,13 @@ export default function MealForm({
                 onClick={() => updateFormData({ isPublic: true })}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                   formData.isPublic
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-2 text-white'
                     : 'border-gray-300 text-gray-600 hover:border-gray-400'
                 }`}
+                style={formData.isPublic ? { 
+                  backgroundColor: '#1768AC',
+                  borderColor: '#1768AC'
+                } : {}}
               >
                 <Globe className="w-4 h-4" />
                 <span className="font-medium">Public</span>
@@ -431,9 +435,13 @@ export default function MealForm({
                 onClick={() => updateFormData({ isPublic: false })}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                   !formData.isPublic
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-2 text-white'
                     : 'border-gray-300 text-gray-600 hover:border-gray-400'
                 }`}
+                style={!formData.isPublic ? { 
+                  backgroundColor: '#1768AC',
+                  borderColor: '#1768AC'
+                } : {}}
               >
                 <Lock className="w-4 h-4" />
                 <span className="font-medium">Private</span>
@@ -473,6 +481,11 @@ export default function MealForm({
                             ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
                             : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200'
                         }`}
+                        style={isTagged ? {
+                          backgroundColor: '#E3F2FD',
+                          color: '#1768AC',
+                          borderColor: '#90CAF9'
+                        } : {}}
                       >
                         {buddy.image && (
                           <img
@@ -503,6 +516,7 @@ export default function MealForm({
               onImagesChange={setImages}
               maxImages={5}
               className="border-2 border-dashed border-gray-300 rounded-lg"
+              theme="meal"
             />
             <p className="text-xs text-gray-500">
               Add up to 5 photos of your meal. The first photo (or the one you mark as primary) will be used as the main image.
@@ -518,14 +532,20 @@ export default function MealForm({
             >
               Cancel
             </button>
-            <LoadingButton
+            <button
               type="submit"
-              loading={isSubmitting}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center"
+              style={{ backgroundColor: '#1768AC' }}
+              onMouseEnter={(e) => !isSubmitting && ((e.target as HTMLElement).style.backgroundColor = '#135285')}
+              onMouseLeave={(e) => !isSubmitting && ((e.target as HTMLElement).style.backgroundColor = '#1768AC')}
             >
+              {isSubmitting && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              )}
               <Save className="w-4 h-4 mr-2" />
               {submitLabel}
-            </LoadingButton>
+            </button>
           </div>
         </form>
       </div>

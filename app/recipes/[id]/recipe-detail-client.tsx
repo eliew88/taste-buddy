@@ -530,7 +530,10 @@ export default function RecipeDetailPage() {
               {session?.user?.id === recipe.authorId && (
                 <Link
                   href={`/recipes/${recipeId}/edit`}
-                  className="flex items-center space-x-2 bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors"
+                  className="flex items-center space-x-2 text-white px-4 py-2 rounded-lg transition-colors"
+                  style={{ backgroundColor: '#1B998B' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                 >
                   <Edit className="w-4 h-4" />
                   <span>Edit</span>

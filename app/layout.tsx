@@ -79,16 +79,15 @@ export default function RootLayout({
         
         {/* Favicon and app icons */}
         <link rel="icon" href="/cooking-pot-icon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/cooking-pot-icon.svg" />
         
         {/* Theme color for mobile browsers */}
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#B370B0" />
         
         {/* Viewport for responsive design */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
-      <body className={`${inter.className} bg-blue-100`} style={{ backgroundColor: '#dbeafe' }}>
+      <body className={`${inter.className}`} style={{ backgroundColor: '#CFE8EF' }}>
         {/* Global Error Boundary - No function props passed */}
         <ErrorBoundary>
           {/* Session Provider for Authentication */}

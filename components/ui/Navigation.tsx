@@ -42,6 +42,10 @@ export default function Navigation() {
     if (href === '/') {
       return pathname === '/';
     }
+    if (href === '/profile') {
+      return pathname === '/profile' || pathname === '/profile/' || 
+             (pathname.startsWith('/profile/') && !pathname.startsWith('/profile/recipe-book'));
+    }
     return pathname.startsWith(href);
   };
 
@@ -50,12 +54,16 @@ export default function Navigation() {
    * @param href - The link href
    * @returns CSS class string
    */
-  const getLinkClasses = (href: string): string => {
+  const getLinkProps = (href: string) => {
     const baseClasses = 'transition-colors duration-200';
-    const activeClasses = 'text-purple-700 bg-purple-100';
+    const activeClasses = 'text-white';
     const inactiveClasses = 'text-gray-600 hover:text-gray-900 hover:bg-gray-50';
     
-    return `${baseClasses} ${isActiveLink(href) ? activeClasses : inactiveClasses}`;
+    const isActive = isActiveLink(href);
+    return {
+      className: `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`,
+      style: isActive ? { backgroundColor: '#B370B0' } : {}
+    };
   };
 
   /**
@@ -73,7 +81,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-blue-100 shadow-sm border-b sticky top-0 z-50" role="navigation">
+    <nav className="shadow-sm border-b sticky top-0 z-50" style={{ backgroundColor: '#CFE8EF' }} role="navigation">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Brand Logo */}
@@ -92,7 +100,8 @@ export default function Navigation() {
           <div className="hidden md:flex items-center space-x-4">
             <Link 
               href="/" 
-              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkClasses('/')}`}
+              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/').className}`}
+              style={getLinkProps('/').style}
               aria-current={isActiveLink('/') ? 'page' : undefined}
             >
               <Home className="w-4 h-4 mr-1" />
@@ -101,7 +110,8 @@ export default function Navigation() {
             
             <Link 
               href="/food-feed" 
-              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkClasses('/food-feed')}`}
+              className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/food-feed').className}`}
+              style={getLinkProps('/food-feed').style}
               aria-current={isActiveLink('/food-feed') ? 'page' : undefined}
             >
               <Sparkles className="w-4 h-4 mr-1" />
@@ -112,7 +122,8 @@ export default function Navigation() {
               <>
                 <Link 
                   href="/profile/recipe-book" 
-                  className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkClasses('/profile/recipe-book')}`}
+                  className={`px-3 py-2 rounded-md flex items-center whitespace-nowrap ${getLinkProps('/profile/recipe-book').className}`}
+                  style={getLinkProps('/profile/recipe-book').style}
                   aria-current={isActiveLink('/profile/recipe-book') ? 'page' : undefined}
                 >
                   <BookOpen className="w-4 h-4 mr-1" />
@@ -122,16 +133,22 @@ export default function Navigation() {
                 {/* Add Meal Memory Button */}
                 <Link 
                   href="/meals/new" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center font-medium whitespace-nowrap"
+                  className="text-white px-4 py-2 rounded-lg transition-colors flex items-center font-medium whitespace-nowrap"
+                  style={{ backgroundColor: '#1768AC' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#135285'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1768AC'}
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Add Meal
+                  Add Memory
                 </Link>
                 
                 {/* Primary CTA Button */}
                 <Link 
                   href="/recipes/new" 
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium whitespace-nowrap"
+                  className="text-white px-4 py-2 rounded-lg transition-colors flex items-center font-medium whitespace-nowrap"
+                  style={{ backgroundColor: '#1B998B' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Recipe
@@ -144,7 +161,8 @@ export default function Navigation() {
                 <div className="relative">
                   <Link 
                     href="/profile" 
-                    className={`p-2 rounded-md ${getLinkClasses('/profile')} flex items-center space-x-2`}
+                    className={`p-2 rounded-md ${getLinkProps('/profile').className} flex items-center space-x-2`}
+                    style={getLinkProps('/profile').style}
                     aria-label="User Profile"
                   >
                     <Avatar
@@ -186,7 +204,10 @@ export default function Navigation() {
                 
                 <Link 
                   href="/auth/signup" 
-                  className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors flex items-center font-medium whitespace-nowrap"
+                  className="text-white px-4 py-2 rounded-lg transition-colors flex items-center font-medium whitespace-nowrap"
+                  style={{ backgroundColor: '#1B998B' }}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Sign Up
@@ -208,11 +229,12 @@ export default function Navigation() {
 
         {/* Mobile Navigation Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t bg-blue-100 py-4" role="menu">
+          <div className="md:hidden border-t py-4" style={{ backgroundColor: '#CFE8EF' }} role="menu">
             <div className="flex flex-col space-y-2">
               <Link
                 href="/"
-                className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/')}`}
+                className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/').className}`}
+                style={getLinkProps('/').style}
                 onClick={closeMobileMenu}
                 role="menuitem"
               >
@@ -222,7 +244,8 @@ export default function Navigation() {
               
               <Link
                 href="/food-feed"
-                className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/food-feed')}`}
+                className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/food-feed').className}`}
+                style={getLinkProps('/food-feed').style}
                 onClick={closeMobileMenu}
                 role="menuitem"
               >
@@ -234,7 +257,8 @@ export default function Navigation() {
                 <>
                   <Link
                     href="/profile/recipe-book"
-                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile/recipe-book')}`}
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/profile/recipe-book').className}`}
+                    style={getLinkProps('/profile/recipe-book').style}
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
@@ -244,7 +268,8 @@ export default function Navigation() {
                   
                   <Link
                     href="/profile"
-                    className={`px-3 py-2 rounded-md flex items-center ${getLinkClasses('/profile')}`}
+                    className={`px-3 py-2 rounded-md flex items-center ${getLinkProps('/profile').className}`}
+                    style={getLinkProps('/profile').style}
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
@@ -260,18 +285,24 @@ export default function Navigation() {
                   {/* Mobile Add Meal Button */}
                   <Link
                     href="/meals/new"
-                    className="mx-3 mt-2 bg-blue-600 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
+                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
+                    style={{ backgroundColor: '#1768AC' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#135285'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1768AC'}
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Meal
+                    Add Memory
                   </Link>
                   
                   {/* Mobile CTA Button */}
                   <Link
                     href="/recipes/new"
-                    className="mx-3 mt-2 bg-green-700 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-green-800 transition-colors flex items-center justify-center"
+                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
+                    style={{ backgroundColor: '#1B998B' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >
@@ -307,7 +338,10 @@ export default function Navigation() {
                   
                   <Link
                     href="/auth/signup"
-                    className="mx-3 mt-2 bg-green-700 text-white py-2 px-4 rounded-lg text-center font-medium hover:bg-green-800 transition-colors flex items-center justify-center"
+                    className="mx-3 mt-2 text-white py-2 px-4 rounded-lg text-center font-medium transition-colors flex items-center justify-center"
+                    style={{ backgroundColor: '#1B998B' }}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#177A6E'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#1B998B'}
                     onClick={closeMobileMenu}
                     role="menuitem"
                   >

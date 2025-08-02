@@ -139,7 +139,18 @@ export default function CommentForm({ recipeId, onCommentCreated }: CommentFormP
             id="comment"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 resize-none"
+            style={{
+              '--tw-ring-color': '#B370B0'
+            } as React.CSSProperties}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#B370B0';
+              e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
             rows={4}
             placeholder="Share your thoughts about this recipe..."
             disabled={isSubmitting}
@@ -155,7 +166,18 @@ export default function CommentForm({ recipeId, onCommentCreated }: CommentFormP
             id="visibility"
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as 'private' | 'author_only' | 'public')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:ring-2"
+            style={{
+              '--tw-ring-color': '#B370B0'
+            } as React.CSSProperties}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#B370B0';
+              e.target.style.boxShadow = `0 0 0 2px rgba(179, 112, 176, 0.2)`;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
             disabled={isSubmitting}
           >
             <option value="public">🌍 Public - Everyone can see</option>
@@ -191,8 +213,23 @@ export default function CommentForm({ recipeId, onCommentCreated }: CommentFormP
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
               isSubmitting || !content.trim()
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-700 text-white hover:bg-green-800'
+                : 'text-white'
             }`}
+            style={
+              isSubmitting || !content.trim()
+                ? {}
+                : { backgroundColor: '#1B998B' }
+            }
+            onMouseEnter={(e) => {
+              if (!isSubmitting && content.trim()) {
+                (e.target as HTMLElement).style.backgroundColor = '#177A6E';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSubmitting && content.trim()) {
+                (e.target as HTMLElement).style.backgroundColor = '#1B998B';
+              }
+            }}
           >
             <Send className="w-4 h-4" />
             <span>{isSubmitting ? 'Posting...' : 'Post Comment'}</span>
